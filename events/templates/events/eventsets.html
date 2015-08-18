@@ -1,0 +1,48 @@
+{% load staticfiles %}
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Wire-Cell Event Sets</title>
+    <link rel="stylesheet" href="{% static 'css/lib/bootstrap.min.css' %}" media="screen" />
+    <link rel="stylesheet" href="{% static 'css/bee.css' %}" />
+  </head>
+
+  <body>
+    <div>
+      <div class="page-header">
+        <h1>
+          Wire-Cell Event Sets
+          <small>To BEE, or ...</small>
+        </h1>
+      </div>
+
+      <table class="table table-striped table-bordered table-hover">
+        <thead>
+          <th>ID</th>
+          <th>Event Type</th>
+          <th># Events</th>
+          <th>Energy</th>
+          <th>Geometry</th>
+          <th>Description</th>
+          <th>Created at</th>
+        </thead>
+        {% for eventset in eventset_list %}
+        <tr>
+          <td>{{eventset.id}}</td>
+          <td class="event_type"><a href="{% url 'event' eventset.id 0 %}">{{eventset.event_type}}</a></td>
+          <td>{{eventset.num_events}}</td>
+          <td>{{eventset.energy}}</td>
+          <td>{{eventset.geometry}}</td>
+          <td>{{eventset.desc}}</td>
+          <td>{{eventset.created_at | date:"M d Y"}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+
+    </div>
+
+  </body>
+
+</html>

@@ -1,0 +1,53 @@
+body {
+    /*font-family: sans-serif;*/
+    /*font-size: 16px;*/
+    /*text-align:center;*/
+    background-color: #000;
+    /*background-color: white;*/
+    margin: 0px;
+    overflow: hidden;
+}
+
+#info {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    /*width: 100%;*/
+    padding: 5px;
+}
+#statusbar {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    padding: 5px;
+    color: #feffca;
+}
+#loadingbar {
+    position: absolute;
+    bottom: 0px;
+    width: 25%;
+}
+#container {
+    /* this size is set by renderer.setSize()*/
+}
+#mc {
+    color: white;
+    position: absolute;
+    left: 5px;
+    bottom: 20px;
+    font-size: 1.2em;
+    display: none;
+    /*width: 500px;*/
+    /*background-color: #111;*/
+}
+#cmdModal {
+    top:5%;
+/*right:50%;*/
+/*outline: none;*/
+}
+/*a {color: #82beb7;}*/
+.function {font-weight: bold;}
+.key {color: orange; font-weight: bold;}
+.hotkey {float: right; color: #c20078;}
+.warning {color: #af6f09;}
+.success {color: #2a7e19;}
