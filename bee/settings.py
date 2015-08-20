@@ -19,22 +19,21 @@ DATA_DIR = 'nothing'
 if HOST_NAME.startswith('lycastus'):
     SITE_BNL = True
     DATA_DIR = '../../public_html/examples'
+    DEBUG = False
+    ALLOWED_HOSTS = ['phy.bnl.gov', 'lycastus.phy.bnl.gov']
 else:
     SITE_LOCAL = True
     DATA_DIR = '../wire-cell'
+    DEBUG = True
+    ALLOWED_HOSTS = []
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
+from ConfigParser import RawConfigParser
+conf = RawConfigParser()
+conf.read(os.path.join(BASE_DIR, 'bee/bee.conf'))
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '5p#c6_08)l4g^rg4*ocgls2zba2@$6gt6qlvj3l552d#%4vhu#'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = conf.get('common', 'SECRET_KEY')
 
 TEMPLATE_DEBUG = True
-
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -98,5 +97,11 @@ elif SITE_BNL:
 #     os.path.join(BASE_DIR, "static"),
 #     # '/var/www/static/',
 # )
+
+# path to store uploaded filels
+if SITE_LOCAL:
+    MEDIA_ROOT = BASE_DIR + '/tmp/'
+elif SITE_BNL:
+    MEDIA_ROOT = conf.get('common', 'MEDIA_ROOT')
 
 SITE_ID = 1

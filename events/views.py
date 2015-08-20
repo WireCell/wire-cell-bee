@@ -1,8 +1,11 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.core import serializers
+from django.core.exceptions import *
 
 from events.models import EventSet
+from events.models import UploadFile
+
 from bee import settings
 
 import os, json
@@ -19,8 +22,22 @@ def eventsets(request):
         }
         return render(request, 'events/eventsets.html', context)
 
+def get_eventset(set_id):
+    if (set_id.isdigit()):
+        set_id = int(set_id)
+        eventset = EventSet.objects.get(pk=set_id)
+    else:
+        eventset = EventSet()
+        eventset.alias = set_id
+    return eventset
+
 def event(request, set_id, event_id):
-    eventset = EventSet.objects.get(pk=set_id)
+
+    try:
+        eventset = get_eventset(set_id)
+    except ObjectDoesNotExist:
+        return HttpResponse('Event set for ' + set_id + ' does not exist.')
+
     context = {
         'eventset': eventset,
         'event_id' : event_id,
@@ -49,10 +66,14 @@ def event(request, set_id, event_id):
         return options
 
     options = queryToOptions(request)
+    sst_list = eventset.recon_list()
+    if (len(sst_list)==0):
+        return HttpResponse("Sorry, no data found.")
+
     options.update({
-        'nEvents' : eventset.num_events,
+        'nEvents' : eventset.event_count(),
         'id' : int(event_id),
-        'sst': eventset.recon_list()
+        'sst': sst_list
     })
     if request.is_ajax():
         return HttpResponse(json.dumps(options))
@@ -61,9 +82,9 @@ def event(request, set_id, event_id):
 
 def data(request, set_id, event_id, name):
     '''only for ajax'''
-    eventset = EventSet.objects.get(id=set_id)
-    filename = settings.BASE_DIR + '/' + settings.DATA_DIR + '/' + eventset.alias + '/data/' + event_id
-    filename += "/" + event_id
+    eventset = get_eventset(set_id)
+    # filename = settings.BASE_DIR + '/' + settings.DATA_DIR + '/' + eventset.alias + '/data/' + event_id
+    filename = eventset.data_dir() + '/' + event_id + '/' + event_id
     if (name == 'mc'):
         filename += "-mc.json"
     elif (name == 'WireCell-charge'):
@@ -84,3 +105,38 @@ def data(request, set_id, event_id, name):
     except IOError:
         return HttpResponse(filename + ' does not exist')
 
+
+def upload(request):
+    '''file upload'''
+    import uuid, subprocess
+    if request.method == 'POST':
+        new_file = request.FILES['file']
+        # print new_file.name, new_file.size, new_file.content_type
+        unique_name = str(uuid.uuid4())
+        new_filename = settings.MEDIA_ROOT + unique_name + '.zip'
+        # print new_filename
+        with open(new_filename, 'wb+') as destination:
+            for chunk in new_file.chunks():
+                destination.write(chunk)
+
+        cmd = 'unzip -l ' + new_filename + ' | head -n 5 | tail -n 2 | awk \'{print $4}\''
+        # print cmd
+        try:
+            output = subprocess.check_output(cmd, shell=True)
+            if (output == 'data/\ndata/0/\n'):
+                print 'Good Format!'
+            else:
+                print 'Bad Format!', output,
+                return HttpResponse('DataNotValid')
+        except subprocess.CalledProcessError:
+            return HttpResponse('DataNotValid')
+
+        extract_dir = settings.MEDIA_ROOT + unique_name
+        cmd = 'unzip %s -d %s && chmod -R a+w %s' % (
+            new_filename, extract_dir, extract_dir)
+        # cmd = 'unzip %s -d %s' % (new_filename, extract_dir)
+        # print cmd
+        subprocess.call(cmd, shell=True)
+        return HttpResponse(unique_name)
+    else:
+        return HttpResponse('No Get, Please POST')

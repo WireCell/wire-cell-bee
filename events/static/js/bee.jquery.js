@@ -204,7 +204,7 @@ if ( typeof Object.create !== 'function' ) {
             $('.dg .c select').css({
                 'width': 136,
                 'padding': 0,
-                'margin': 0,
+                'margin': '1px',
                 'height': 'auto'
             });
             $('.dg .c input').css({
@@ -916,10 +916,10 @@ if ( typeof Object.create !== 'function' ) {
             showCharge : true
         },
         sst : [
-            "WireCell-charge",
-            "truth",
-            "WireCell-simple",
-            "WireCell-deblob"
+            // "WireCell-charge",
+            // "truth",
+            // "WireCell-simple",
+            // "WireCell-deblob"
         ]
     };
 

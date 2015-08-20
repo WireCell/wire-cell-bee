@@ -19,13 +19,29 @@ class EventSet(models.Model):
         return u'%i: %s @ %s' % (self.pk, self.event_type, self.alias)
 
     def data_dir(self):
-        return "%s/%s/%s/data" % (settings.BASE_DIR, settings.DATA_DIR, self.alias)
+        d = None
+        if (self.pk==None):  # temporay, not saved to database
+            d = settings.MEDIA_ROOT + self.alias + '/data'
+        else:
+            d = "%s/%s/%s/data" % (settings.BASE_DIR, settings.DATA_DIR, self.alias)
+
+        if os.path.exists(d):
+            return d
+        else:
+            return None
 
     def event_list(self):
-        return os.listdir(self.data_dir())
+        d = self.data_dir()
+        if d:
+            return os.listdir(self.data_dir())
+        else:
+            return []
 
     def event_count(self):
-        return len(self.event_list())
+        if (self.num_events>0):
+            return self.num_events
+        else:
+            return len(self.event_list())
 
     def data_info(self, eventNo=0):
         results = {}
@@ -45,3 +61,7 @@ class EventSet(models.Model):
 
     def has_MC(self):
         return 'mc' in self.data_info()
+
+
+class UploadFile(models.Model):
+    file = models.FileField(upload_to='raw/%Y/%m/%d')

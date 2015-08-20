@@ -1,5 +1,5 @@
 /* app css stylesheet */
-body {margin: 20px;}
+/*body {margin: 20px;}*/
 
 /*h1 {font-family: 'Abril Fatface', sans-serif; color: #3b8378;}*/
 
@@ -8,3 +8,16 @@ a {color: #27ABE4; font-weight: bold;}
 a.NA {color: #999; }
 .size {}
 
+#dropzone {
+  border: 2px dotted;
+  border-radius: 10px;
+  padding: 2px;
+  width: 160px;
+  float: right;
+  font-size: 24px;
+}
+
+#dropzone .dz-message {
+    margin: 1.2em 0;
+    line-height: 1.2em;
+}
