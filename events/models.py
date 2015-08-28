@@ -53,10 +53,13 @@ class EventSet(models.Model):
     def recon_list(self, eventNo=0):
         results = []
         info = self.data_info()
+        info.pop('mc', None)
         for name in convention.SORTED_RECON_FILES:
             if (name in info):
                 results.append(convention.FILENAME_ALIAS.get(name, name))
                 info.pop(name, None)
+        for name in info.keys():
+            results.append(name)
         return results
 
     def has_MC(self):

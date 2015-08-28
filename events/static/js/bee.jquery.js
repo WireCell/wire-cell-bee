@@ -19,22 +19,41 @@ if ( typeof Object.create !== 'function' ) {
     var event_url = base_url.substring(0, base_url.indexOf('event')) + 'event/';
     // console.log(index_of_query_postion, base_url, base_query, event_url);
 
-    var USER_COLORS = [
-        0xffffff, // white
-        0xffff14, // yellow
-        0xc20078, // magenta
-        0x15b01a, // green
-        0xe50000, // red
-        0x95d0fc, // light blue
-        0xff81c0, // pink
-        0x029386, // teal
-        0x96f97b, // light green
-        0xbf77f6, // light purple
-        0xe6daa6, // beige
-        0xf97306, // orange
-        0x0343df, // blue
-        0x7e1e9c // purple
-    ]
+    var USER_COLORS = {
+        'dark' :     [
+            0xffffff, // white
+            0xffff14, // yellow
+            0xc20078, // magenta
+            0x15b01a, // green
+            0xe50000, // red
+            0x95d0fc, // light blue
+            0xff81c0, // pink
+            0x029386, // teal
+            0x96f97b, // light green
+            0xbf77f6, // light purple
+            0xe6daa6, // beige
+            0xf97306, // orange
+            0x0343df, // blue
+            0x7e1e9c // purple
+        ],
+        'light' : [
+            0x000000, // black
+            0x0343df, // blue
+            0xc20078, // magenta
+            0x15b01a, // green
+            0xe50000, // red
+            0x95d0fc, // light blue
+            0xff81c0, // pink
+            0x029386, // teal
+            0x96f97b, // light green
+            0xbf77f6, // light purple
+            0xe6daa6, // beige
+            0xf97306, // orange
+            0xffff14, // yellow
+            0x7e1e9c // purple
+        ]
+    }
+
 
     // SST class
     var SST = {
@@ -102,7 +121,7 @@ if ( typeof Object.create !== 'function' ) {
                 depthWrite      : false,
                 sizeAttenuation : false
             });
-            if (self.name == "WireCell-charge") self.material.opacity = self.options.material.opacity;
+            if (self.name == self.options.sst[0]) self.material.opacity = self.options.material.opacity;
             self.bounds = {
                 xmax: getMaxOfArray(self.x),
                 xmin: getMinOfArray(self.x),
@@ -193,7 +212,14 @@ if ( typeof Object.create !== 'function' ) {
             self.initObitController();
             self.animate();
 
-            self.initMC();  // load MC tracks
+            if (self.options.hasMC) {
+                self.initMC();  // load MC tracks
+            }
+            else {
+                var loading_el = $('#loadingbar');
+                loading_el.html(loading_el.html()
+                    + "<br /><strong class='info'>Info:</strong> No MC found, skiping. ");
+            }
             self.initSST(); // SST's are added asynchronously into the scene
 
             self.initGuiSlice();
@@ -233,6 +259,9 @@ if ( typeof Object.create !== 'function' ) {
                     opacity: self.options.slice.opacity,
                     color: 0x00FFFF
                 }
+            };
+            if (self.options.theme=='light') {
+                self.guiController.slice.color = 0xFF0000;
             }
         },
 
@@ -259,6 +288,27 @@ if ( typeof Object.create !== 'function' ) {
                         else sst.material.opacity = 0;
                         sst.material.needsUpdate = true;
                     }
+               });
+
+            folder_general.add(self.options, 'theme', ['dark', 'light'])
+               .name("Theme")
+               .onChange(function(value) {
+                    var new_query;
+                    if (base_query.indexOf('theme=light')>0) {
+                        new_query = base_query.replace('theme=light', 'theme='+value);
+                    }
+                    else if (base_query.indexOf('theme=dark')>0) {
+                        new_query = base_query.replace('theme=dark', 'theme='+value);
+                    }
+                    else {
+                        if (base_query == "") {
+                            new_query = base_query+'?theme='+value;
+                        }
+                        else {
+                            new_query = base_query+'&theme='+value;
+                        }
+                    }
+                    window.location.assign(base_url+new_query);
                });
 
             folder_general.add($.fn.BEE.user_options.material, "showCharge")
@@ -391,7 +441,7 @@ if ( typeof Object.create !== 'function' ) {
 
             self.helper = new THREE.BoxHelper(new THREE.Mesh(new THREE.BoxGeometry(halfx*2, halfy*2, halfz*2)));
             self.helper.material.color.setHex(0x333333);
-            self.helper.material.blending = THREE.AdditiveBlending;
+            // self.helper.material.blending = THREE.AdditiveBlending;
             self.helper.material.transparent = true;
 
             self.group_main.add(self.helper);
@@ -408,8 +458,8 @@ if ( typeof Object.create !== 'function' ) {
                 new THREE.MeshBasicMaterial( {
                     color: ctrl.slice.color,
                     transparent: true,
-                    opacity: ctrl.slice.opacity,
-                    blending: THREE.AdditiveBlending
+                    // blending: THREE.AdditiveBlending,
+                    opacity: ctrl.slice.opacity
                 }));
             self.slice.position.x = ctrl.slice.position;
             self.scene_slice.add(self.slice);  // slice has its own scene
@@ -522,13 +572,14 @@ if ( typeof Object.create !== 'function' ) {
             self.nRequestedSSTDone = 0;
             self.nLoadedSST = 0;
             var sst;
+            var theme = self.options.theme;
 
             var color_index;
             for (var i=0; i<self.options.sst.length; i++) {
                 sst = Object.create(SST);
                 sst.init(self.options.sst[i], self.options);
-                color_index = i>=USER_COLORS.length? i-USER_COLORS.length : i;
-                sst.chargeColor = new THREE.Color(USER_COLORS[color_index]);
+                color_index = i>=USER_COLORS[theme].length? i-USER_COLORS[theme].length : i;
+                sst.chargeColor = new THREE.Color(USER_COLORS[theme][color_index]);
                 self.registerSST(sst);
             }
         },
@@ -591,6 +642,9 @@ if ( typeof Object.create !== 'function' ) {
             renderer.setSize( window.innerWidth*self.options.camera.scale, window.innerHeight );
             renderer.gammaInput = true;
             renderer.gammaOutput = true;
+            if (self.options.theme == 'light') {
+                renderer.setClearColor(0xFFFFFF, 1);
+            }
 
             // container = document.getElementById( 'container' );
             var container = self.$elem[0];
@@ -686,7 +740,7 @@ if ( typeof Object.create !== 'function' ) {
 
         centerToEvent: function() {
             var self = this;
-            var sst = self.listOfSST["WireCell-charge"]
+            var sst = self.listOfSST[self.options.sst[0]];
             var halfx = self.options.geom.halfx;
             var halfy = self.options.geom.halfy;
             var halfz = self.options.geom.halfz;
@@ -747,7 +801,7 @@ if ( typeof Object.create !== 'function' ) {
 
         xzView: function() {
             var self = this;
-            var sst = self.listOfSST["WireCell-charge"]
+            var sst = self.listOfSST[self.options.sst[0]];
 
             self.centerToEvent();
             self.camera.position.x = (sst.bounds.xmin + sst.bounds.xmax)/2 - self.options.geom.halfx;
@@ -762,7 +816,7 @@ if ( typeof Object.create !== 'function' ) {
 
         xuView: function() {
             var self = this;
-            var sst = self.listOfSST["WireCell-charge"]
+            var sst = self.listOfSST[self.options.sst[0]];
 
             self.centerToEvent();
             self.camera.position.x = (sst.bounds.xmin + sst.bounds.xmax)/2 - self.options.geom.halfx;
@@ -777,7 +831,7 @@ if ( typeof Object.create !== 'function' ) {
 
         xvView: function() {
             var self = this;
-            var sst = self.listOfSST["WireCell-charge"]
+            var sst = self.listOfSST[self.options.sst[0]];
 
             self.centerToEvent();
             self.camera.position.x = (sst.bounds.xmin + sst.bounds.xmax)/2 - self.options.geom.halfx;
@@ -895,6 +949,8 @@ if ( typeof Object.create !== 'function' ) {
     $.fn.BEE.options = {
         nEvents  : 100,
         id       : 0,
+        theme    : 'dark',
+        hasMC    : false,
         geom     : {
             name  : 'uboone',
             halfx : 128.,
@@ -912,7 +968,7 @@ if ( typeof Object.create !== 'function' ) {
             opacity: 0.05
         },
         material : {
-            opacity : 0.3,
+            opacity : 0.8,
             showCharge : true
         },
         sst : [

@@ -149,11 +149,11 @@
             $.extend(true, options, data);
         }); // server options
         xhr.then(function(){
-            $.extend(true, options, {
-              material: {
-                opacity: 0.2
-              }
-            }); // user options
+            // $.extend(true, options, {
+            //   material: {
+            //     opacity: 0.2
+            //   }
+            // }); // user options
             var bee = $("#container").BEE(options);
             // console.log(options);
         });

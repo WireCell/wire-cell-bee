@@ -73,6 +73,7 @@ def event(request, set_id, event_id):
     options.update({
         'nEvents' : eventset.event_count(),
         'id' : int(event_id),
+        'hasMC' : eventset.has_MC(),
         'sst': sst_list
     })
     if request.is_ajax():
@@ -123,7 +124,7 @@ def upload(request):
         # print cmd
         try:
             output = subprocess.check_output(cmd, shell=True)
-            if (output == 'data/\ndata/0/\n'):
+            if (output.startswith('data/\ndata/')):
                 print 'Good Format!'
             else:
                 print 'Bad Format!', output,
