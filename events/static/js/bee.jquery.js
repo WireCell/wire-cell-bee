@@ -88,6 +88,9 @@ if ( typeof Object.create !== 'function' ) {
             self.z = [];
             self.q = [];
             self.nq = [];
+            self.runNo = data.runNo;
+            self.subRunNo = data.subRunNo;
+            self.eventNo = data.eventNo;
 
             var size = data.x.length; // all data must have x
             var QTHRESH = 0;
@@ -594,6 +597,12 @@ if ( typeof Object.create !== 'function' ) {
                     this.containedIn = self.group_main;
                     self.listOfSST[sst.name] = sst;
                     self.nLoadedSST += 1;
+                    if (sst.runNo) {
+                        $('#runNo').html(sst.runNo + ' - ');
+                        $('#subRunNo').html(sst.subRunNo + ' - ');
+                        $('#eventNo').html(sst.eventNo);
+                    }
+                    // console.log(sst);
                     el.html(el.html()+"<br /><strong class='success'>Success!</strong> loading " + sst.name + " ... done. ")
                 }, sst),
                 function() {
@@ -644,6 +653,7 @@ if ( typeof Object.create !== 'function' ) {
             renderer.gammaOutput = true;
             if (self.options.theme == 'light') {
                 renderer.setClearColor(0xFFFFFF, 1);
+                // renderer.setClearColor(0xdddddd, 1);
             }
 
             // container = document.getElementById( 'container' );

@@ -31,6 +31,31 @@ def get_eventset(set_id):
         eventset.alias = set_id
     return eventset
 
+
+def event_list(request, set_id):
+    try:
+        eventset = get_eventset(set_id)
+    except ObjectDoesNotExist:
+        return HttpResponse('Event set for ' + set_id + ' does not exist.')
+
+    context = {
+        'set_id': set_id,
+        'event_list': [],
+    }
+
+    summary = eventset.summary()
+    sorted_keys = summary.keys()
+    sorted_keys.sort(key=int)
+    for key in sorted_keys:
+        context['event_list'].append(summary[key])
+        context['event_list'][-1]['id'] = key
+
+    # from pprint import pprint
+    # pprint(context)
+
+    return render(request, 'events/event_list.html', context)
+
+
 def event(request, set_id, event_id):
 
     try:
@@ -40,7 +65,8 @@ def event(request, set_id, event_id):
 
     context = {
         'eventset': eventset,
-        'event_id' : event_id,
+        'set_id': set_id,
+        'event_id': event_id,
     }
 
     def queryToOptions(request):
@@ -66,14 +92,14 @@ def event(request, set_id, event_id):
         return options
 
     options = queryToOptions(request)
-    sst_list = eventset.recon_list()
+    sst_list = eventset.recon_list(int(event_id))
     if (len(sst_list)==0):
         return HttpResponse("Sorry, no data found.")
 
     options.update({
         'nEvents' : eventset.event_count(),
         'id' : int(event_id),
-        'hasMC' : eventset.has_MC(),
+        'hasMC' : eventset.has_MC(int(event_id)),
         'sst': sst_list
     })
     if request.is_ajax():

@@ -22,7 +22,7 @@ Dropzone.autoDiscover = false;
             this.on("success", function(f) {
                 var name = f.xhr.response;
                 // console.log();
-                window.location.replace(base_url+'set/'+name+'/event/0/')
+                window.location.replace(base_url+'set/'+name+'/event/list/')
             });
         }
     });

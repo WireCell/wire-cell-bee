@@ -25,18 +25,6 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                  role="button" aria-haspopup="true" aria-expanded="false">
-                 Event
-                 <span class="caret"></span>
-              </a>
-              <ul class="dropdown-menu">
-                <li><a href="#" id="toggleMC">Show MC <span class="hotkey">m</span></a></li>
-                <li role="separator" class="divider"></li>
-                <li><a href="" data-toggle="modal" data-target="#cmdModal">Command List </a></li>
-              </ul>
-            </li>
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown"
-                 role="button" aria-haspopup="true" aria-expanded="false">
                  Navigation
                  <span class="caret"></span>
               </a>
@@ -49,6 +37,8 @@
                 <li role="separator" class="divider"></li>
                 <li><a href="#" id="nextSlice">Next Slice <span class="hotkey">k</span></a></li>
                 <li><a href="#" id="prevSlice">Prev Slice <span class="hotkey">j</span></a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="" data-toggle="modal" data-target="#cmdModal">Command List </a></li>
               </ul>
             </li>
             <li class="dropdown">
@@ -63,10 +53,31 @@
                 <li><a href="#" id="play">Play (Fullscreen)</a></li>
               </ul>
             </li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+                 role="button" aria-haspopup="true" aria-expanded="false">
+                 Event
+                 <span id="runNo"></span>
+                 <span id="subRunNo"></span>
+                 <span id="eventNo"></span>
+                 <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li><a href="#" id="toggleMC">Show MC <span class="hotkey">m</span></a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="{% url 'event_list' set_id %}">
+                  Go to Event List ...
+                </a></li>
+              </ul>
+            </li>
           </ul>
         </div>
       </div>
     </nav>
+
+    <div id="eventinfo">
+
+    </div>
 
     <div id="container"></div>
 
