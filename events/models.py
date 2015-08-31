@@ -77,6 +77,9 @@ class EventSet(models.Model):
 
     def summary(self):
         info = {}
+        d = self.data_dir()
+        if not d:
+            return info
         summary_file = self.data_dir() + '/summary.json'
         if os.path.exists(summary_file):
             print summary_file, ' found'

@@ -63,7 +63,7 @@ if ( typeof Object.create !== 'function' ) {
             self.options = options;
             self.url = base_url + name + "/";
             self.containedIn = null; // caching the THREE.Group
-            self.COLORMAX = 14000*2/3.;
+            // self.COLORMAX = 14000*2/3.;
             self.chargeColor = new THREE.Color(0xFFFFFF);
 
             self.setup();
@@ -134,6 +134,7 @@ if ( typeof Object.create !== 'function' ) {
                 zmin: getMinOfArray(self.z)
             }
             self.drawInsideThreeFrames();
+            // self.drawInsideBeamFrame()
         },
 
         drawInsideSlice: function(start, width) {
@@ -157,7 +158,13 @@ if ( typeof Object.create !== 'function' ) {
                 // if (self.geometry.vertices.length==10) break;
                 var color = new THREE.Color();
                 if ($.fn.BEE.user_options.material.showCharge) {
-                    color.setHSL(getColorAtScalar(self.q[i], self.COLORMAX), 1, 0.5);
+                    var scale = self.options.material.colorScale;
+                    color.setHSL(getColorAtScalar(self.q[i], Math.pow(scale,2)*14000*2/3), 1, 0.5);
+                    if ( self.name.indexOf('gray')>-1 ) {
+                        var gray = (color.r + color.g + color.b) / 3;
+                        color.setRGB(gray, gray, gray);
+                    }
+
                 }
                 else {
                     color = self.chargeColor;
@@ -314,7 +321,7 @@ if ( typeof Object.create !== 'function' ) {
                     window.location.assign(base_url+new_query);
                });
 
-            folder_general.add($.fn.BEE.user_options.material, "showCharge")
+            folder_general.add(self.options.material, "showCharge")
                 .name("Show Charge")
                 .onChange(function(value) {
                     var sst;
@@ -325,6 +332,16 @@ if ( typeof Object.create !== 'function' ) {
                         }
                         else {
                             sst.drawInsideThreeFrames();
+                        }
+                    }
+                });
+            folder_general.add(self.options.material, "colorScale", 0., 2.)
+                .name("Color Scale")
+                .step(0.01)
+                .onChange(function(value) {
+                    if (self.options.material.showCharge) {
+                        for (var name in self.listOfSST) {
+                            self.listOfSST[name].drawInsideThreeFrames();
                         }
                     }
                 });
@@ -396,7 +413,7 @@ if ( typeof Object.create !== 'function' ) {
                 .onChange(function(value) {
                     self.slice.material.opacity = value;
                 });
-            folder_slice.add(ctrl.slice, "width", w, w*100).step(w)
+            folder_slice.add(ctrl.slice, "width", w, halfx*2).step(w)
                 .onChange(function(value){
                     self.slice.scale.x = value/w; // SCALE
                 });
@@ -978,6 +995,7 @@ if ( typeof Object.create !== 'function' ) {
             opacity: 0.05
         },
         material : {
+            colorScale: 1.0,
             opacity : 0.8,
             showCharge : true
         },

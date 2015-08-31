@@ -44,11 +44,12 @@ def event_list(request, set_id):
     }
 
     summary = eventset.summary()
-    sorted_keys = summary.keys()
-    sorted_keys.sort(key=int)
-    for key in sorted_keys:
-        context['event_list'].append(summary[key])
-        context['event_list'][-1]['id'] = key
+    if summary:
+        sorted_keys = summary.keys()
+        sorted_keys.sort(key=int)
+        for key in sorted_keys:
+            context['event_list'].append(summary[key])
+            context['event_list'][-1]['id'] = key
 
     # from pprint import pprint
     # pprint(context)
