@@ -186,9 +186,9 @@ if ( typeof Object.create !== 'function' ) {
             this.drawInsideSlice(-this.options.geom.halfx, this.options.geom.halfx*2);
         },
 
-        toLocalX: function(value) { return value - this.options.geom.halfx; },
-        toLocalY: function(value) { return value; },
-        toLocalZ: function(value) { return value - this.options.geom.halfz; }
+        toLocalX: function(value) { return value - this.options.geom.center[0]; },
+        toLocalY: function(value) { return value - this.options.geom.center[1]; },
+        toLocalZ: function(value) { return value - this.options.geom.center[2]; }
     };
 
 
@@ -335,6 +335,16 @@ if ( typeof Object.create !== 'function' ) {
                         }
                     }
                 });
+            folder_general.add(self.options.geom, "showBox")
+                .name("Show Box")
+                .onChange(function(value) {
+                    if (value) {
+                        self.group_main.add(self.group_helper);
+                    }
+                    else {
+                        self.group_main.remove(self.group_helper);
+                    }
+                });
             folder_general.add(self.options.material, "colorScale", 0., 2.)
                 .name("Color Scale")
                 .step(0.01)
@@ -453,18 +463,85 @@ if ( typeof Object.create !== 'function' ) {
         },
 
         initHelper: function() {
-            // shorthands
             var self = this;
-            var halfx = self.options.geom.halfx;
-            var halfy = self.options.geom.halfy;
-            var halfz = self.options.geom.halfz;
+            self.group_helper = new THREE.Group();
+            self.tpcHelpers = [];
 
-            self.helper = new THREE.BoxHelper(new THREE.Mesh(new THREE.BoxGeometry(halfx*2, halfy*2, halfz*2)));
-            self.helper.material.color.setHex(0x333333);
-            // self.helper.material.blending = THREE.AdditiveBlending;
-            self.helper.material.transparent = true;
+            // self.options.geom.name = "dune35t";
 
-            self.group_main.add(self.helper);
+            if (self.options.geom.name == "uboone") {
+                self.tpcLoc = [
+                    [0., 256., -116., 116., 0., 1040.]
+                ];
+                self.options.geom.halfx = (self.tpcLoc[0][1]-self.tpcLoc[0][0])/2;
+                self.options.geom.halfy = (self.tpcLoc[0][3]-self.tpcLoc[0][2])/2;
+                self.options.geom.halfz = (self.tpcLoc[0][5]-self.tpcLoc[0][4])/2;
+                self.options.geom.center[0] = (self.tpcLoc[0][1]+self.tpcLoc[0][0])/2;
+                self.options.geom.center[1] = (self.tpcLoc[0][3]+self.tpcLoc[0][2])/2;
+                self.options.geom.center[2] = (self.tpcLoc[0][5]+self.tpcLoc[0][4])/2;
+
+            }
+
+            else if (self.options.geom.name == "dune35t") {
+                self.tpcLoc = [
+                    [-34.4523 , -7.27732, -84.4008, 115.087, -2.03813, 51.4085],
+                    [-0.747073,  221.728, -84.4008, 115.087, -2.03813, 51.4085],
+                    [-34.4523 , -7.27732, -84.4852, 0.015  , 51.4085 , 103.332],
+                    [-0.747073,  221.728, -84.4852, 0.015  , 51.4085 , 103.332],
+                    [-34.4523 , -7.27732, 0       , 115.087, 51.4085 , 103.332],
+                    [-0.747073,  221.728, 0       , 115.087, 51.4085 , 103.332],
+                    [-34.4523 , -7.27732, -84.4008, 115.087, 103.332 , 156.779],
+                    [-0.747073,  221.728, -84.4008, 115.087, 103.332 , 156.779]
+                ];
+                self.options.geom.halfx = (self.tpcLoc[7][1]-self.tpcLoc[0][0])/2;
+                self.options.geom.halfy = (self.tpcLoc[7][3]-self.tpcLoc[0][2])/2;
+                self.options.geom.halfz = (self.tpcLoc[7][5]-self.tpcLoc[0][4])/2;
+                self.options.geom.center[0] = (self.tpcLoc[7][1]+self.tpcLoc[0][0])/2;
+                self.options.geom.center[1] = (self.tpcLoc[7][3]+self.tpcLoc[0][2])/2;
+                self.options.geom.center[2] = (self.tpcLoc[7][5]+self.tpcLoc[0][4])/2;
+            }
+            // console.log(self.options.geom)
+
+            var helper, tpc, box;
+            for (var i=0; i<self.tpcLoc.length; i++) {
+                tpc = new THREE.Mesh(
+                    new THREE.BoxGeometry(
+                        self.tpcLoc[i][1]-self.tpcLoc[i][0],
+                        self.tpcLoc[i][3]-self.tpcLoc[i][2],
+                        self.tpcLoc[i][5]-self.tpcLoc[i][4]
+                        ),
+                    new THREE.MeshBasicMaterial({
+                        color: 0x333333,
+                        transparent: true,
+                        opacity: 0.1
+                        })
+                );
+                // tpc.position.x = (self.tpcLoc[i][1]+self.tpcLoc[i][0])/2;
+                // tpc.position.y = (self.tpcLoc[i][3]+self.tpcLoc[i][2])/2;
+                // tpc.position.z = (self.tpcLoc[i][5]+self.tpcLoc[i][4])/2;
+                helper = new THREE.Object3D;
+                box = new THREE.BoxHelper(tpc);
+                box.material.color.setHex(0x111111);
+                helper.add(box);
+                helper.position.x = self.toLocalX((self.tpcLoc[i][1]+self.tpcLoc[i][0])/2);
+                helper.position.y = self.toLocalY((self.tpcLoc[i][3]+self.tpcLoc[i][2])/2);
+                helper.position.z = self.toLocalZ((self.tpcLoc[i][5]+self.tpcLoc[i][4])/2);
+
+                // console.log(helper);
+                // helper.material.color.setHex(USER_COLORS['dark'][i]);
+
+                // helper.material.transparent = true;
+                self.tpcHelpers.push(helper);
+                self.group_helper.add(helper);
+            }
+
+            // self.helper = new THREE.BoxHelper(new THREE.Mesh(
+            //     new THREE.BoxGeometry(self.options.geom.halfx*2, self.options.geom.halfy*2, self.options.geom.halfz*2)));
+            // self.helper.material.color.setHex(0x333333);
+            // // self.helper.material.blending = THREE.AdditiveBlending;
+            // self.helper.material.transparent = true;
+            // self.group_helper.add(self.helper);
+            self.group_main.add(self.group_helper);
         },
 
         initSlice: function() {
@@ -482,6 +559,8 @@ if ( typeof Object.create !== 'function' ) {
                     opacity: ctrl.slice.opacity
                 }));
             self.slice.position.x = ctrl.slice.position;
+            self.slice.position.y = self.toLocalY(self.options.geom.center[1]);
+            self.slice.position.z = self.toLocalZ(self.options.geom.center[2]);
             self.scene_slice.add(self.slice);  // slice has its own scene
         },
 
@@ -850,8 +929,8 @@ if ( typeof Object.create !== 'function' ) {
             self.camera.position.y = self.options.camera.depth;
             self.camera.position.z = (sst.bounds.zmin + sst.bounds.zmax)/2 - self.options.geom.halfz;
 
-            self.scene.rotation.x = -Math.PI /180 * 60;
-            self.scene_slice.rotation.x = -Math.PI /180 * 60;
+            self.scene.rotation.x = -Math.PI /180 * self.options.geom.angleU;
+            self.scene_slice.rotation.x = -Math.PI /180 * self.options.geom.angleU;
             self.camera.up = new THREE.Vector3(1,0,0);
             self.orbitController.update();
         },
@@ -865,8 +944,8 @@ if ( typeof Object.create !== 'function' ) {
             self.camera.position.y = self.options.camera.depth;
             self.camera.position.z = (sst.bounds.zmin + sst.bounds.zmax)/2 - self.options.geom.halfz;
 
-            self.scene.rotation.x = Math.PI /180 * 60;
-            self.scene_slice.rotation.x = Math.PI /180 * 60;
+            self.scene.rotation.x = Math.PI /180 * self.options.geom.angleV;
+            self.scene_slice.rotation.x = Math.PI /180 * self.options.geom.angleV;
             self.camera.up = new THREE.Vector3(1,0,0);
             self.orbitController.update();
         },
@@ -964,6 +1043,7 @@ if ( typeof Object.create !== 'function' ) {
 
     $.fn.BEE = function( options ) {
         $.fn.BEE.user_options = $.extend(true, {}, $.fn.BEE.options, options ); // recursive extend
+        // console.log($.fn.BEE.user_options);
 
         var scene3D = Object.create(Scene3D);
         scene3D.init($.fn.BEE.user_options, this);
@@ -980,9 +1060,13 @@ if ( typeof Object.create !== 'function' ) {
         hasMC    : false,
         geom     : {
             name  : 'uboone',
+            showBox : true,
             halfx : 128.,
             halfy : 116.,
-            halfz : 520.
+            halfz : 520.,
+            center : [128, 0, 520],
+            angleU : 60,
+            angleV : 60
         },
         camera   : {
             scale : 0.85,

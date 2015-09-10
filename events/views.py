@@ -92,17 +92,28 @@ def event(request, set_id, event_id):
                 options[key] = value_clean
         return options
 
-    options = queryToOptions(request)
     sst_list = eventset.recon_list(int(event_id))
     if (len(sst_list)==0):
         return HttpResponse("Sorry, no data found.")
 
-    options.update({
+    options = {
         'nEvents' : eventset.event_count(),
         'id' : int(event_id),
+        'geom' : {},
         'hasMC' : eventset.has_MC(int(event_id)),
         'sst': sst_list
-    })
+    }
+    if (eventset.geometry == 'dune35t'):
+        options['camera'] = {
+            'depth': 800,
+        }
+        options['geom']['name'] = 'dune35t'
+        options['geom']['angleU'] = 45
+        options['geom']['angleV'] = 45
+
+
+    options.update(queryToOptions(request))
+
     if request.is_ajax():
         return HttpResponse(json.dumps(options))
     else:

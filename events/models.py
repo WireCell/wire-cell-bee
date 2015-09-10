@@ -92,14 +92,17 @@ class EventSet(models.Model):
                 for event_id in self.event_list():
                     runNo = 0
                     subRunNo = 0
-                    evenNo = 0
+                    eventNo = 0
                     data_info = self.data_info(event_id)
                     if data_info:
                         with open(data_info.values()[0]) as f:
-                            content = json.load(f)
-                            runNo = content.get('runNo', 0)
-                            subRunNo = content.get('subRunNo', 0)
-                            eventNo = content.get('eventNo', 0)
+                            try:
+                                content = json.load(f)
+                                runNo = content.get('runNo', 0)
+                                subRunNo = content.get('subRunNo', 0)
+                                eventNo = content.get('eventNo', 0)
+                            except ValueError:
+                                pass
                     info[event_id] = {
                         'runNo': runNo,
                         'subRunNo': subRunNo,
