@@ -18,6 +18,12 @@ class EventSet(models.Model):
     def __unicode__(self):
         return u'%i: %s @ %s' % (self.pk, self.event_type, self.alias)
 
+    def geom(self, eventNo=0):
+        if (self.pk==None):  # temporay, not saved to database
+            return self.summary()[eventNo]['geom']
+        else:
+            return self.geometry
+
     def data_dir(self):
         d = None
         if (self.pk==None):  # temporay, not saved to database
@@ -93,6 +99,7 @@ class EventSet(models.Model):
                     runNo = 0
                     subRunNo = 0
                     eventNo = 0
+                    geom = 'uboone'
                     data_info = self.data_info(event_id)
                     if data_info:
                         with open(data_info.values()[0]) as f:
@@ -101,12 +108,14 @@ class EventSet(models.Model):
                                 runNo = content.get('runNo', 0)
                                 subRunNo = content.get('subRunNo', 0)
                                 eventNo = content.get('eventNo', 0)
+                                geom = content.get('geom', 'uboone')
                             except ValueError:
                                 pass
                     info[event_id] = {
                         'runNo': runNo,
                         'subRunNo': subRunNo,
                         'eventNo': eventNo,
+                        'geom': geom,
                         'content_list': self.content_list(event_id),
                         'data': data_info
                     }
@@ -114,5 +123,5 @@ class EventSet(models.Model):
                         json.dump(info, of)
         return info
 
-class UploadFile(models.Model):
-    file = models.FileField(upload_to='raw/%Y/%m/%d')
+# class UploadFile(models.Model):
+#     file = models.FileField(upload_to='raw/%Y/%m/%d')

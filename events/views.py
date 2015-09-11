@@ -4,7 +4,7 @@ from django.core import serializers
 from django.core.exceptions import *
 
 from events.models import EventSet
-from events.models import UploadFile
+# from events.models import UploadFile
 
 from bee import settings
 
@@ -103,7 +103,7 @@ def event(request, set_id, event_id):
         'hasMC' : eventset.has_MC(int(event_id)),
         'sst': sst_list
     }
-    if (eventset.geometry == 'dune35t'):
+    if (eventset.geom(event_id) == 'dune35t'):
         options['camera'] = {
             'depth': 800,
         }
@@ -171,7 +171,7 @@ def upload(request):
             return HttpResponse('DataNotValid')
 
         extract_dir = settings.MEDIA_ROOT + unique_name
-        cmd = 'unzip %s -d %s && chmod -R a+w %s' % (
+        cmd = 'unzip %s -d %s && chmod -R g+w %s' % (
             new_filename, extract_dir, extract_dir)
         # cmd = 'unzip %s -d %s' % (new_filename, extract_dir)
         # print cmd
