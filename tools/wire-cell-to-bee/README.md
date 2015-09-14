@@ -1,3 +1,5 @@
+## Usage
+
 ```bash
 python dump_json.py [filename] [alg1 alg2 ...]
 ```

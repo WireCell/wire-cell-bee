@@ -335,14 +335,24 @@ if ( typeof Object.create !== 'function' ) {
                         }
                     }
                 });
-            folder_general.add(self.options.geom, "showBox")
-                .name("Show Box")
+            folder_general.add(self.options.geom, "showTPCs")
+                .name("Show TPCs")
                 .onChange(function(value) {
                     if (value) {
                         self.group_main.add(self.group_helper);
                     }
                     else {
                         self.group_main.remove(self.group_helper);
+                    }
+                });
+            folder_general.add(self.options.geom, "showAxises")
+                .name("Show Axises")
+                .onChange(function(value) {
+                    if (value) {
+                        self.scene.add(self.axises);
+                    }
+                    else {
+                        self.scene.remove(self.axises);
                     }
                 });
             folder_general.add(self.options.material, "colorScale", 0., 2.)
@@ -460,6 +470,8 @@ if ( typeof Object.create !== 'function' ) {
 
             self.group_main = new THREE.Group();
             self.scene.add(self.group_main);
+
+            self.axises = new THREE.AxisHelper( 100 );
         },
 
         initHelper: function() {
@@ -1036,9 +1048,12 @@ if ( typeof Object.create !== 'function' ) {
             }
             window.animate();
         },
-        toLocalX: function(value) { return value - this.options.geom.halfx; },
-        toLocalY: function(value) { return value; },
-        toLocalZ: function(value) { return value - this.options.geom.halfz; }
+        // toLocalX: function(value) { return value - this.options.geom.halfx; },
+        // toLocalY: function(value) { return value; },
+        // toLocalZ: function(value) { return value - this.options.geom.halfz; }
+        toLocalX: function(value) { return value - this.options.geom.center[0]; },
+        toLocalY: function(value) { return value - this.options.geom.center[1]; },
+        toLocalZ: function(value) { return value - this.options.geom.center[2]; }
     };
 
     $.fn.BEE = function( options ) {
@@ -1060,7 +1075,8 @@ if ( typeof Object.create !== 'function' ) {
         hasMC    : false,
         geom     : {
             name  : 'uboone',
-            showBox : true,
+            showTPCs : true,
+            showAxises : false,
             halfx : 128.,
             halfy : 116.,
             halfz : 520.,
