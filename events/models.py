@@ -68,7 +68,10 @@ class EventSet(models.Model):
                 results.append(convention.FILENAME_ALIAS.get(name, name))
                 info.pop(name, None)
         for name in info.keys():
-            results.append(name)
+            if (name.find('-track')>0):
+                info.pop(name)
+            else:
+                results.append(name)
         return results
 
     def has_MC(self, eventNo=0):

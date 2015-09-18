@@ -37,6 +37,15 @@ def main(filename, options):
                 'data/'+str_i+'/'+str_i+'-'+rec+'.json')
             print cmd
             os.system(cmd)
+        trackfilename = list_of_files[i].replace(
+            'shower3D',
+            'cluster'
+            )
+        cmd = "root -b -q -l 'Track2JSON.C(\"%s\", \"%s\")'" % (
+            trackfilename,
+            'data/'+str_i+'/'+str_i+'-WireCell-charge-track.json')
+        print cmd
+        os.system(cmd)
 
     if (os.path.exists('to_upload.zip')):
         print 'removing old to_upload.zip ...'

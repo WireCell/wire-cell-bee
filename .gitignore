@@ -1,5 +1,7 @@
 *.pyc
 *.conf
+*.zip
+test.*
 data/
 tmp/
 fabfile.py

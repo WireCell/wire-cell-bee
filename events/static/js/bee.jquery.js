@@ -54,6 +54,73 @@ if ( typeof Object.create !== 'function' ) {
         ]
     }
 
+    // Tracks class
+    var TRACK = {
+        init: function(data) {
+            var self = this;
+            self.data = data;
+            self.id = data.trackid;
+            self.type = data.type;
+            self.size = data['x'].length;
+            self.initLine();
+        },
+
+        initLine: function() {
+            var self = this;
+            var material = new THREE.LineBasicMaterial( {
+                color: 0xffffff,
+                opacity: 1,
+                linewidth: 3,
+                vertexColors: THREE.VertexColors
+            } );
+            var geometry = new THREE.Geometry();
+            for (var i=0; i<self.size; i++) {
+                geometry.vertices.push(new THREE.Vector3(
+                    toLocalX(self.data['x'][i]),
+                    toLocalY(self.data['y'][i]),
+                    toLocalZ(self.data['z'][i])));
+                var scale = 2;
+                var color = new THREE.Color();
+                color.setHSL(getColorAtScalar(self.data['dedx'][i], Math.pow(scale,2)*14000*2/3), 1, 0.5);
+                geometry.colors.push(color);
+            }
+            // console.log(geometry);
+            self.line = new THREE.Line(geometry, material);
+        }
+    }
+
+    // clustering and tracking collections;
+    var CT = {
+        init: function(name) {
+            var self = this;
+            self.name = name;
+            self.url = base_url + name + "-track/";
+            self.tracks = [];
+
+            self.loadData();
+
+        },
+
+        loadData: function() {
+            var self = this;
+            self.process = $.getJSON(self.url, function(data) {
+                // console.log(data);
+                var tracks = data['tracks'];
+                for (var i=0; i<tracks.length; i++) {
+                    var track = Object.create(TRACK);
+                    var track_data = tracks[i];
+                    track.init(track_data);
+                    self.tracks.push(track);
+                }
+                // console.log(self.tracks);
+                // self.initData(data);
+                // self.initPointCloud();
+            })
+            .fail(function(){
+                console.log("load " + self.url + " failed");
+            });
+        }
+    }
 
     // SST class
     var SST = {
@@ -148,9 +215,9 @@ if ( typeof Object.create !== 'function' ) {
             self.geometry = new THREE.Geometry();
 
             for (var i=0; i<size; i++) {
-                var x = self.toLocalX(self.x[i]);
-                var y = self.toLocalY(self.y[i]);
-                var z = self.toLocalZ(self.z[i]);
+                var x = toLocalX(self.x[i]);
+                var y = toLocalY(self.y[i]);
+                var z = toLocalZ(self.z[i]);
                 if (x  < start || x > start+width) {
                     continue;
                 }
@@ -184,11 +251,11 @@ if ( typeof Object.create !== 'function' ) {
 
         drawInsideBeamFrame: function() {
             this.drawInsideSlice(-this.options.geom.halfx, this.options.geom.halfx*2);
-        },
+        }
 
-        toLocalX: function(value) { return value - this.options.geom.center[0]; },
-        toLocalY: function(value) { return value - this.options.geom.center[1]; },
-        toLocalZ: function(value) { return value - this.options.geom.center[2]; }
+        // toLocalX: function(value) { return value - this.options.geom.center[0]; },
+        // toLocalY: function(value) { return value - this.options.geom.center[1]; },
+        // toLocalZ: function(value) { return value - this.options.geom.center[2]; }
     };
 
 
@@ -231,6 +298,7 @@ if ( typeof Object.create !== 'function' ) {
                     + "<br /><strong class='info'>Info:</strong> No MC found, skiping. ");
             }
             self.initSST(); // SST's are added asynchronously into the scene
+            self.initCT();
 
             self.initGuiSlice();
             self.initGuiCamera();
@@ -265,7 +333,7 @@ if ( typeof Object.create !== 'function' ) {
                 slice: {
                     sliced_mode: false,
                     width: self.options.slice.width,
-                    position: -self.options.geom.halfx + self.options.slice.width/2,
+                    position: -$.fn.BEE.user_options.geom.halfx + self.options.slice.width/2,
                     opacity: self.options.slice.opacity,
                     color: 0x00FFFF
                 }
@@ -335,7 +403,7 @@ if ( typeof Object.create !== 'function' ) {
                         }
                     }
                 });
-            folder_general.add(self.options.geom, "showTPCs")
+            folder_general.add($.fn.BEE.user_options.geom, "showTPCs")
                 .name("Show TPCs")
                 .onChange(function(value) {
                     if (value) {
@@ -345,7 +413,7 @@ if ( typeof Object.create !== 'function' ) {
                         self.group_main.remove(self.group_helper);
                     }
                 });
-            folder_general.add(self.options.geom, "showAxises")
+            folder_general.add($.fn.BEE.user_options.geom, "showAxises")
                 .name("Show Axises")
                 .onChange(function(value) {
                     if (value) {
@@ -412,7 +480,7 @@ if ( typeof Object.create !== 'function' ) {
             var self = this;
             var ctrl = self.guiController;
             var w = self.options.slice.width;
-            var halfx = self.options.geom.halfx;
+            var halfx = $.fn.BEE.user_options.geom.halfx;
 
             var folder_slice = this.gui.addFolder("Slice");
             folder_slice.add(ctrl.slice, "sliced_mode")
@@ -479,22 +547,23 @@ if ( typeof Object.create !== 'function' ) {
             self.group_helper = new THREE.Group();
             self.tpcHelpers = [];
 
-            // self.options.geom.name = "dune35t";
+            // $.fn.BEE.user_options.geom.name = "dune35t";
 
-            if (self.options.geom.name == "uboone") {
+            if ($.fn.BEE.user_options.geom.name == "uboone") {
                 self.tpcLoc = [
                     [0., 256., -116., 116., 0., 1040.]
                 ];
-                self.options.geom.halfx = (self.tpcLoc[0][1]-self.tpcLoc[0][0])/2;
-                self.options.geom.halfy = (self.tpcLoc[0][3]-self.tpcLoc[0][2])/2;
-                self.options.geom.halfz = (self.tpcLoc[0][5]-self.tpcLoc[0][4])/2;
-                self.options.geom.center[0] = (self.tpcLoc[0][1]+self.tpcLoc[0][0])/2;
-                self.options.geom.center[1] = (self.tpcLoc[0][3]+self.tpcLoc[0][2])/2;
-                self.options.geom.center[2] = (self.tpcLoc[0][5]+self.tpcLoc[0][4])/2;
+                $.fn.BEE.user_options.geom.halfx = (self.tpcLoc[0][1]-self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.halfy = (self.tpcLoc[0][3]-self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.halfz = (self.tpcLoc[0][5]-self.tpcLoc[0][4])/2;
+                $.fn.BEE.user_options.geom.center[0] = (self.tpcLoc[0][1]+self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.center[1] = (self.tpcLoc[0][3]+self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[0][5]+self.tpcLoc[0][4])/2;
+
 
             }
 
-            else if (self.options.geom.name == "dune35t") {
+            else if ($.fn.BEE.user_options.geom.name == "dune35t") {
                 self.tpcLoc = [
                     [-34.4523 , -7.27732, -84.4008, 115.087, -2.03813, 51.4085],
                     [-0.747073,  221.728, -84.4008, 115.087, -2.03813, 51.4085],
@@ -505,14 +574,14 @@ if ( typeof Object.create !== 'function' ) {
                     [-34.4523 , -7.27732, -84.4008, 115.087, 103.332 , 156.779],
                     [-0.747073,  221.728, -84.4008, 115.087, 103.332 , 156.779]
                 ];
-                self.options.geom.halfx = (self.tpcLoc[7][1]-self.tpcLoc[0][0])/2;
-                self.options.geom.halfy = (self.tpcLoc[7][3]-self.tpcLoc[0][2])/2;
-                self.options.geom.halfz = (self.tpcLoc[7][5]-self.tpcLoc[0][4])/2;
-                self.options.geom.center[0] = (self.tpcLoc[7][1]+self.tpcLoc[0][0])/2;
-                self.options.geom.center[1] = (self.tpcLoc[7][3]+self.tpcLoc[0][2])/2;
-                self.options.geom.center[2] = (self.tpcLoc[7][5]+self.tpcLoc[0][4])/2;
+                $.fn.BEE.user_options.geom.halfx = (self.tpcLoc[7][1]-self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.halfy = (self.tpcLoc[7][3]-self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.halfz = (self.tpcLoc[7][5]-self.tpcLoc[0][4])/2;
+                $.fn.BEE.user_options.geom.center[0] = (self.tpcLoc[7][1]+self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.center[1] = (self.tpcLoc[7][3]+self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[7][5]+self.tpcLoc[0][4])/2;
             }
-            // console.log(self.options.geom)
+            // console.log($.fn.BEE.user_options.geom)
 
             var helper, tpc, box;
             for (var i=0; i<self.tpcLoc.length; i++) {
@@ -535,9 +604,9 @@ if ( typeof Object.create !== 'function' ) {
                 box = new THREE.BoxHelper(tpc);
                 box.material.color.setHex(0x111111);
                 helper.add(box);
-                helper.position.x = self.toLocalX((self.tpcLoc[i][1]+self.tpcLoc[i][0])/2);
-                helper.position.y = self.toLocalY((self.tpcLoc[i][3]+self.tpcLoc[i][2])/2);
-                helper.position.z = self.toLocalZ((self.tpcLoc[i][5]+self.tpcLoc[i][4])/2);
+                helper.position.x = toLocalX((self.tpcLoc[i][1]+self.tpcLoc[i][0])/2);
+                helper.position.y = toLocalY((self.tpcLoc[i][3]+self.tpcLoc[i][2])/2);
+                helper.position.z = toLocalZ((self.tpcLoc[i][5]+self.tpcLoc[i][4])/2);
 
                 // console.log(helper);
                 // helper.material.color.setHex(USER_COLORS['dark'][i]);
@@ -548,7 +617,7 @@ if ( typeof Object.create !== 'function' ) {
             }
 
             // self.helper = new THREE.BoxHelper(new THREE.Mesh(
-            //     new THREE.BoxGeometry(self.options.geom.halfx*2, self.options.geom.halfy*2, self.options.geom.halfz*2)));
+            //     new THREE.BoxGeometry($.fn.BEE.user_options.geom.halfx*2, $.fn.BEE.user_options.geom.halfy*2, $.fn.BEE.user_options.geom.halfz*2)));
             // self.helper.material.color.setHex(0x333333);
             // // self.helper.material.blending = THREE.AdditiveBlending;
             // self.helper.material.transparent = true;
@@ -559,8 +628,8 @@ if ( typeof Object.create !== 'function' ) {
         initSlice: function() {
             var self = this;
             var ctrl = self.guiController;
-            var halfy = self.options.geom.halfy;
-            var halfz = self.options.geom.halfz;
+            var halfy = $.fn.BEE.user_options.geom.halfy;
+            var halfz = $.fn.BEE.user_options.geom.halfz;
 
             self.slice = new THREE.Mesh(
                 new THREE.BoxGeometry(ctrl.slice.width, halfy*2, halfz*2 ),
@@ -571,8 +640,8 @@ if ( typeof Object.create !== 'function' ) {
                     opacity: ctrl.slice.opacity
                 }));
             self.slice.position.x = ctrl.slice.position;
-            self.slice.position.y = self.toLocalY(self.options.geom.center[1]);
-            self.slice.position.z = self.toLocalZ(self.options.geom.center[2]);
+            self.slice.position.y = toLocalY($.fn.BEE.user_options.geom.center[1]);
+            self.slice.position.z = toLocalZ($.fn.BEE.user_options.geom.center[2]);
             self.scene_slice.add(self.slice);  // slice has its own scene
         },
 
@@ -611,14 +680,14 @@ if ( typeof Object.create !== 'function' ) {
                         geometry = new THREE.Geometry();
                         geometry.vertices.push(
                             new THREE.Vector3(
-                                self.toLocalX(node.data.start[0]),
-                                self.toLocalY(node.data.start[1]),
-                                self.toLocalZ(node.data.start[2])
+                                toLocalX(node.data.start[0]),
+                                toLocalY(node.data.start[1]),
+                                toLocalZ(node.data.start[2])
                             ),
                             new THREE.Vector3(
-                                self.toLocalX(node.data.end[0]),
-                                self.toLocalY(node.data.end[1]),
-                                self.toLocalZ(node.data.end[2])
+                                toLocalX(node.data.end[0]),
+                                toLocalY(node.data.end[1]),
+                                toLocalZ(node.data.end[2])
                             )
                         );
                         line = new THREE.Line( geometry, material );
@@ -637,9 +706,9 @@ if ( typeof Object.create !== 'function' ) {
                         });
                         var sphere = new THREE.Mesh( geometry2, material2 );
                         sphere.overdraw = true;
-                        sphere.position.x = self.toLocalX(node.data.start[0]);
-                        sphere.position.y = self.toLocalY(node.data.start[1]);
-                        sphere.position.z = self.toLocalZ(node.data.start[2]);
+                        sphere.position.x = toLocalX(node.data.start[0]);
+                        sphere.position.y = toLocalY(node.data.start[1]);
+                        sphere.position.z = toLocalZ(node.data.start[2]);
 
                         self.scene.add(sphere);
                         self.listOfMCObjects.push(sphere);
@@ -675,6 +744,29 @@ if ( typeof Object.create !== 'function' ) {
                     el.html(el.html()+"<br /><strong class='warning'>Warning!</strong> loading MC ... failed. ")
                 }
             );
+        },
+
+        initCT: function() {
+            var self = this;
+            self.listOfCT = {};
+
+            var ct = Object.create(CT);
+            ct.init("WireCell-charge");
+            ct.process.then( // add to the scence after all are set up
+                $.proxy(function(){  // use proxy to set up the this context
+                    // console.log(this)
+                    for (var i=0; i<this.tracks.length; i++) {
+                        self.group_main.add(ct.tracks[i].line);
+                        // console.log('added ' + i)
+                    }
+                    this.containedIn = self.group_main;
+                    self.listOfCT["WireCell-charge"] = this;
+                    self.nLoadedCT += 1;
+                }, ct),
+                function() {
+                }
+            );
+
         },
 
         initSST: function() {
@@ -859,9 +951,9 @@ if ( typeof Object.create !== 'function' ) {
         centerToEvent: function() {
             var self = this;
             var sst = self.listOfSST[self.options.sst[0]];
-            var halfx = self.options.geom.halfx;
-            var halfy = self.options.geom.halfy;
-            var halfz = self.options.geom.halfz;
+            var halfx = $.fn.BEE.user_options.geom.halfx;
+            var halfy = $.fn.BEE.user_options.geom.halfy;
+            var halfz = $.fn.BEE.user_options.geom.halfz;
             var depth = self.options.camera.depth;
 
             self.camera.position.x = -depth;
@@ -922,9 +1014,9 @@ if ( typeof Object.create !== 'function' ) {
             var sst = self.listOfSST[self.options.sst[0]];
 
             self.centerToEvent();
-            self.camera.position.x = (sst.bounds.xmin + sst.bounds.xmax)/2 - self.options.geom.halfx;
+            self.camera.position.x = (sst.bounds.xmin + sst.bounds.xmax)/2 - $.fn.BEE.user_options.geom.halfx;
             self.camera.position.y = self.options.camera.depth;
-            self.camera.position.z = (sst.bounds.zmin + sst.bounds.zmax)/2 - self.options.geom.halfz;
+            self.camera.position.z = (sst.bounds.zmin + sst.bounds.zmax)/2 - $.fn.BEE.user_options.geom.halfz;
 
             self.scene.rotation.x = 0;
             self.scene_slice.rotation.x = 0;
@@ -937,12 +1029,12 @@ if ( typeof Object.create !== 'function' ) {
             var sst = self.listOfSST[self.options.sst[0]];
 
             self.centerToEvent();
-            self.camera.position.x = (sst.bounds.xmin + sst.bounds.xmax)/2 - self.options.geom.halfx;
+            self.camera.position.x = (sst.bounds.xmin + sst.bounds.xmax)/2 - $.fn.BEE.user_options.geom.halfx;
             self.camera.position.y = self.options.camera.depth;
-            self.camera.position.z = (sst.bounds.zmin + sst.bounds.zmax)/2 - self.options.geom.halfz;
+            self.camera.position.z = (sst.bounds.zmin + sst.bounds.zmax)/2 - $.fn.BEE.user_options.geom.halfz;
 
-            self.scene.rotation.x = -Math.PI /180 * self.options.geom.angleU;
-            self.scene_slice.rotation.x = -Math.PI /180 * self.options.geom.angleU;
+            self.scene.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
+            self.scene_slice.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
             self.camera.up = new THREE.Vector3(1,0,0);
             self.orbitController.update();
         },
@@ -952,12 +1044,12 @@ if ( typeof Object.create !== 'function' ) {
             var sst = self.listOfSST[self.options.sst[0]];
 
             self.centerToEvent();
-            self.camera.position.x = (sst.bounds.xmin + sst.bounds.xmax)/2 - self.options.geom.halfx;
+            self.camera.position.x = (sst.bounds.xmin + sst.bounds.xmax)/2 - $.fn.BEE.user_options.geom.halfx;
             self.camera.position.y = self.options.camera.depth;
-            self.camera.position.z = (sst.bounds.zmin + sst.bounds.zmax)/2 - self.options.geom.halfz;
+            self.camera.position.z = (sst.bounds.zmin + sst.bounds.zmax)/2 - $.fn.BEE.user_options.geom.halfz;
 
-            self.scene.rotation.x = Math.PI /180 * self.options.geom.angleV;
-            self.scene_slice.rotation.x = Math.PI /180 * self.options.geom.angleV;
+            self.scene.rotation.x = Math.PI /180 * $.fn.BEE.user_options.geom.angleV;
+            self.scene_slice.rotation.x = Math.PI /180 * $.fn.BEE.user_options.geom.angleV;
             self.camera.up = new THREE.Vector3(1,0,0);
             self.orbitController.update();
         },
@@ -1047,13 +1139,13 @@ if ( typeof Object.create !== 'function' ) {
                 self.renderer.render(self.scene_slice, self.camera);
             }
             window.animate();
-        },
+        }
         // toLocalX: function(value) { return value - this.options.geom.halfx; },
         // toLocalY: function(value) { return value; },
         // toLocalZ: function(value) { return value - this.options.geom.halfz; }
-        toLocalX: function(value) { return value - this.options.geom.center[0]; },
-        toLocalY: function(value) { return value - this.options.geom.center[1]; },
-        toLocalZ: function(value) { return value - this.options.geom.center[2]; }
+        // toLocalX: function(value) { return value - this.options.geom.center[0]; },
+        // toLocalY: function(value) { return value - this.options.geom.center[1]; },
+        // toLocalZ: function(value) { return value - this.options.geom.center[2]; }
     };
 
     $.fn.BEE = function( options ) {
@@ -1141,5 +1233,9 @@ if ( typeof Object.create !== 'function' ) {
         }
         return min;
     }
+
+    function toLocalX(value) { return value - $.fn.BEE.user_options.geom.center[0]; }
+    function toLocalY(value) { return value - $.fn.BEE.user_options.geom.center[1]; }
+    function toLocalZ(value) { return value - $.fn.BEE.user_options.geom.center[2]; }
 
 })( jQuery, window, document );
