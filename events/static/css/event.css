@@ -31,7 +31,7 @@ body {
     /* this size is set by renderer.setSize()*/
 }
 #mc {
-    color: white;
+    color: #999;
     position: absolute;
     left: 5px;
     bottom: 20px;
@@ -40,6 +40,28 @@ body {
     /*width: 500px;*/
     /*background-color: #111;*/
 }
+
+#sst {
+    color: #999;
+    text-align: center;
+    border: 1px solid;
+    padding-top: 5px;
+    padding-bottom: 4px;
+}
+
+#sst-docker {
+    position: absolute;
+    left: 10px;
+    top: 80px;
+    width: 200px;
+    color: #999;
+1}
+
+.myslider.ui-slider {
+    margin-top: 5px;
+    margin-bottom: 2.4em;
+}
+
 #cmdModal {
     top:5%;
 /*right:50%;*/

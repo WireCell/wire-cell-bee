@@ -22,18 +22,18 @@ if ( typeof Object.create !== 'function' ) {
     var USER_COLORS = {
         'dark' :     [
             0xffffff, // white
+            0xFF8080, // light red
+            0x96f97b, // light green
             0xffff14, // yellow
+            0x95d0fc, // light blue
+            0xe50000, // red
+            0xbf77f6, // light purple
+            0x0343df, // blue
+            0xf97306, // orange
             0xc20078, // magenta
             0x15b01a, // green
-            0xe50000, // red
-            0x95d0fc, // light blue
-            0xff81c0, // pink
             0x029386, // teal
-            0x96f97b, // light green
-            0xbf77f6, // light purple
             0xe6daa6, // beige
-            0xf97306, // orange
-            0x0343df, // blue
             0x7e1e9c // purple
         ],
         'light' : [
@@ -129,6 +129,7 @@ if ( typeof Object.create !== 'function' ) {
             self.name = name;
             self.options = options;
             self.url = base_url + name + "/";
+            self.index = -1;  // index in the options.sst
             self.containedIn = null; // caching the THREE.Group
             // self.COLORMAX = 14000*2/3.;
             self.chargeColor = new THREE.Color(0xFFFFFF);
@@ -251,6 +252,18 @@ if ( typeof Object.create !== 'function' ) {
 
         drawInsideBeamFrame: function() {
             this.drawInsideSlice(-this.options.geom.halfx, this.options.geom.halfx*2);
+        },
+
+        selected: function() {
+            $.fn.BEE.current_sst = this;
+            // console.log($.fn.BEE.current_sst);
+            var el = $('#sst');
+            el.html(this.name);
+            el.show();
+            $.fn.BEE.ui_sst.$el_size.slider("value", this.material.size);
+            $.fn.BEE.ui_sst.$el_opacity.slider("value", this.material.opacity);
+            $.fn.BEE.ui_sst.$el_color.val('#'+this.chargeColor.getHexString());
+            // console.log($.fn.BEE.ui_sst.$el_color.val());
         }
 
         // toLocalX: function(value) { return value - this.options.geom.center[0]; },
@@ -304,7 +317,6 @@ if ( typeof Object.create !== 'function' ) {
             self.initGuiCamera();
 
             self.addEventListener();
-
             $('.dg .c select').css({
                 'width': 136,
                 'padding': 0,
@@ -348,10 +360,16 @@ if ( typeof Object.create !== 'function' ) {
             var ctrl = self.guiController;
 
             var folder_general = self.gui.addFolder("General");
-
-            folder_general.add($.fn.BEE.user_options, "id", 0, $.fn.BEE.user_options.nEvents-1)
+            var folder_recon = self.gui.addFolder("Recon");
+            // console.log(self.gui.__folders.Recon)
+            var options = {
+                'id' : $.fn.BEE.user_options.id
+            };
+            folder_general.add(options, 'id', 0, $.fn.BEE.user_options.nEvents-1)
                 .name("Event").step(1)
                 .onFinishChange(function(value) {
+                    // console.log($.fn.BEE.user_options.id, value);
+                    if (value == $.fn.BEE.user_options.id) { return; }
                     window.location.assign(event_url + value + '/' + base_query);
                 });
 
@@ -368,9 +386,11 @@ if ( typeof Object.create !== 'function' ) {
                     }
                });
 
-            folder_general.add(self.options, 'theme', ['dark', 'light'])
+            folder_general.add($.fn.BEE.user_options, 'theme', ['dark', 'light'])
                .name("Theme")
                .onChange(function(value) {
+                    clearLocalStorage();
+                    $(window).unbind('beforeunload');
                     var new_query;
                     if (base_query.indexOf('theme=light')>0) {
                         new_query = base_query.replace('theme=light', 'theme='+value);
@@ -389,21 +409,12 @@ if ( typeof Object.create !== 'function' ) {
                     window.location.assign(base_url+new_query);
                });
 
-            folder_general.add(self.options.material, "showCharge")
+            folder_general.add($.fn.BEE.user_options.material, "showCharge")
                 .name("Show Charge")
                 .onChange(function(value) {
-                    var sst;
-                    for (var name in self.listOfSST) {
-                        sst = self.listOfSST[name];
-                        if(self.guiController.slice.sliced_mode) {
-                            sst.drawInsideSlice(ctrl.slice.position-ctrl.slice.width/2, ctrl.slice.width);
-                        }
-                        else {
-                            sst.drawInsideThreeFrames();
-                        }
-                    }
+                    self.redrawAllSST();
                 });
-            folder_general.add($.fn.BEE.user_options.geom, "showTPCs")
+            folder_general.add($.fn.BEE.user_options.helper, "showTPCs")
                 .name("Show TPCs")
                 .onChange(function(value) {
                     if (value) {
@@ -413,7 +424,7 @@ if ( typeof Object.create !== 'function' ) {
                         self.group_main.remove(self.group_helper);
                     }
                 });
-            folder_general.add($.fn.BEE.user_options.geom, "showAxises")
+            folder_general.add($.fn.BEE.user_options.helper, "showAxises")
                 .name("Show Axises")
                 .onChange(function(value) {
                     if (value) {
@@ -423,11 +434,11 @@ if ( typeof Object.create !== 'function' ) {
                         self.scene.remove(self.axises);
                     }
                 });
-            folder_general.add(self.options.material, "colorScale", 0., 2.)
+            folder_general.add($.fn.BEE.user_options.material, "colorScale", 0., 2.)
                 .name("Color Scale")
                 .step(0.01)
                 .onChange(function(value) {
-                    if (self.options.material.showCharge) {
+                    if ($.fn.BEE.user_options.material.showCharge) {
                         for (var name in self.listOfSST) {
                             self.listOfSST[name].drawInsideThreeFrames();
                         }
@@ -447,6 +458,7 @@ if ( typeof Object.create !== 'function' ) {
             folder_camera.add($.fn.BEE.user_options.camera, "ortho")
                 .name("Ortho Camera")
                 .onChange(function(value) {
+                    // saveLocalStorage();
                     var new_query;
                     if (base_query.indexOf('camera.ortho=true')>0) {
                         new_query = base_query.replace('camera.ortho=true', 'camera.ortho='+value);
@@ -500,9 +512,11 @@ if ( typeof Object.create !== 'function' ) {
             folder_slice.add(ctrl.slice, "opacity", 0, 1)
                 .onChange(function(value) {
                     self.slice.material.opacity = value;
+                    $.fn.BEE.user_options.slice.opacity = value;
                 });
             folder_slice.add(ctrl.slice, "width", w, halfx*2).step(w)
                 .onChange(function(value){
+                    $.fn.BEE.user_options.slice.width = value;
                     self.slice.scale.x = value/w; // SCALE
                 });
             folder_slice.add(ctrl.slice, "position", -halfx+w/2, halfx-w/2)
@@ -540,6 +554,10 @@ if ( typeof Object.create !== 'function' ) {
             self.scene.add(self.group_main);
 
             self.axises = new THREE.AxisHelper( 100 );
+            if ($.fn.BEE.user_options.helper.showAxises) {
+                self.scene.add(self.axises);
+            }
+
         },
 
         initHelper: function() {
@@ -622,7 +640,10 @@ if ( typeof Object.create !== 'function' ) {
             // // self.helper.material.blending = THREE.AdditiveBlending;
             // self.helper.material.transparent = true;
             // self.group_helper.add(self.helper);
-            self.group_main.add(self.group_helper);
+            if ($.fn.BEE.user_options.helper.showTPCs == true) {
+                self.group_main.add(self.group_helper);
+            }
+
         },
 
         initSlice: function() {
@@ -778,25 +799,47 @@ if ( typeof Object.create !== 'function' ) {
             var theme = self.options.theme;
 
             var color_index;
+
             for (var i=0; i<self.options.sst.length; i++) {
                 sst = Object.create(SST);
                 sst.init(self.options.sst[i], self.options);
+                sst.index = i;
                 color_index = i>=USER_COLORS[theme].length? i-USER_COLORS[theme].length : i;
                 sst.chargeColor = new THREE.Color(USER_COLORS[theme][color_index]);
                 self.registerSST(sst);
+                self.gui.__folders.Recon.__controllers[i].name(sst.index+1 + '. ' + sst.name);
             }
+
         },
 
         registerSST: function(sst) {
             var self = this;
-            self.initSSTGui(sst);
             var el = $('#loadingbar');
+            self.initSSTGui(sst);
+
+            var sst_options = Lockr.get('sst_options');
+            var options = Lockr.get('options');
+
             sst.process.then( // add to the scence after all are set up
                 $.proxy(function(){  // use proxy to set up the this context
                     self.group_main.add(this.pointCloud);
                     this.containedIn = self.group_main;
                     self.listOfSST[sst.name] = sst;
                     self.nLoadedSST += 1;
+                    if (sst_options && sst_options[sst.name]) {
+                       sst.material.size = sst_options[sst.name]['size'];
+                       sst.material.opacity = sst_options[sst.name]['opacity'];
+                       sst.chargeColor = new THREE.Color(sst_options[sst.name]['chargeColor']);
+
+                       // console.log(sst_options[sst.name])
+                    }
+                    sst.drawInsideThreeFrames();
+
+                    if (options && options['selected_sst'] && options['selected_sst'] == sst.name) {
+                        sst.selected();
+                        self.selected_sst = sst.name;
+                    }
+                    // console.log(self.selected_sst)
                     if (sst.runNo) {
                         $('#runNo').html(sst.runNo + ' - ');
                         $('#subRunNo').html(sst.subRunNo + ' - ');
@@ -811,35 +854,52 @@ if ( typeof Object.create !== 'function' ) {
             );
             sst.process.always(function(){
                 self.nRequestedSSTDone += 1;
+
                 if (self.nRequestedSSTDone == self.options.sst.length) {
                     el.html(el.html()+"<br /> All done!");
                     window.setTimeout(function(){
                         el.alert('close');
-                    }, 1000);
+                    }, 500);
+
+                    if (!self.selected_sst) {
+                        // console.log($.fn.BEE.user_options.sst[0] + ' selected');
+                        self.listOfSST[$.fn.BEE.user_options.sst[0]].selected();
+                    }
                 }
                 // console.log(self.nRequestedSSTDone, self.nLoadedSST);
             });
         },
 
+
         initSSTGui: function(sst) {
             var self = this;
-            var folder_recon = self.gui.addFolder("Recon (" + sst.name + ")");
+            // var folder_recon = self.gui.addFolder("Recon (" + sst.name + ")");
             var opacity = sst.name == "WireCell-charge" ? self.options.material.opacity : 0;
             var prop = {
                 size: 2,
-                opacity: opacity
+                opacity: opacity,
+                select: function() {
+                    $.fn.BEE.current_sst = sst;
+                    console.log($.fn.BEE.current_sst);
+                }
             };
-            folder_recon.add(prop, "size", 1, 6).step(1)
-                .onChange(function(value) {
-                    sst.material.size = value;
-                });
-            folder_recon.add(prop, "opacity", 0, 1)
-                .onChange(function(value) {
-                    sst.material.opacity = value;
-                });
-            if (sst.name == "WireCell-charge" || sst.name == "truth") {
-                folder_recon.open();
-            }
+            // folder_recon.add(prop, "size", 1, 6).step(1)
+            //     .onChange(function(value) {
+            //         sst.material.size = value;
+            //     });
+            // folder_recon.add(prop, "opacity", 0, 1)
+            //     .onChange(function(value) {
+            //         sst.material.opacity = value;
+            //     });
+            // if (sst.name == "WireCell-charge" || sst.name == "truth") {
+            //     folder_recon.open();
+            // }
+            self.gui.__folders.Recon.add(sst, "selected")
+                .name(sst.name);
+            self.gui.__folders.Recon.open();
+            $('.dg .cr.function .property-name').css({
+                'width': '100%'
+            })
         },
 
         initRenderer: function() {
@@ -876,6 +936,10 @@ if ( typeof Object.create !== 'function' ) {
                 $("#mc").hide();
                 el.html(el.html().replace("Hide", "Show"));
             }
+        },
+
+        toggleSidebar: function() {
+            $.fn.BEE.ui_sst.$el_container.toggle("slide");
         },
 
         updateStatusBar: function() {
@@ -1054,6 +1118,49 @@ if ( typeof Object.create !== 'function' ) {
             self.orbitController.update();
         },
 
+        redrawAllSST: function() {
+            var self = this;
+            var ctrl = self.guiController;
+            var sst;
+            for (var name in self.listOfSST) {
+                sst = self.listOfSST[name];
+                if(self.guiController.slice.sliced_mode) {
+                    sst.drawInsideSlice(ctrl.slice.position-ctrl.slice.width/2, ctrl.slice.width);
+                }
+                else {
+                    sst.drawInsideThreeFrames();
+                }
+            }
+        },
+
+        toggleCharge: function() {
+            var self = this;
+            $.fn.BEE.user_options.material.showCharge = !($.fn.BEE.user_options.material.showCharge);
+            self.gui.__folders.General.__controllers[3].updateDisplay();
+            self.redrawAllSST();
+        },
+
+        increaseOpacity: function() {
+            if ($.fn.BEE.current_sst.material.opacity >= 1) { return; }
+            else { $.fn.BEE.current_sst.material.opacity += 0.05; }
+            $.fn.BEE.ui_sst.$el_opacity.slider("value", $.fn.BEE.current_sst.material.opacity);
+        },
+        decreaseOpacity: function() {
+            if ($.fn.BEE.current_sst.material.opacity <= 0) { return; }
+            else { $.fn.BEE.current_sst.material.opacity -= 0.05; }
+            $.fn.BEE.ui_sst.$el_opacity.slider("value", $.fn.BEE.current_sst.material.opacity);
+        },
+        increaseSize: function() {
+            if ($.fn.BEE.current_sst.material.size >= 8) { return; }
+            else { $.fn.BEE.current_sst.material.size += 0.5; }
+            $.fn.BEE.ui_sst.$el_size.slider("value", $.fn.BEE.current_sst.material.size);
+        },
+        decreaseSize: function() {
+            if ($.fn.BEE.current_sst.material.size <= 1) { return; }
+            else { $.fn.BEE.current_sst.material.size -= 0.5; }
+            $.fn.BEE.ui_sst.$el_size.slider("value", $.fn.BEE.current_sst.material.size);
+        },
+
         addClickEvent: function(jqObj, f) {
             var self = this;
             jqObj.on("click", function(e){
@@ -1062,9 +1169,16 @@ if ( typeof Object.create !== 'function' ) {
             });
         },
 
-        addEvent: function(e, f) {
+        addEvent: function(key, f) {
             e.preventDefault();
             f.call(this);
+        },
+
+        addKeyEvent: function(key, f) {
+            var self = this;
+            Mousetrap.bind(key, function(e, combo) {
+                f.call(self);
+            });
         },
 
         addEventListener: function() {
@@ -1080,8 +1194,10 @@ if ( typeof Object.create !== 'function' ) {
                     if (!screenfull.isFullscreen) { self.stop(); }
                 });
             }
-
+            self.addClickEvent($('#toggleSidebar') , self.toggleSidebar);
+            self.addClickEvent($('#preset-default'), clearLocalStorageAndReload);
             self.addClickEvent($('#toggleMC')      , self.toggleMC);
+            self.addClickEvent($('#toggleCharge')  , self.toggleCharge);
             self.addClickEvent($('#nextEvent')     , self.nextEvent);
             self.addClickEvent($('#prevEvent')     , self.prevEvent);
             self.addClickEvent($('#nextSlice')     , self.nextSlice);
@@ -1100,22 +1216,71 @@ if ( typeof Object.create !== 'function' ) {
                 else { self.stop(); }
             });
 
-            $(document).on("keypress", function(e) {
-                if      (e.which == 109)  { self.addEvent(e, self.toggleMC); }
-                else if (e.which == 110 ) { self.addEvent(e, self.nextEvent); } // n
-                else if (e.which == 112 ) { self.addEvent(e, self.prevEvent); }  // p
-                else if (e.which == 107)  { self.addEvent(e, self.nextSlice); } // k
-                else if (e.which == 106)  { self.addEvent(e, self.prevSlice); } // j
-                else if (e.which == 93)   { self.addEvent(e, self.nextRecon); } // ]
-                else if (e.which == 91)   { self.addEvent(e, self.prevRecon); } // [
-                else if (e.which == 99)   { self.addEvent(e, self.centerToEvent); } // c
-                else if (e.which == 114)  { self.addEvent(e, self.resetCamera); } // r
-                else if (e.which == 122)  { self.addEvent(e, self.xzView); } // z
-                else if (e.which == 117)  { self.addEvent(e, self.xuView); }  // u
-                else if (e.which == 118)  { self.addEvent(e, self.xvView); } // v
-                else {
-                    // console.log(event.which);
-                }
+            // $(document).on("keypress", function(e) {
+            //     else if (e.which == 93)   { self.addEvent(e, self.nextRecon); } // ]
+            //     else if (e.which == 91)   { self.addEvent(e, self.prevRecon); } // [
+            //     else if (e.which == 99)   { self.addEvent(e, self.centerToEvent); } // c
+            //     else if (e.which == 114)  { self.addEvent(e, self.resetCamera); } // r
+            //     else if (e.which == 122)  { self.addEvent(e, self.xzView); } // z
+            //     else if (e.which == 117)  { self.addEvent(e, self.xuView); }  // u
+            //     else if (e.which == 118)  { self.addEvent(e, self.xvView); } // v
+            //     else if (e.which == 61)   { self.addEvent(e, self.increaseOpacity); }  // =
+            //     else if (e.which == 45)   { self.addEvent(e, self.decreaseOpacity); }  // -
+            //     else if (e.which == 43)   { self.addEvent(e, self.increaseSize); }  // +
+            //     else if (e.which == 95)   { self.addEvent(e, self.decreaseSize); }  // _
+            //     // else if (e.which >= 49 && e.which <= 57 ) {
+            //     //     e.preventDefault();
+            //     //     var index = e.which - 49;
+            //     //     if (index > $.fn.BEE.user_options.sst.length-1) { return; }
+            //     //     var sst = self.listOfSST[$.fn.BEE.user_options.sst[index]];
+            //     //     if (sst) { sst.selected(); }
+            //     // }
+            //     else if (e.which == 113)   { self.addEvent(e, self.toggleCharge); }  // q
+
+            //     else {
+            //         // console.log(event.which);
+            //     }
+            // });
+            self.addKeyEvent('m', self.toggleMC);
+            self.addKeyEvent('q', self.toggleCharge);
+            self.addKeyEvent('shift+n', self.nextEvent);
+            self.addKeyEvent('shift+p', self.prevEvent);
+            self.addKeyEvent('k', self.nextSlice);
+            self.addKeyEvent('j', self.prevSlice);
+            self.addKeyEvent(']', self.nextRecon);
+            self.addKeyEvent('[', self.prevRecon);
+            self.addKeyEvent('c', self.centerToEvent);
+            self.addKeyEvent('z', self.xzView);
+            self.addKeyEvent('u', self.xuView);
+            self.addKeyEvent('v', self.xvView);
+            self.addKeyEvent('r', self.resetCamera);
+            self.addKeyEvent('=', self.increaseOpacity);
+            self.addKeyEvent('-', self.decreaseOpacity);
+            self.addKeyEvent('+', self.increaseSize);
+            self.addKeyEvent('_', self.decreaseSize);
+            Mousetrap.bindGlobal('esc', function(){
+                // console.log($('input'));
+                $('input').blur(); // remove focus from input elements
+                $('select').blur(); // remove focus from select elements
+            });
+            for (var i=1; i<=9; i++) {
+                Mousetrap.bind(i.toString(), function(e, key) {
+                    // console.log(key);
+                    var index = Number(key)-1;
+                    if (index > $.fn.BEE.user_options.sst.length-1) { return; }
+                    var sst = self.listOfSST[$.fn.BEE.user_options.sst[index]];
+                    if (sst) { sst.selected(); }
+                });
+            }
+            Mousetrap.bind('shift+up', function(e){
+                self.camera.zoom += 0.1;
+                self.camera.updateProjectionMatrix();
+                return false;
+            });
+            Mousetrap.bind('shift+down', function(e){
+                self.camera.zoom -= 0.1;
+                self.camera.updateProjectionMatrix();
+                return false;
             });
         },
 
@@ -1149,7 +1314,7 @@ if ( typeof Object.create !== 'function' ) {
     };
 
     $.fn.BEE = function( options ) {
-        $.fn.BEE.user_options = $.extend(true, {}, $.fn.BEE.options, options ); // recursive extend
+        $.fn.BEE.user_options = $.extend(true, {}, $.fn.BEE.options, options, Lockr.get('options') ); // recursive extend
         // console.log($.fn.BEE.user_options);
 
         var scene3D = Object.create(Scene3D);
@@ -1160,15 +1325,18 @@ if ( typeof Object.create !== 'function' ) {
         return this;
     };
 
+
     $.fn.BEE.options = {
         nEvents  : 100,
         id       : 0,
         theme    : 'dark',
         hasMC    : false,
-        geom     : {
-            name  : 'uboone',
+        helper   : {
             showTPCs : true,
             showAxises : false,
+        },
+        geom     : {
+            name  : 'uboone',
             halfx : 128.,
             halfy : 116.,
             halfz : 520.,
@@ -1188,7 +1356,7 @@ if ( typeof Object.create !== 'function' ) {
         },
         material : {
             colorScale: 1.0,
-            opacity : 0.8,
+            opacity : 0.2,
             showCharge : true
         },
         sst : [
@@ -1198,6 +1366,76 @@ if ( typeof Object.create !== 'function' ) {
             // "WireCell-deblob"
         ]
     };
+    $.fn.BEE.user_options = $.fn.BEE.options;
+
+    $.fn.BEE.current_sst = {
+        material: {
+            size: 0,
+            opacity: 0
+        }
+    };
+
+    $.fn.BEE.ui_sst = {
+        $el_container: $('#sst-docker'),
+        $el_size: $('#sst-size'),
+        $el_opacity: $("#sst-opacity"),
+        $el_color: $('#sst-color')
+    }
+
+    $.fn.BEE.ui_sst.$el_size.slider({
+      min: 1, max: 8, step: 0.5, value: 0,
+      slide: function(event, ui) {
+        $.fn.BEE.current_sst.material.size = ui.value;
+      }
+    }).slider("pips").slider("float");
+    $.fn.BEE.ui_sst.$el_opacity.slider({
+      min: 0, max: 1, step: 0.05, value: 0,
+      slide: function(event, ui) {
+        $.fn.BEE.current_sst.material.opacity = ui.value;
+      }
+    }).slider("pips").slider("float");
+    $.fn.BEE.ui_sst.$el_color.on('change', function(){
+        $.fn.BEE.current_sst.chargeColor = new THREE.Color($(this).val());
+        if (!($.fn.BEE.user_options.material.showCharge)) {
+            $.fn.BEE.scene3D.redrawAllSST();
+        }
+    });
+
+    function saveLocalStorage() {
+        var options = {
+            'material' : $.fn.BEE.user_options.material,
+            'slice' : $.fn.BEE.user_options.slice,
+            'theme' : $.fn.BEE.user_options.theme,
+            'helper': $.fn.BEE.user_options.helper
+        };
+        if ($.fn.BEE.current_sst) {
+            options['selected_sst'] = $.fn.BEE.current_sst.name;
+        }
+        var sst_options = {};
+        for (var name in $.fn.BEE.scene3D.listOfSST) {
+            var sst = $.fn.BEE.scene3D.listOfSST[name];
+            sst_options[name] = {
+                'size': sst.material.size,
+                'opacity' : sst.material.opacity,
+                'chargeColor' : sst.chargeColor.getHex()
+            }
+        }
+        Lockr.set('options', options);
+        Lockr.set('sst_options', sst_options);
+    }
+
+    window.setInterval(saveLocalStorage, 30000);
+    $(window).bind('beforeunload', saveLocalStorage);
+
+    function clearLocalStorage() {
+        Lockr.flush();
+    }
+
+    function clearLocalStorageAndReload() {
+        $(window).unbind('beforeunload');
+        Lockr.flush();
+        window.location.reload();
+    }
 
     // Utility funcitons
     function getColorAtScalar(n, maxLength) {

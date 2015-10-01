@@ -7,6 +7,9 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <link rel="icon" href="{% static 'css/bee.ico' %}" />
     <link rel="stylesheet" href="{% static 'css/lib/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.4/themes/ui-darkness/jquery-ui.css">
+    <link rel="stylesheet" href="{% static 'css/lib/jquery-ui-slider-pips.css' %}" />
+
     <link rel="stylesheet" href="{% static 'css/event.css' %}" />
     <link rel="stylesheet" href="{% static 'css/lib/jstree/style.css' %}" />
 </head>
@@ -25,22 +28,22 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                  role="button" aria-haspopup="true" aria-expanded="false">
-                 Navigation
+                 Event
+                 <span id="runNo"></span>
+                 <span id="subRunNo"></span>
+                 <span id="eventNo"></span>
                  <span class="caret"></span>
               </a>
               <ul class="dropdown-menu">
-                <li><a href="#" id="nextEvent">Next Event <span class="hotkey">n</span></a></li>
-                <li><a href="#" id="prevEvent">Prev Event <span class="hotkey">p</span></a></li>
+              <li><a href="#" id="toggleMC">Show MC <span class="hotkey">m</span></a></li>
+              <li><a href="#" id="toggleCharge">Toggle Charge <span class="hotkey">q</span></a></li>
                 <li role="separator" class="divider"></li>
-                <li><a href="#" id="nextRecon">Next Recon <span class="hotkey">]</span></a></li>
-                <li><a href="#" id="prevRecon">Prev Recon <span class="hotkey">[</span></a></li>
-                <li role="separator" class="divider"></li>
-                <li><a href="#" id="nextSlice">Next Slice <span class="hotkey">k</span></a></li>
-                <li><a href="#" id="prevSlice">Prev Slice <span class="hotkey">j</span></a></li>
-                <li role="separator" class="divider"></li>
-                <li><a href="" data-toggle="modal" data-target="#cmdModal">Command List </a></li>
+                <li><a href="{% url 'event_list' set_id %}">
+                  Go to Event List ...
+                </a></li>
               </ul>
             </li>
+
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Camera <span class="caret"></span></a>
               <ul class="dropdown-menu">
@@ -53,23 +56,32 @@
                 <li><a href="#" id="play">Play (Fullscreen)</a></li>
               </ul>
             </li>
+
             <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown"
-                 role="button" aria-haspopup="true" aria-expanded="false">
-                 Event
-                 <span id="runNo"></span>
-                 <span id="subRunNo"></span>
-                 <span id="eventNo"></span>
-                 <span class="caret"></span>
-              </a>
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View <span class="caret"></span></a>
               <ul class="dropdown-menu">
-                <li><a href="#" id="toggleMC">Show MC <span class="hotkey">m</span></a></li>
+                <li><a href="#" id="nextEvent">Next Event <span class="hotkey">Shift+n</span></a></li>
+                <li><a href="#" id="prevEvent">Prev Event <span class="hotkey">Shift+p</span></a></li>
                 <li role="separator" class="divider"></li>
-                <li><a href="{% url 'event_list' set_id %}">
-                  Go to Event List ...
-                </a></li>
+                <li><a href="#" id="nextRecon">Next Recon <span class="hotkey">]</span></a></li>
+                <li><a href="#" id="prevRecon">Prev Recon <span class="hotkey">[</span></a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#" id="nextSlice">Next Slice <span class="hotkey">k</span></a></li>
+                <li><a href="#" id="prevSlice">Prev Slice <span class="hotkey">j</span></a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#" id="toggleSidebar">Toggle Sidebar</a></li>
               </ul>
             </li>
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">System <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#" id="preset-default">Return to Default </a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="" data-toggle="modal" data-target="#cmdModal">Hotkey List </a></li>
+              </ul>
+            </li>
+
           </ul>
         </div>
       </div>
@@ -86,6 +98,23 @@
         slice x: <span id="slice_x">0</span>
     </div>
     <div id="mc"></div>
+    <!-- <div id="sst">HAAdsfada</div> -->
+    <!-- <div id="accordion"></div> -->
+    <div id="sst-docker">
+      <h4 id="sst"></h4>
+      Size
+      <div id="sst-size" class="myslider"></div>
+      Opacity
+      <div id="sst-opacity" class="myslider"></div>
+      <form class="form-inline">
+        <div class="form-group">
+          <label for="sst-color" style="margin-top:4px">Plain Color</label>
+          <input type="color" style="width:60px; float:right" id="sst-color" value="#FFFFFF">
+        </div>
+      </form>
+
+    </div>
+
     <div class="alert alert-info fade in" id="loadingbar">
         <a href="#" class="close" data-dismiss="alert">&times;</a>
         Working ...
@@ -109,11 +138,11 @@
                 <tbody>
                   <tr>
                     <td>Toggle MC</td><td>m</td>
-                    <td></td><td></td>
+                    <td>Toggle Charge</td><td>q</td>
                   </tr>
                   <tr>
-                    <td>Next Event</td><td>n</td>
-                    <td>Prev Event</td><td>p</td>
+                    <td>Next Event</td><td>Shift+n</td>
+                    <td>Prev Event</td><td>Shift+p</td>
                   </tr>
                   <tr>
                     <td>Next Recon</td><td>]</td>
@@ -135,6 +164,22 @@
                     <td>X-Z view</td><td>z</td>
                     <td>Y-Z view</td><td>c</td>
                   </tr>
+                  <tr>
+                    <td>Zoom in</td><td>Shift+Up</td>
+                    <td>Zoom out</td><td>Shift+Down</td>
+                  </tr>
+                  <tr>
+                    <td>Select Recon</td><td>1 - 9</td>
+                    <td>Unselect All</td><td>Esc</td>
+                  </tr>
+                  <tr>
+                    <td>Increase Opacity</td><td>=</td>
+                    <td>Decrease Opacity</td><td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Increase Point Size</td><td>+</td>
+                    <td>Decrease Point Size</td><td>_</td>
+                  </tr>
                 </tbody>
             </table>
           </div>
@@ -146,6 +191,12 @@
     </div>
 
     <script type="text/javascript" src="{% static 'js/lib/jquery-2.1.4.min.js' %}"></script>
+    <script src="https://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+    <script type="text/javascript" src="{% static 'js/lib/jquery-ui-slider-pips.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/mousetrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/mousetrap-global-bind.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/lockr.min.js' %}"></script>
+
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="{% static 'js/lib/dat.gui.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/lib/three.min.js' %}"></script>
