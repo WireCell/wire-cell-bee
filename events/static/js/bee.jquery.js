@@ -18,6 +18,8 @@ if ( typeof Object.create !== 'function' ) {
     }
     var event_url = base_url.substring(0, base_url.indexOf('event')) + 'event/';
     // console.log(index_of_query_postion, base_url, base_query, event_url);
+    var listOfReconElems= {};
+
 
     var USER_COLORS = {
         'dark' :     [
@@ -37,20 +39,20 @@ if ( typeof Object.create !== 'function' ) {
             0x7e1e9c // purple
         ],
         'light' : [
-            0x000000, // black
             0x0343df, // blue
-            0xc20078, // magenta
-            0x15b01a, // green
             0xe50000, // red
+            0x15b01a, // green
+            0x7e1e9c, // purple
             0x95d0fc, // light blue
-            0xff81c0, // pink
+            0xc20078, // magenta
             0x029386, // teal
+            0xff81c0, // pink
             0x96f97b, // light green
             0xbf77f6, // light purple
             0xe6daa6, // beige
             0xf97306, // orange
             0xffff14, // yellow
-            0x7e1e9c // purple
+            0x000000, // black
         ]
     }
 
@@ -61,7 +63,7 @@ if ( typeof Object.create !== 'function' ) {
             self.data = data;
             self.id = data.trackid;
             self.type = data.type;
-            self.size = data['x'].length;
+            self.size = 0;
             self.initLine();
         },
 
@@ -74,15 +76,20 @@ if ( typeof Object.create !== 'function' ) {
                 vertexColors: THREE.VertexColors
             } );
             var geometry = new THREE.Geometry();
-            for (var i=0; i<self.size; i++) {
-                geometry.vertices.push(new THREE.Vector3(
-                    toLocalX(self.data['x'][i]),
-                    toLocalY(self.data['y'][i]),
-                    toLocalZ(self.data['z'][i])));
-                var scale = 2;
-                var color = new THREE.Color();
-                color.setHSL(getColorAtScalar(self.data['dedx'][i], Math.pow(scale,2)*14000*2/3), 1, 0.5);
-                geometry.colors.push(color);
+            var length = self.data['x'].length;
+            for (var i=0; i<length; i++) {
+                if (self.data['type'] != 1) {  // remove bad tracks for now
+                    geometry.vertices.push(new THREE.Vector3(
+                        toLocalX(self.data['x'][i]),
+                        toLocalY(self.data['y'][i]),
+                        toLocalZ(self.data['z'][i])));
+                    var scale = 2;
+                    var color = new THREE.Color();
+                    color.setHSL(getColorAtScalar(self.data['dedx'][i], Math.pow(scale,2)*14000*2/3), 1, 0.5);
+                    geometry.colors.push(color);
+                    self.size +=1;
+                }
+
             }
             // console.log(geometry);
             self.line = new THREE.Line(geometry, material);
@@ -263,6 +270,10 @@ if ( typeof Object.create !== 'function' ) {
             $.fn.BEE.ui_sst.$el_size.slider("value", this.material.size);
             $.fn.BEE.ui_sst.$el_opacity.slider("value", this.material.opacity);
             $.fn.BEE.ui_sst.$el_color.val('#'+this.chargeColor.getHexString());
+            for (var name in listOfReconElems) {
+                listOfReconElems[name].css('color', 'white');
+            }
+            listOfReconElems[this.name].css('color', '#f97306');
             // console.log($.fn.BEE.ui_sst.$el_color.val());
         }
 
@@ -281,8 +292,8 @@ if ( typeof Object.create !== 'function' ) {
             self.options = options;
             self.el_slice_x = $('#slice_x');
             self.el_slice_number = $('#slice_number');
-            self.setup();
 
+            self.setup();
         },
 
         setup: function() {
@@ -383,6 +394,7 @@ if ( typeof Object.create !== 'function' ) {
                         if (name == value) sst.material.opacity = self.options.material.opacity;
                         else sst.material.opacity = 0;
                         sst.material.needsUpdate = true;
+                        checkSST(sst);
                     }
                });
 
@@ -476,10 +488,11 @@ if ( typeof Object.create !== 'function' ) {
                     }
                     window.location.assign(base_url+new_query);
                 });
-            folder_camera.add(prop, 'view', [ 'YZ', 'XZ', 'XU', 'XV'])
+            folder_camera.add(prop, 'view', [ 'YZ', 'XY', 'XZ', 'XU', 'XV'])
                .name("2D View ")
                .onChange(function(value) {
                     if (value == 'YZ') { self.yzView(); }
+                    else if (value == 'XY') { self.xyView(); }
                     else if (value == 'XZ') { self.xzView(); }
                     else if (value == 'XU') { self.xuView(); }
                     else if (value == 'XV') { self.xvView(); }
@@ -599,6 +612,52 @@ if ( typeof Object.create !== 'function' ) {
                 $.fn.BEE.user_options.geom.center[1] = (self.tpcLoc[7][3]+self.tpcLoc[0][2])/2;
                 $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[7][5]+self.tpcLoc[0][4])/2;
             }
+
+            else if ($.fn.BEE.user_options.geom.name == "dune10kt_workspace") {
+                self.tpcLoc = [
+                    [-363.37605, -2.53305 , -628.57875, -20.75000, -106.39000, 126.00000],
+                    [2.53305   , 363.37605, -628.57875, -20.75000, -106.39000, 126.00000],
+                    [-363.37605, -2.53305 , -20.75000 , 587.07875, -106.39000, 126.00000],
+                    [2.53305   , 363.37605, -20.75000 , 587.07875, -106.39000, 126.00000],
+                    [-363.37605, -2.53305 , -628.57875, -20.75000, 126.00000 , 358.39000],
+                    [2.53305   , 363.37605, -628.57875, -20.75000, 126.00000 , 358.39000],
+                    [-363.37605, -2.53305 , -20.75000 , 587.07875, 126.00000 , 358.39000],
+                    [2.53305   , 363.37605, -20.75000 , 587.07875, 126.00000 , 358.39000]
+                ];
+                $.fn.BEE.user_options.geom.halfx = (self.tpcLoc[7][1]-self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.halfy = (self.tpcLoc[7][3]-self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.halfz = (self.tpcLoc[7][5]-self.tpcLoc[0][4])/2;
+                $.fn.BEE.user_options.geom.center[0] = (self.tpcLoc[7][1]+self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.center[1] = (self.tpcLoc[7][3]+self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[7][5]+self.tpcLoc[0][4])/2;
+            }
+
+            else if ($.fn.BEE.user_options.geom.name == "protodune") {
+                self.tpcLoc = [
+                    [-387.36 , -365.917, -0.2, 607.629, -0.87625, 231.514],
+                    [-360.851, -0.008  , -0.2, 607.629, -0.87625, 231.514],
+                    [0.008   , 360.851 , -0.2, 607.629, -0.87625, 231.514],
+                    [365.917 , 387.36  , -0.2, 607.629, -0.87625, 231.514],
+                    [-387.36 , -365.917, -0.2, 607.629, 231.514 , 463.904],
+                    [-360.851, -0.008  , -0.2, 607.629, 231.514 , 463.904],
+                    [0.008   , 360.851 , -0.2, 607.629, 231.514 , 463.904],
+                    [365.917 , 387.36  , -0.2, 607.629, 231.514 , 463.904],
+                    [-387.36 , -365.917, -0.2, 607.629, 463.904 , 696.294],
+                    [-360.851, -0.008  , -0.2, 607.629, 463.904 , 696.294],
+                    [0.008   , 360.851 , -0.2, 607.629, 463.904 , 696.294],
+                    [365.917 , 387.36  , -0.2, 607.629, 463.904 , 696.294],
+                ];
+                $.fn.BEE.user_options.geom.halfx = (self.tpcLoc[11][1]-self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.halfy = (self.tpcLoc[11][3]-self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.halfz = (self.tpcLoc[11][5]-self.tpcLoc[0][4])/2;
+                $.fn.BEE.user_options.geom.center[0] = (self.tpcLoc[11][1]+self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.center[1] = (self.tpcLoc[11][3]+self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[11][5]+self.tpcLoc[0][4])/2;
+
+                self.guiController.slice.position = -$.fn.BEE.user_options.geom.halfx;
+
+            }
+
             // console.log($.fn.BEE.user_options.geom)
 
             var helper, tpc, box;
@@ -829,7 +888,7 @@ if ( typeof Object.create !== 'function' ) {
                     if (sst_options && sst_options[sst.name]) {
                        sst.material.size = sst_options[sst.name]['size'];
                        sst.material.opacity = sst_options[sst.name]['opacity'];
-                       sst.chargeColor = new THREE.Color(sst_options[sst.name]['chargeColor']);
+                       sst.chargeColor = new THREE.Color(parseInt(sst_options[sst.name].chargeColor,16));
 
                        // console.log(sst_options[sst.name])
                     }
@@ -847,6 +906,9 @@ if ( typeof Object.create !== 'function' ) {
                     }
                     // console.log(sst);
                     el.html(el.html()+"<br /><strong class='success'>Success!</strong> loading " + sst.name + " ... done. ")
+
+                    checkSST(sst);
+
                 }, sst),
                 function() {
                     el.html(el.html()+"<br /><strong class='warning'>Warning!</strong> loading " + sst.name + " ... failed. ")
@@ -880,7 +942,7 @@ if ( typeof Object.create !== 'function' ) {
                 opacity: opacity,
                 select: function() {
                     $.fn.BEE.current_sst = sst;
-                    console.log($.fn.BEE.current_sst);
+                    // console.log($.fn.BEE.current_sst);
                 }
             };
             // folder_recon.add(prop, "size", 1, 6).step(1)
@@ -894,12 +956,18 @@ if ( typeof Object.create !== 'function' ) {
             // if (sst.name == "WireCell-charge" || sst.name == "truth") {
             //     folder_recon.open();
             // }
+
             self.gui.__folders.Recon.add(sst, "selected")
                 .name(sst.name);
             self.gui.__folders.Recon.open();
             $('.dg .cr.function .property-name').css({
                 'width': '100%'
             })
+            listOfReconElems[sst.name] = $(".dg .property-name:contains('"+sst.name+"')");
+            // console.log(listOfReconElems[sst.name]);
+            // if (sst.material.opacity > 0.01) {
+            //     console.log(sst.name + ' visible');
+            // }
         },
 
         initRenderer: function() {
@@ -1073,6 +1141,21 @@ if ( typeof Object.create !== 'function' ) {
             this.centerToEvent();
         },
 
+        xyView: function() {
+            var self = this;
+            var sst = self.listOfSST[self.options.sst[0]];
+
+            self.centerToEvent();
+            self.camera.position.x = (sst.bounds.xmin + sst.bounds.xmax)/2 - $.fn.BEE.user_options.geom.halfx;
+            self.camera.position.y = (sst.bounds.ymin + sst.bounds.ymax)/2;
+            self.camera.position.z = self.options.camera.depth;
+
+            self.camera.up = new THREE.Vector3(0,0,1);
+            self.scene.rotation.z = 0;
+            self.scene_slice.rotation.z = 0;
+            self.orbitController.update();
+        },
+
         xzView: function() {
             var self = this;
             var sst = self.listOfSST[self.options.sst[0]];
@@ -1144,11 +1227,13 @@ if ( typeof Object.create !== 'function' ) {
             if ($.fn.BEE.current_sst.material.opacity >= 1) { return; }
             else { $.fn.BEE.current_sst.material.opacity += 0.05; }
             $.fn.BEE.ui_sst.$el_opacity.slider("value", $.fn.BEE.current_sst.material.opacity);
+            checkSST($.fn.BEE.current_sst);
         },
         decreaseOpacity: function() {
             if ($.fn.BEE.current_sst.material.opacity <= 0) { return; }
             else { $.fn.BEE.current_sst.material.opacity -= 0.05; }
             $.fn.BEE.ui_sst.$el_opacity.slider("value", $.fn.BEE.current_sst.material.opacity);
+            checkSST($.fn.BEE.current_sst);
         },
         increaseSize: function() {
             if ($.fn.BEE.current_sst.material.size >= 8) { return; }
@@ -1206,6 +1291,7 @@ if ( typeof Object.create !== 'function' ) {
             self.addClickEvent($('#prevRecon')     , self.prevRecon);
             self.addClickEvent($('#centerToEvent') , self.centerToEvent);
             self.addClickEvent($('#resetCamera')   , self.resetCamera);
+            self.addClickEvent($('#xyView')        , self.xyView);
             self.addClickEvent($('#xzView')        , self.xzView);
             self.addClickEvent($('#xuView')        , self.xuView);
             self.addClickEvent($('#xvView')        , self.xvView);
@@ -1250,6 +1336,7 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent(']', self.nextRecon);
             self.addKeyEvent('[', self.prevRecon);
             self.addKeyEvent('c', self.centerToEvent);
+            self.addKeyEvent('x', self.xyView);
             self.addKeyEvent('z', self.xzView);
             self.addKeyEvent('u', self.xuView);
             self.addKeyEvent('v', self.xvView);
@@ -1392,6 +1479,7 @@ if ( typeof Object.create !== 'function' ) {
       min: 0, max: 1, step: 0.05, value: 0,
       slide: function(event, ui) {
         $.fn.BEE.current_sst.material.opacity = ui.value;
+        checkSST($.fn.BEE.current_sst);
       }
     }).slider("pips").slider("float");
     $.fn.BEE.ui_sst.$el_color.on('change', function(){
@@ -1417,8 +1505,9 @@ if ( typeof Object.create !== 'function' ) {
             sst_options[name] = {
                 'size': sst.material.size,
                 'opacity' : sst.material.opacity,
-                'chargeColor' : sst.chargeColor.getHex()
+                'chargeColor' : sst.chargeColor.getHexString()
             }
+            // console.log(sst_options[name].chargeColor);
         }
         Lockr.set('options', options);
         Lockr.set('sst_options', sst_options);
@@ -1435,6 +1524,19 @@ if ( typeof Object.create !== 'function' ) {
         $(window).unbind('beforeunload');
         Lockr.flush();
         window.location.reload();
+    }
+
+    //
+    function checkSST(sst) {
+        // var $el = $('.dg .property-name:contains('+sst.name+')');
+        var $el = listOfReconElems[sst.name];
+         // $('.dg .property-name:contains('+sst.name+')');
+        var color = sst.chargeColor;
+        var rgb_string = 'rgb(' + color.r*255 + ', ' + color.g*255 + ', ' + color.b*255 + ', ' + sst.material.opacity+')';
+        // console.log(rgb_string)
+        $el.css('background-color', rgb_string);
+
+
     }
 
     // Utility funcitons

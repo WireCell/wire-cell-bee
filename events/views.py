@@ -110,8 +110,20 @@ def event(request, set_id, event_id):
         options['geom']['name'] = 'dune35t'
         options['geom']['angleU'] = 45
         options['geom']['angleV'] = 45
-
-
+    elif (eventset.geom(event_id) == 'protodune'):
+        options['camera'] = {
+            'depth': 2400,
+        }
+        options['geom']['name'] = 'protodune'
+        options['geom']['angleU'] = 35.7
+        options['geom']['angleV'] = 35.7
+    elif (eventset.geom(event_id) == 'dune10kt_workspace'):
+        options['camera'] = {
+            'depth': 3000,
+        }
+        options['geom']['name'] = 'dune10kt_workspace'
+        options['geom']['angleU'] = 35.7
+        options['geom']['angleV'] = 35.7
     options.update(queryToOptions(request))
 
     if request.is_ajax():

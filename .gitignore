@@ -1,7 +1,10 @@
 *.pyc
 *.conf
+*.d
+*.so
 *.zip
 test.*
 data/
 tmp/
 fabfile.py
+wc.json
