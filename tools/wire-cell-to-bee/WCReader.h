@@ -7,7 +7,6 @@
 #include <fstream>
 #include "TString.h"
 
-class TClonesArray;
 class TTree;
 class TFile;
 class TDatabasePDG;
@@ -20,30 +19,6 @@ public:
     enum LIMITS {
         MAX_TRACKS = 30000,
     };
-
-    // int nEvent;
-
-    // // simTree Leafs
-    // int eventNo;
-    // int runNo;
-    // int subRunNo;
-
-    // int raw_nChannel;  // number of raw hit channels (including noise)
-    // std::vector<int> *raw_channelId;
-    // TClonesArray *raw_wf;
-
-    // int calib_nChannel;  // number of hit channels
-    // std::vector<int> *calib_channelId;
-    // TClonesArray *calib_wf;
-
-    // int simide_size;
-    // std::vector<int>   *simide_channelIdY;
-    // std::vector<int>   *simide_trackId;
-    // std::vector<int>   *simide_tdc;
-    // std::vector<float> *simide_x;
-    // std::vector<float> *simide_y;
-    // std::vector<float> *simide_z;
-    // std::vector<float> *simide_numElectrons;
 
     int mc_Ntrack;  // number of tracks in MC
     int mc_id[MAX_TRACKS];  // track id; size == mc_Ntrack
@@ -91,13 +66,6 @@ public:
     void DumpMC();
 
     void print_vector(ostream& out, vector<double>& v, TString desc, bool end=false);
-
-    // TTree* Tree() { return simTree; }
-    // void GetEntry(int i);
-    // void Reset();
-    // void PrintInfo(int level=0);  // print the current event(entry) info
-    // void PrintMCInfo();  // print mc tracks info
-    // void InitBranchAddress();
 
     bool IsPrimary(int i) { return mc_mother[i] == 0 ; }
     void ProcessTracks();
