@@ -68,10 +68,11 @@ class EventSet(models.Model):
                 results.append(convention.FILENAME_ALIAS.get(name, name))
                 info.pop(name, None)
         for name in info.keys():
-            if (name.find('-track')>0):
+            if (name.find('-track')>0 or name.startswith('channel')):
                 info.pop(name)
             else:
                 results.append(name)
+        # print results
         return results
 
     def has_MC(self, eventNo=0):
@@ -91,29 +92,37 @@ class EventSet(models.Model):
             return info
         summary_file = self.data_dir() + '/summary.json'
         if os.path.exists(summary_file):
-            print summary_file, ' found'
+            print summary_file, 'found'
             # print self.event_list()
             with open(summary_file) as json_file:
                 info = json.load(json_file)
         else:
             if not self.pk>0: # only for tmp dirs
                 print 'creating summary: ', summary_file
+                print self.event_list()
                 for event_id in self.event_list():
                     runNo = 0
                     subRunNo = 0
                     eventNo = 0
                     geom = 'uboone'
                     data_info = self.data_info(event_id)
+                    recon_list = self.recon_list(event_id)
+                    # print recon_list
+                    # print data_info
+                    # if recon_list:
                     if data_info:
-                        with open(data_info.values()[0]) as f:
-                            try:
-                                content = json.load(f)
-                                runNo = content.get('runNo', 0)
-                                subRunNo = content.get('subRunNo', 0)
-                                eventNo = content.get('eventNo', 0)
-                                geom = content.get('geom', 'uboone')
-                            except ValueError:
-                                pass
+                        for name, filename in data_info.items():
+                            if (name == 'mc' or name.startswith('channel')): continue
+                            with open(filename) as f:
+                                try:
+                                    content = json.load(f)
+                                    runNo = content.get('runNo', 0)
+                                    subRunNo = content.get('subRunNo', 0)
+                                    eventNo = content.get('eventNo', 0)
+                                    geom = content.get('geom', 'uboone')
+                                except ValueError:
+                                    pass
+                            break
                     info[event_id] = {
                         'runNo': runNo,
                         'subRunNo': subRunNo,
@@ -122,8 +131,8 @@ class EventSet(models.Model):
                         'content_list': self.content_list(event_id),
                         'data': data_info
                     }
-                    with open(summary_file, 'w') as of:
-                        json.dump(info, of)
+                with open(summary_file, 'w') as of:
+                    json.dump(info, of)
         return info
 
 # class UploadFile(models.Model):

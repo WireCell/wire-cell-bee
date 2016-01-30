@@ -124,7 +124,7 @@ if ( typeof Object.create !== 'function' ) {
                 // self.initPointCloud();
             })
             .fail(function(){
-                console.log("load " + self.url + " failed");
+                // console.log("load " + self.url + " failed");
             });
         }
     }
@@ -206,7 +206,10 @@ if ( typeof Object.create !== 'function' ) {
                 ymax: getMaxOfArray(self.y),
                 ymin: getMinOfArray(self.y),
                 zmax: getMaxOfArray(self.z),
-                zmin: getMinOfArray(self.z)
+                zmin: getMinOfArray(self.z),
+                xmean: getMeanOfArray(self.x),
+                ymean: getMeanOfArray(self.y),
+                zmean: getMeanOfArray(self.z)
             }
             self.drawInsideThreeFrames();
             // self.drawInsideBeamFrame()
@@ -323,6 +326,7 @@ if ( typeof Object.create !== 'function' ) {
             }
             self.initSST(); // SST's are added asynchronously into the scene
             self.initCT();
+            self.initDeadArea();
 
             self.initGuiSlice();
             self.initGuiCamera();
@@ -590,8 +594,6 @@ if ( typeof Object.create !== 'function' ) {
                 $.fn.BEE.user_options.geom.center[0] = (self.tpcLoc[0][1]+self.tpcLoc[0][0])/2;
                 $.fn.BEE.user_options.geom.center[1] = (self.tpcLoc[0][3]+self.tpcLoc[0][2])/2;
                 $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[0][5]+self.tpcLoc[0][4])/2;
-
-
             }
 
             else if ($.fn.BEE.user_options.geom.name == "dune35t") {
@@ -614,15 +616,25 @@ if ( typeof Object.create !== 'function' ) {
             }
 
             else if ($.fn.BEE.user_options.geom.name == "dune10kt_workspace") {
+                // self.tpcLoc = [
+                //     [-363.37605, -2.53305 , -628.57875, -20.75000, -106.39000, 126.00000],
+                //     [2.53305   , 363.37605, -628.57875, -20.75000, -106.39000, 126.00000],
+                //     [-363.37605, -2.53305 , -20.75000 , 587.07875, -106.39000, 126.00000],
+                //     [2.53305   , 363.37605, -20.75000 , 587.07875, -106.39000, 126.00000],
+                //     [-363.37605, -2.53305 , -628.57875, -20.75000, 126.00000 , 358.39000],
+                //     [2.53305   , 363.37605, -628.57875, -20.75000, 126.00000 , 358.39000],
+                //     [-363.37605, -2.53305 , -20.75000 , 587.07875, 126.00000 , 358.39000],
+                //     [2.53305   , 363.37605, -20.75000 , 587.07875, 126.00000 , 358.39000]
+                // ];
                 self.tpcLoc = [
-                    [-363.37605, -2.53305 , -628.57875, -20.75000, -106.39000, 126.00000],
-                    [2.53305   , 363.37605, -628.57875, -20.75000, -106.39000, 126.00000],
-                    [-363.37605, -2.53305 , -20.75000 , 587.07875, -106.39000, 126.00000],
-                    [2.53305   , 363.37605, -20.75000 , 587.07875, -106.39000, 126.00000],
-                    [-363.37605, -2.53305 , -628.57875, -20.75000, 126.00000 , 358.39000],
-                    [2.53305   , 363.37605, -628.57875, -20.75000, 126.00000 , 358.39000],
-                    [-363.37605, -2.53305 , -20.75000 , 587.07875, 126.00000 , 358.39000],
-                    [2.53305   , 363.37605, -20.75000 , 587.07875, 126.00000 , 358.39000]
+                    [-363.376, -2.53305, -607.829, 0      , -0.87625, 231.514],
+                    [2.53305 ,  363.376, -607.829, 0      , -0.87625, 231.514],
+                    [-363.376, -2.53305, 0       , 607.829, -0.87625, 231.514],
+                    [2.53305 ,  363.376, 0       , 607.829, -0.87625, 231.514],
+                    [-363.376, -2.53305, -607.829, 0      , 231.514 , 463.904],
+                    [2.53305 ,  363.376, -607.829, 0      , 231.514 , 463.904],
+                    [-363.376, -2.53305, 0       , 607.829, 231.514 , 463.904],
+                    [2.53305 ,  363.376, 0       , 607.829, 231.514 , 463.904]
                 ];
                 $.fn.BEE.user_options.geom.halfx = (self.tpcLoc[7][1]-self.tpcLoc[0][0])/2;
                 $.fn.BEE.user_options.geom.halfy = (self.tpcLoc[7][3]-self.tpcLoc[0][2])/2;
@@ -723,6 +735,61 @@ if ( typeof Object.create !== 'function' ) {
             self.slice.position.y = toLocalY($.fn.BEE.user_options.geom.center[1]);
             self.slice.position.z = toLocalZ($.fn.BEE.user_options.geom.center[2]);
             self.scene_slice.add(self.slice);  // slice has its own scene
+        },
+
+        initDeadArea: function() {
+            // console.log("init dead area");
+            var self = this;
+            var url = base_url + "channel-deadarea/";
+            var xhr = $.getJSON(url, function(data) {
+                // console.log(data);
+
+                var extrudeSettings = {
+                    steps           : 100,
+                    bevelEnabled    : false,
+                    extrudePath     : null
+                };
+                var material = new THREE.MeshBasicMaterial({
+                    color: 0x888888,
+                    transparent: true,
+                    opacity: 0.7,
+                    wireframe: false
+                });
+
+                for (var i=0; i<data.length; i++) {
+                    var pts = [];
+                    var raw_pts = data[i];
+                    var cy = 0;
+                    var cz = 0;
+                    for (var j = 0; j < raw_pts.length; j ++ ) {
+                        cy += raw_pts[j][0];
+                        cz += raw_pts[j][1];
+                    }
+                    cy /= raw_pts.length;
+                    cz /= raw_pts.length;
+                    for (var j = 0; j < raw_pts.length; j ++ ) {
+                        pts.push( new THREE.Vector2(-raw_pts[j][1]+cz, raw_pts[j][0]-cy) );
+                    }
+                    var spline = new THREE.SplineCurve3( [
+                        new THREE.Vector3( -$.fn.BEE.user_options.geom.halfx, toLocalY(cy),  toLocalZ(cz)),
+                        new THREE.Vector3( $.fn.BEE.user_options.geom.halfx, toLocalY(cy),  toLocalZ(cz)),
+                    ] );
+                    extrudeSettings.extrudePath = spline;
+                    var shape = new THREE.Shape(pts);
+                    var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+                    var mesh = new THREE.Mesh( geometry, material );
+                    self.scene.add(mesh);
+                };
+            });
+
+            var el = $('#loadingbar');
+            xhr.then( // add to the scence after all are set up
+                function() {
+                    el.html(el.html()+"<br /><strong class='success'>Success!</strong> loading Dead Channels ... done. ")
+                },
+                function() {
+                }
+            );
         },
 
         initMC: function() {
@@ -1089,14 +1156,20 @@ if ( typeof Object.create !== 'function' ) {
             var depth = self.options.camera.depth;
 
             self.camera.position.x = -depth;
-            self.camera.position.y = (sst.bounds.ymin + sst.bounds.ymax)/2;
-            self.camera.position.z = (sst.bounds.zmin + sst.bounds.zmax)/2 - halfz;
+            self.camera.position.y = (sst.bounds.ymean + sst.bounds.ymean)/2;
+            self.camera.position.z = (sst.bounds.zmean + sst.bounds.zmean)/2 - halfz;
 
+            // self.orbitController.target.set(
+            //     (sst.bounds.xmin + sst.bounds.xmax)/2 - halfx,
+            //     (sst.bounds.ymin + sst.bounds.ymax)/2,
+            //     (sst.bounds.zmin + sst.bounds.zmax)/2 - halfz
+            // );
             self.orbitController.target.set(
-                (sst.bounds.xmin + sst.bounds.xmax)/2 - halfx,
-                (sst.bounds.ymin + sst.bounds.ymax)/2,
-                (sst.bounds.zmin + sst.bounds.zmax)/2 - halfz
+                sst.bounds.xmean - halfx,
+                sst.bounds.ymean,
+                sst.bounds.zmean - halfz
             );
+
             self.camera.up = new THREE.Vector3(0,1,0);
             self.scene.rotation.x = 0;
             self.scene_slice.rotation.x = 0;
@@ -1146,8 +1219,8 @@ if ( typeof Object.create !== 'function' ) {
             var sst = self.listOfSST[self.options.sst[0]];
 
             self.centerToEvent();
-            self.camera.position.x = (sst.bounds.xmin + sst.bounds.xmax)/2 - $.fn.BEE.user_options.geom.halfx;
-            self.camera.position.y = (sst.bounds.ymin + sst.bounds.ymax)/2;
+            self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
+            self.camera.position.y = (sst.bounds.ymean + sst.bounds.ymean)/2;
             self.camera.position.z = self.options.camera.depth;
 
             self.camera.up = new THREE.Vector3(0,0,1);
@@ -1161,9 +1234,9 @@ if ( typeof Object.create !== 'function' ) {
             var sst = self.listOfSST[self.options.sst[0]];
 
             self.centerToEvent();
-            self.camera.position.x = (sst.bounds.xmin + sst.bounds.xmax)/2 - $.fn.BEE.user_options.geom.halfx;
+            self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
             self.camera.position.y = self.options.camera.depth;
-            self.camera.position.z = (sst.bounds.zmin + sst.bounds.zmax)/2 - $.fn.BEE.user_options.geom.halfz;
+            self.camera.position.z = (sst.bounds.zmean + sst.bounds.zmean)/2 - $.fn.BEE.user_options.geom.halfz;
 
             self.scene.rotation.x = 0;
             self.scene_slice.rotation.x = 0;
@@ -1176,9 +1249,9 @@ if ( typeof Object.create !== 'function' ) {
             var sst = self.listOfSST[self.options.sst[0]];
 
             self.centerToEvent();
-            self.camera.position.x = (sst.bounds.xmin + sst.bounds.xmax)/2 - $.fn.BEE.user_options.geom.halfx;
+            self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
             self.camera.position.y = self.options.camera.depth;
-            self.camera.position.z = (sst.bounds.zmin + sst.bounds.zmax)/2 - $.fn.BEE.user_options.geom.halfz;
+            self.camera.position.z = (sst.bounds.zmean + sst.bounds.zmean)/2 - $.fn.BEE.user_options.geom.halfz;
 
             self.scene.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
             self.scene_slice.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
@@ -1191,9 +1264,9 @@ if ( typeof Object.create !== 'function' ) {
             var sst = self.listOfSST[self.options.sst[0]];
 
             self.centerToEvent();
-            self.camera.position.x = (sst.bounds.xmin + sst.bounds.xmax)/2 - $.fn.BEE.user_options.geom.halfx;
+            self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
             self.camera.position.y = self.options.camera.depth;
-            self.camera.position.z = (sst.bounds.zmin + sst.bounds.zmax)/2 - $.fn.BEE.user_options.geom.halfz;
+            self.camera.position.z = (sst.bounds.zmean + sst.bounds.zmean)/2 - $.fn.BEE.user_options.geom.halfz;
 
             self.scene.rotation.x = Math.PI /180 * $.fn.BEE.user_options.geom.angleV;
             self.scene_slice.rotation.x = Math.PI /180 * $.fn.BEE.user_options.geom.angleV;
@@ -1572,6 +1645,11 @@ if ( typeof Object.create !== 'function' ) {
           }
         }
         return min;
+    }
+
+    function getMeanOfArray(arr) {
+        var sum = arr.reduce(function(a, b) { return a + b }, 0);
+        return sum / (arr.length || 1);
     }
 
     function toLocalX(value) { return value - $.fn.BEE.user_options.geom.center[0]; }
