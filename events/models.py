@@ -55,7 +55,8 @@ class EventSet(models.Model):
     def data_info(self, eventNo=0):
         results = {}
         for x in glob('%s/%i/*.json' % (self.data_dir(), eventNo)):
-            f = os.path.basename(x).rstrip('.json')
+            # f = os.path.basename(x).rstrip('.json')  // rstrip is a set!
+            f = os.path.basename(x)[:-5]
             results[ f[f.find('-')+1:] ] = x
         return results
 

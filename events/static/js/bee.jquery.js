@@ -293,8 +293,10 @@ if ( typeof Object.create !== 'function' ) {
             self.$elem = elem;
             // self.$elem = $( elem );
             self.options = options;
-            self.el_slice_x = $('#slice_x');
-            self.el_slice_number = $('#slice_number');
+            // self.el_slice_x = $('#slice_x');
+            // self.el_slice_number = $('#slice_number');
+            self.el_statusbar = $('#statusbar');
+            self.el_bee = $('container');
 
             self.setup();
         },
@@ -450,8 +452,8 @@ if ( typeof Object.create !== 'function' ) {
                         self.scene.remove(self.axises);
                     }
                 });
-            folder_general.add($.fn.BEE.user_options.material, "colorScale", 0., 2.)
-                .name("Color Scale")
+            folder_general.add($.fn.BEE.user_options.material, "colorScale", 0., 1.9)
+                .name("Color-scale")
                 .step(0.01)
                 .onChange(function(value) {
                     if ($.fn.BEE.user_options.material.showCharge) {
@@ -459,6 +461,36 @@ if ( typeof Object.create !== 'function' ) {
                             self.listOfSST[name].drawInsideThreeFrames();
                         }
                     }
+                });
+            folder_general.add($.fn.BEE.user_options.helper, "deadAreaOpacity", 0., 0.9)
+                .name("Inactivity")
+                .step(0.1)
+                .onChange(function(value) {
+                    if (value<0.05) {
+                        if (self.isShowDeadArea) {
+                            for (var i=0; i<self.listOfDeadAreas.length; i++) {
+                                self.scene.remove(self.listOfDeadAreas[i]);
+                                self.isShowDeadArea = false;
+                                // console.log('removed');
+                            }
+                        }
+                    }
+                    else {
+                        if (!self.isShowDeadArea) {
+                            self.isShowDeadArea = true;
+                            for (var i=0; i<self.listOfDeadAreas.length; i++) {
+                                var obj = self.listOfDeadAreas[i];
+                                self.scene.add(obj);
+                                // console.log('added');
+                            }
+                        }
+                        for (var i=0; i<self.listOfDeadAreas.length; i++) {
+                            var obj = self.listOfDeadAreas[i];
+                            obj.material.opacity = value;
+                            obj.material.needsUpdate = true;
+                        }
+                    }
+
                 });
             folder_general.open();
         },
@@ -536,7 +568,7 @@ if ( typeof Object.create !== 'function' ) {
                     $.fn.BEE.user_options.slice.width = value;
                     self.slice.scale.x = value/w; // SCALE
                 });
-            folder_slice.add(ctrl.slice, "position", -halfx+w/2, halfx-w/2)
+            folder_slice.add(ctrl.slice, "position", -3*halfx+w/2, 3*halfx-w/2)
                 .onChange(function(value) {
                     self.slice.position.x = value;
                     self.updateStatusBar();
@@ -740,6 +772,7 @@ if ( typeof Object.create !== 'function' ) {
         initDeadArea: function() {
             // console.log("init dead area");
             var self = this;
+            self.listOfDeadAreas = [];
             var url = base_url + "channel-deadarea/";
             var xhr = $.getJSON(url, function(data) {
                 // console.log(data);
@@ -752,10 +785,12 @@ if ( typeof Object.create !== 'function' ) {
                 var material = new THREE.MeshBasicMaterial({
                     color: 0x888888,
                     transparent: true,
-                    opacity: 0.7,
+                    depthWrite: true,
+                    opacity: $.fn.BEE.user_options.helper.deadAreaOpacity,
                     wireframe: false
                 });
 
+                var mergedGeometry = new THREE.Geometry();
                 for (var i=0; i<data.length; i++) {
                     var pts = [];
                     var raw_pts = data[i];
@@ -772,14 +807,21 @@ if ( typeof Object.create !== 'function' ) {
                     }
                     var spline = new THREE.SplineCurve3( [
                         new THREE.Vector3( -$.fn.BEE.user_options.geom.halfx, toLocalY(cy),  toLocalZ(cz)),
-                        new THREE.Vector3( $.fn.BEE.user_options.geom.halfx, toLocalY(cy),  toLocalZ(cz)),
+                        // new THREE.Vector3( $.fn.BEE.user_options.geom.halfx, toLocalY(cy),  toLocalZ(cz)),
+                        new THREE.Vector3( -$.fn.BEE.user_options.geom.halfx+2, toLocalY(cy),  toLocalZ(cz)),
                     ] );
                     extrudeSettings.extrudePath = spline;
                     var shape = new THREE.Shape(pts);
                     var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-                    var mesh = new THREE.Mesh( geometry, material );
-                    self.scene.add(mesh);
+                    mergedGeometry.merge(geometry);
+                    // var mesh = new THREE.Mesh( geometry, material );
+                    // self.listOfDeadAreas.push(mesh);
+                    // self.scene.add(mesh);
                 };
+                var mesh = new THREE.Mesh( mergedGeometry, material );
+                self.listOfDeadAreas.push(mesh);
+                self.scene.add(mesh);
+                self.isShowDeadArea = true;
             });
 
             var el = $('#loadingbar');
@@ -1079,8 +1121,12 @@ if ( typeof Object.create !== 'function' ) {
 
         updateStatusBar: function() {
             var ctrl = this.guiController;
-            this.el_slice_x.html((ctrl.slice.position+this.options.geom.halfx).toFixed(1));
-            this.el_slice_number.html(((ctrl.slice.position+this.options.geom.halfx)/0.32).toFixed(0));
+            // this.el_slice_x.html();
+            // this.el_slice_number.html();
+            this.el_statusbar.html(
+                'slice #: ' + ((ctrl.slice.position+this.options.geom.halfx)/ctrl.slice.width).toFixed(0)
+                + ' | slice x: ' + (ctrl.slice.position+this.options.geom.halfx).toFixed(1)
+            )
         },
 
         nextEvent: function() {
@@ -1164,6 +1210,7 @@ if ( typeof Object.create !== 'function' ) {
             //     (sst.bounds.ymin + sst.bounds.ymax)/2,
             //     (sst.bounds.zmin + sst.bounds.zmax)/2 - halfz
             // );
+            if (self.rotationCenter!=undefined) self.scene.remove(self.rotationCenter);
             self.orbitController.target.set(
                 sst.bounds.xmean - halfx,
                 sst.bounds.ymean,
@@ -1234,6 +1281,9 @@ if ( typeof Object.create !== 'function' ) {
             var sst = self.listOfSST[self.options.sst[0]];
 
             self.centerToEvent();
+            // self.scene.rotation.z = Math.PI /2;
+            // self.scene_slice.rotation.z= Math.PI /2;
+
             self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
             self.camera.position.y = self.options.camera.depth;
             self.camera.position.z = (sst.bounds.zmean + sst.bounds.zmean)/2 - $.fn.BEE.user_options.geom.halfz;
@@ -1249,6 +1299,12 @@ if ( typeof Object.create !== 'function' ) {
             var sst = self.listOfSST[self.options.sst[0]];
 
             self.centerToEvent();
+            // self.scene.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
+            // self.scene_slice.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
+            // self.scene.rotation.z = Math.PI /2;
+            // self.scene_slice.rotation.z= Math.PI /2;
+
+
             self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
             self.camera.position.y = self.options.camera.depth;
             self.camera.position.z = (sst.bounds.zmean + sst.bounds.zmean)/2 - $.fn.BEE.user_options.geom.halfz;
@@ -1319,11 +1375,99 @@ if ( typeof Object.create !== 'function' ) {
             $.fn.BEE.ui_sst.$el_size.slider("value", $.fn.BEE.current_sst.material.size);
         },
 
-        addClickEvent: function(jqObj, f) {
+        locatePointUnderMouse: function(event) {
             var self = this;
-            jqObj.on("click", function(e){
+            var mouse = { x: 1, y: 1 };
+            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+            mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
+
+            var raycaster = new THREE.Raycaster();
+            raycaster.params.PointCloud.threshold = 1;
+            var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(self.camera);
+
+            raycaster.ray.set(self.camera.position, vector.sub(self.camera.position).normalize());
+            self.scene.updateMatrixWorld();
+            var sst = self.listOfSST[$.fn.BEE.user_options.sst[0]];
+            var intersects = raycaster.intersectObject(sst.pointCloud);
+
+            // console.log(vector.x + ', ' + vector.y + ', ' + vector.z);
+            if (intersects.length>0) {
+                var index = intersects[0].index;
+                // console.log(intersects[0]);
+                var x = sst.geometry.vertices[index].x; // local coordinates
+                var y = sst.geometry.vertices[index].y;
+                var z = sst.geometry.vertices[index].z;
+                // console.log(x + ', ' + y + ', ' + z);
+                self.el_statusbar.html(
+                    '(x, y, z) = ('
+                    + sst.x[index].toFixed(1) + ', '
+                    + sst.y[index].toFixed(1) + ', '
+                    + sst.z[index].toFixed(1) + ')'
+                );
+            }
+            else {
+                self.el_statusbar.html('none detected');
+            }
+        },
+
+        LookAtUnderMouse: function(event) {
+            var self = this;
+            var mouse = { x: 1, y: 1 };
+            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+            mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
+
+            var raycaster = new THREE.Raycaster();
+            raycaster.params.PointCloud.threshold = 1;  // 1cm
+            var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(self.camera);
+
+            raycaster.ray.set(self.camera.position, vector.sub(self.camera.position).normalize());
+            self.scene.updateMatrixWorld();
+            var sst = self.listOfSST[$.fn.BEE.user_options.sst[0]];
+            var intersects = raycaster.intersectObject(sst.pointCloud);
+
+            // console.log(vector.x + ', ' + vector.y + ', ' + vector.z);
+            if (intersects.length>0) {
+                var index = intersects[0].index;
+                // console.log(intersects[0]);
+                var x = sst.geometry.vertices[index].x; // local coordinates
+                var y = sst.geometry.vertices[index].y;
+                var z = sst.geometry.vertices[index].z;
+
+                if (self.rotationCenter!=undefined) self.scene.remove(self.rotationCenter);
+                var geometry2 = new THREE.SphereGeometry( 0.2, 32, 32 );
+                var material2 = new THREE.MeshNormalMaterial({
+                    blending: THREE.NormalBlending,
+                    opacity: 0.4,
+                    transparent: true,
+                    depthWrite: false,
+                    sizeAttenuation: false
+                });
+                self.rotationCenter = new THREE.Mesh( geometry2, material2 );
+                self.rotationCenter.overdraw = true;
+                self.rotationCenter.position.x = x;
+                self.rotationCenter.position.y = y;
+                self.rotationCenter.position.z = z;
+                self.scene.add(self.rotationCenter);
+                self.orbitController.target.set(x, y, z);
+                // self.el_statusbar.html(
+                //     '(x, y, z) = ('
+                //     + sst.x[index].toFixed(1) + ', '
+                //     + sst.y[index].toFixed(1) + ', '
+                //     + sst.z[index].toFixed(1) + ')'
+                // );
+            }
+            else {
+                self.el_statusbar.html('none detected');
+            }
+        },
+
+        addClickEvent: function(jqObj, f, eventName) {
+            var self = this;
+            var name = eventName;
+            if (name==undefined) { name="click"; }
+            jqObj.on(name, function(e){
                 e.preventDefault();
-                f.call(self);
+                f.call(self, e);
             });
         },
 
@@ -1374,6 +1518,8 @@ if ( typeof Object.create !== 'function' ) {
                 if (el.html() == 'Play (Fullscreen)') { self.play(); }
                 else { self.stop(); }
             });
+            self.addClickEvent($('#container'), self.locatePointUnderMouse);
+            self.addClickEvent($('#container'), self.LookAtUnderMouse, 'dblclick');
 
             // $(document).on("keypress", function(e) {
             //     else if (e.which == 93)   { self.addEvent(e, self.nextRecon); } // ]
@@ -1442,6 +1588,7 @@ if ( typeof Object.create !== 'function' ) {
                 self.camera.updateProjectionMatrix();
                 return false;
             });
+
         },
 
         animate: function() {
@@ -1494,6 +1641,7 @@ if ( typeof Object.create !== 'function' ) {
         helper   : {
             showTPCs : true,
             showAxises : false,
+            deadAreaOpacity : 0.0,
         },
         geom     : {
             name  : 'uboone',
