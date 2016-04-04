@@ -141,7 +141,7 @@ if ( typeof Object.create !== 'function' ) {
             // self.COLORMAX = 14000*2/3.;
             self.chargeColor = new THREE.Color(0xFFFFFF);
 
-            self.setup();
+            // self.setup();
         },
 
         setup: function() {
@@ -149,10 +149,13 @@ if ( typeof Object.create !== 'function' ) {
             self.process = $.getJSON(self.url, function(data) {
                 self.initData(data);
                 self.initPointCloud();
+                // self.process.responseJSON = null;
+                // self.process.responseText = null;
             })
             .fail(function(){
                 console.log("load " + self.url + " failed");
             });
+            // console.log(self.process);
             return self.process;
         },
 
@@ -265,14 +268,26 @@ if ( typeof Object.create !== 'function' ) {
         },
 
         selected: function() {
+            var self = this;
             $.fn.BEE.current_sst = this;
             // console.log($.fn.BEE.current_sst);
             var el = $('#sst');
             el.html(this.name);
             el.show();
-            $.fn.BEE.ui_sst.$el_size.slider("value", this.material.size);
-            $.fn.BEE.ui_sst.$el_opacity.slider("value", this.material.opacity);
-            $.fn.BEE.ui_sst.$el_color.val('#'+this.chargeColor.getHexString());
+            if (this.material == undefined) { // load sst on demand
+                this.setup();
+                this.scene3D.registerSST(this);
+                this.process.then(function(){
+                    $.fn.BEE.ui_sst.$el_size.slider("value", self.material.size);
+                    $.fn.BEE.ui_sst.$el_opacity.slider("value", self.material.opacity);
+                    $.fn.BEE.ui_sst.$el_color.val('#'+self.chargeColor.getHexString());
+                }, function(){});
+            }
+            else {
+                $.fn.BEE.ui_sst.$el_size.slider("value", self.material.size);
+                $.fn.BEE.ui_sst.$el_opacity.slider("value", self.material.opacity);
+                $.fn.BEE.ui_sst.$el_color.val('#'+self.chargeColor.getHexString());
+            }
             for (var name in listOfReconElems) {
                 listOfReconElems[name].css('color', 'white');
             }
@@ -969,13 +984,21 @@ if ( typeof Object.create !== 'function' ) {
             var color_index;
 
             for (var i=0; i<self.options.sst.length; i++) {
+            // for (var i=0; i<1; i++) {
                 sst = Object.create(SST);
+                sst.scene3D = this;
                 sst.init(self.options.sst[i], self.options);
                 sst.index = i;
                 color_index = i>=USER_COLORS[theme].length? i-USER_COLORS[theme].length : i;
                 sst.chargeColor = new THREE.Color(USER_COLORS[theme][color_index]);
-                self.registerSST(sst);
-                self.gui.__folders.Recon.__controllers[i].name(sst.index+1 + '. ' + sst.name);
+                self.initSSTGui(sst);
+                self.gui.__folders.Recon.__controllers[i].name(i+1 + '. ' + self.options.sst[i]);
+                if (i==0) {
+                    sst.setup();
+                    self.registerSST(sst);
+                }
+                // console.log(self.gui.__folders.Recon);
+                // self.gui.__folders.Recon.__controllers[i].name(i+1 + '. ' + self.options.sst[i]);
             }
 
         },
@@ -983,10 +1006,11 @@ if ( typeof Object.create !== 'function' ) {
         registerSST: function(sst) {
             var self = this;
             var el = $('#loadingbar');
-            self.initSSTGui(sst);
 
             var sst_options = Lockr.get('sst_options');
             var options = Lockr.get('options');
+            el.html(el.html()+"<br /><strong class='success'>Loading </strong>" + sst.name + " ... ");
+            el.show();
 
             sst.process.then( // add to the scence after all are set up
                 $.proxy(function(){  // use proxy to set up the this context
@@ -1002,11 +1026,12 @@ if ( typeof Object.create !== 'function' ) {
                        // console.log(sst_options[sst.name])
                     }
                     sst.drawInsideThreeFrames();
-
-                    if (options && options['selected_sst'] && options['selected_sst'] == sst.name) {
-                        sst.selected();
-                        self.selected_sst = sst.name;
-                    }
+                    sst.selected();
+                    self.selected_sst = sst.name;
+                    // if (options && options['selected_sst'] && options['selected_sst'] == sst.name) {
+                    //     sst.selected();
+                    //     self.selected_sst = sst.name;
+                    // }
                     // console.log(self.selected_sst)
                     if (sst.runNo) {
                         $('#runNo').html(sst.runNo + ' - ');
@@ -1014,8 +1039,11 @@ if ( typeof Object.create !== 'function' ) {
                         $('#eventNo').html(sst.eventNo);
                     }
                     // console.log(sst);
-                    el.html(el.html()+"<br /><strong class='success'>Success!</strong> loading " + sst.name + " ... done. ")
 
+                    window.setTimeout(function(){
+                        el.html('');
+                        el.hide();
+                    }, 1000);
                     checkSST(sst);
 
                 }, sst),
@@ -1026,17 +1054,17 @@ if ( typeof Object.create !== 'function' ) {
             sst.process.always(function(){
                 self.nRequestedSSTDone += 1;
 
-                if (self.nRequestedSSTDone == self.options.sst.length) {
-                    el.html(el.html()+"<br /> All done!");
-                    window.setTimeout(function(){
-                        el.alert('close');
-                    }, 500);
+                // if (self.nRequestedSSTDone == self.options.sst.length) {
+                //     el.html(el.html()+"<br /> All done!");
+                //     window.setTimeout(function(){
+                //         el.hide();
+                //     }, 500);
 
-                    if (!self.selected_sst) {
-                        // console.log($.fn.BEE.user_options.sst[0] + ' selected');
-                        self.listOfSST[$.fn.BEE.user_options.sst[0]].selected();
-                    }
-                }
+                //     if (!self.selected_sst) {
+                //         // console.log($.fn.BEE.user_options.sst[0] + ' selected');
+                //         self.listOfSST[$.fn.BEE.user_options.sst[0]].selected();
+                //     }
+                // }
                 // console.log(self.nRequestedSSTDone, self.nLoadedSST);
             });
         },
@@ -1046,14 +1074,14 @@ if ( typeof Object.create !== 'function' ) {
             var self = this;
             // var folder_recon = self.gui.addFolder("Recon (" + sst.name + ")");
             var opacity = sst.name == "WireCell-charge" ? self.options.material.opacity : 0;
-            var prop = {
-                size: 2,
-                opacity: opacity,
-                select: function() {
-                    $.fn.BEE.current_sst = sst;
-                    // console.log($.fn.BEE.current_sst);
-                }
-            };
+            // var prop = {
+            //     size: 2,
+            //     opacity: opacity,
+            //     select: function() {
+            //         $.fn.BEE.current_sst = sst;
+            //         // console.log($.fn.BEE.current_sst);
+            //     }
+            // };
             // folder_recon.add(prop, "size", 1, 6).step(1)
             //     .onChange(function(value) {
             //         sst.material.size = value;
