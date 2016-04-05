@@ -606,6 +606,8 @@ if ( typeof Object.create !== 'function' ) {
             var camera = self.camera;
             camera.position.z = depth*Math.cos(Math.PI/4);
             camera.position.x = -depth*Math.sin(Math.PI/4);
+            camera.position.y = depth*Math.sin(Math.PI/6);
+
         },
 
         initScene: function() {
@@ -1238,7 +1240,7 @@ if ( typeof Object.create !== 'function' ) {
             //     (sst.bounds.ymin + sst.bounds.ymax)/2,
             //     (sst.bounds.zmin + sst.bounds.zmax)/2 - halfz
             // );
-            if (self.rotationCenter!=undefined) self.scene.remove(self.rotationCenter);
+            // if (self.rotationCenter!=undefined) self.scene.remove(self.rotationCenter);
             self.orbitController.target.set(
                 sst.bounds.xmean - halfx,
                 sst.bounds.ymean,
@@ -1286,7 +1288,16 @@ if ( typeof Object.create !== 'function' ) {
         },
 
         yzView: function() {
-            this.centerToEvent();
+            var self = this;
+            self.centerToEvent();
+            // if (self.rotationCenter) {
+            //     self.orbitController.target.set(
+            //         self.rotationCenter.position.x,
+            //         self.rotationCenter.position.y,
+            //         self.rotationCenter.position.z
+            //     );
+            //     self.orbitController.update();
+            // }
         },
 
         xyView: function() {
@@ -1302,6 +1313,14 @@ if ( typeof Object.create !== 'function' ) {
             self.scene.rotation.z = 0;
             self.scene_slice.rotation.z = 0;
             self.orbitController.update();
+            // if (self.rotationCenter) {
+            //     self.orbitController.target.set(
+            //         self.rotationCenter.position.x,
+            //         self.rotationCenter.position.y,
+            //         self.rotationCenter.position.z
+            //     );
+            //     self.orbitController.update();
+            // }
         },
 
         xzView: function() {
@@ -1320,6 +1339,14 @@ if ( typeof Object.create !== 'function' ) {
             self.scene_slice.rotation.x = 0;
             self.camera.up = new THREE.Vector3(1,0,0);
             self.orbitController.update();
+            // if (self.rotationCenter) {
+            //     self.orbitController.target.set(
+            //         self.rotationCenter.position.x,
+            //         self.rotationCenter.position.y,
+            //         self.rotationCenter.position.z
+            //     );
+            //     self.orbitController.update();
+            // }
         },
 
         xuView: function() {
@@ -1341,6 +1368,14 @@ if ( typeof Object.create !== 'function' ) {
             self.scene_slice.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
             self.camera.up = new THREE.Vector3(1,0,0);
             self.orbitController.update();
+            // if (self.rotationCenter) {
+            //     self.orbitController.target.set(
+            //         self.rotationCenter.position.x,
+            //         self.rotationCenter.position.y,
+            //         self.rotationCenter.position.z
+            //     );
+            //     self.orbitController.update();
+            // }
         },
 
         xvView: function() {
@@ -1356,6 +1391,15 @@ if ( typeof Object.create !== 'function' ) {
             self.scene_slice.rotation.x = Math.PI /180 * $.fn.BEE.user_options.geom.angleV;
             self.camera.up = new THREE.Vector3(1,0,0);
             self.orbitController.update();
+            // if (self.rotationCenter) {
+            //     console.log(self.rotationCenter);
+            //     self.orbitController.target.set(
+            //         self.rotationCenter.position.x,
+            //         self.rotationCenter.position.y,
+            //         self.rotationCenter.position.z
+            //     );
+            //     self.orbitController.update();
+            // }
         },
 
         redrawAllSST: function() {
@@ -1683,7 +1727,7 @@ if ( typeof Object.create !== 'function' ) {
         camera   : {
             scale : 0.85,
             depth : 2000,
-            ortho : false,
+            ortho : true,
             rotate: false
         },
         slice : {
