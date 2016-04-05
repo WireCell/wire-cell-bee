@@ -1225,6 +1225,9 @@ if ( typeof Object.create !== 'function' ) {
 
         centerToEvent: function() {
             var self = this;
+            self.scene.rotation.x = 0;
+            self.scene_slice.rotation.x = 0;
+
             var sst = self.listOfSST[self.options.sst[0]];
             var halfx = $.fn.BEE.user_options.geom.halfx;
             var halfy = $.fn.BEE.user_options.geom.halfy;
@@ -1240,7 +1243,7 @@ if ( typeof Object.create !== 'function' ) {
             //     (sst.bounds.ymin + sst.bounds.ymax)/2,
             //     (sst.bounds.zmin + sst.bounds.zmax)/2 - halfz
             // );
-            // if (self.rotationCenter!=undefined) self.scene.remove(self.rotationCenter);
+            if (self.rotationCenter!=undefined) self.scene.remove(self.rotationCenter);
             self.orbitController.target.set(
                 sst.bounds.xmean - halfx,
                 sst.bounds.ymean,
@@ -1255,10 +1258,12 @@ if ( typeof Object.create !== 'function' ) {
 
         resetCamera: function() {
             var self = this;
+            self.scene.rotation.x = 0;
+            self.scene_slice.rotation.x = 0;
             var depth = self.options.camera.depth;
             self.camera.position.z = depth*Math.cos(Math.PI/4);
             self.camera.position.x = -depth*Math.sin(Math.PI/4);
-            self.camera.position.y = 0;
+            self.camera.position.y = depth*Math.sin(Math.PI/6);
             self.camera.up = new THREE.Vector3(0,1,0);
             self.scene.rotation.x = 0;
             self.scene_slice.rotation.x = 0;
@@ -1289,7 +1294,31 @@ if ( typeof Object.create !== 'function' ) {
 
         yzView: function() {
             var self = this;
-            self.centerToEvent();
+            self.scene.rotation.x = 0;
+            self.scene_slice.rotation.x = 0;
+            TweenLite.to( self.camera.position, 0.6, {
+                x: -self.options.camera.depth,
+                y: self.orbitController.target.y,
+                z: self.orbitController.target.z,
+                onUpdate: function(){self.orbitController.update();}
+            } )
+            // self.camera.position.x = -self.options.camera.depth;
+            // self.camera.position.y = self.orbitController.target.y;
+            // self.camera.position.z = self.orbitController.target.z;
+
+            // self.orbitController.target.set(
+            //     (sst.bounds.xmin + sst.bounds.xmax)/2 - halfx,
+            //     (sst.bounds.ymin + sst.bounds.ymax)/2,
+            //     (sst.bounds.zmin + sst.bounds.zmax)/2 - halfz
+            // );
+            // if (self.rotationCenter!=undefined) self.scene.remove(self.rotationCenter);
+
+
+            // self.camera.up = new THREE.Vector3(0,1,0);
+            // self.scene.rotation.x = 0;
+            // self.scene_slice.rotation.x = 0;
+            // self.orbitController.update();
+            // self.centerToEvent();
             // if (self.rotationCenter) {
             //     self.orbitController.target.set(
             //         self.rotationCenter.position.x,
@@ -1302,20 +1331,31 @@ if ( typeof Object.create !== 'function' ) {
 
         xyView: function() {
             var self = this;
-            var sst = self.listOfSST[self.options.sst[0]];
+            self.scene.rotation.x = 0;
+            self.scene_slice.rotation.x = 0;
+            // self.camera.position.x = self.orbitController.target.x;
+            // self.camera.position.y = self.orbitController.target.y;
+            // self.camera.position.z = self.options.camera.depth;
+            TweenLite.to(self.camera.position, 0.6, {
+                x: self.orbitController.target.x,
+                y: self.orbitController.target.y,
+                z: self.options.camera.depth,
+                onUpdate: function(){self.orbitController.update();}
+            });
+            // var sst = self.listOfSST[self.options.sst[0]];
 
-            self.centerToEvent();
-            // TweenLite.to( self.camera.position, 1, {x:(sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx,
-            //     y:(sst.bounds.ymean + sst.bounds.ymean)/2,
-            //     z: self.options.camera.depth} )
-            // TweenLite.to(self.camera.up, 1, {x:0,y:0,z:1});
-            // TweenLite.to(self.scene.rotation, 1, {x: self.scene.rotation.x, y: self.scene.rotation.y, z: 0});
-            self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
-            self.camera.position.y = (sst.bounds.ymean + sst.bounds.ymean)/2;
-            self.camera.position.z = self.options.camera.depth;
-            self.camera.up = new THREE.Vector3(0,0,1);
-            self.scene.rotation.z = 0;
-            self.scene_slice.rotation.z = 0;
+            // self.centerToEvent();
+            // // TweenLite.to( self.camera.position, 1, {x:(sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx,
+            // //     y:(sst.bounds.ymean + sst.bounds.ymean)/2,
+            // //     z: self.options.camera.depth} )
+            // // TweenLite.to(self.camera.up, 1, {x:0,y:0,z:1});
+            // // TweenLite.to(self.scene.rotation, 1, {x: self.scene.rotation.x, y: self.scene.rotation.y, z: 0});
+            // self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
+            // self.camera.position.y = (sst.bounds.ymean + sst.bounds.ymean)/2;
+            // self.camera.position.z = self.options.camera.depth;
+            // self.camera.up = new THREE.Vector3(0,0,1);
+            // self.scene.rotation.z = 0;
+            // self.scene_slice.rotation.z = 0;
             // self.orbitController.update();
 
             // if (self.rotationCenter) {
@@ -1330,20 +1370,38 @@ if ( typeof Object.create !== 'function' ) {
 
         xzView: function() {
             var self = this;
-            var sst = self.listOfSST[self.options.sst[0]];
-
-            self.centerToEvent();
-            // self.scene.rotation.z = Math.PI /2;
-            // self.scene_slice.rotation.z= Math.PI /2;
-
-            self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
-            self.camera.position.y = self.options.camera.depth;
-            self.camera.position.z = (sst.bounds.zmean + sst.bounds.zmean)/2 - $.fn.BEE.user_options.geom.halfz;
-
             self.scene.rotation.x = 0;
             self.scene_slice.rotation.x = 0;
-            self.camera.up = new THREE.Vector3(1,0,0);
+            self.camera.position.x = self.orbitController.target.x;
+            self.camera.position.z = self.orbitController.target.z;
+            self.camera.position.y = self.options.camera.depth;
+            self.orbitController.rotateLeft(Math.PI/2);
             self.orbitController.update();
+            // TweenLite.to(self.camera.position, 0.6, {
+            //     x: self.orbitController.target.x,
+            //     y: self.options.camera.depth,
+            //     z: self.orbitController.target.z,
+            //     onUpdate: function(){self.orbitController.update();},
+            //     onComplete: function(){
+            //         self.orbitController.rotateLeft(Math.PI/2);
+            //         self.orbitController.update();
+            //     }
+            // });
+
+            // var sst = self.listOfSST[self.options.sst[0]];
+
+            // self.centerToEvent();
+            // // self.scene.rotation.z = Math.PI /2;
+            // // self.scene_slice.rotation.z= Math.PI /2;
+
+            // self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
+            // self.camera.position.y = self.options.camera.depth;
+            // self.camera.position.z = (sst.bounds.zmean + sst.bounds.zmean)/2 - $.fn.BEE.user_options.geom.halfz;
+
+            // self.scene.rotation.x = 0;
+            // self.scene_slice.rotation.x = 0;
+            // self.camera.up = new THREE.Vector3(1,0,0);
+            // self.orbitController.autoRotate = true;
             // if (self.rotationCenter) {
             //     self.orbitController.target.set(
             //         self.rotationCenter.position.x,
@@ -1356,23 +1414,42 @@ if ( typeof Object.create !== 'function' ) {
 
         xuView: function() {
             var self = this;
-            var sst = self.listOfSST[self.options.sst[0]];
-
-            self.centerToEvent();
-            // self.scene.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
-            // self.scene_slice.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
-            // self.scene.rotation.z = Math.PI /2;
-            // self.scene_slice.rotation.z= Math.PI /2;
-
-
-            self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
-            self.camera.position.y = self.options.camera.depth;
-            self.camera.position.z = (sst.bounds.zmean + sst.bounds.zmean)/2 - $.fn.BEE.user_options.geom.halfz;
-
             self.scene.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
             self.scene_slice.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
-            self.camera.up = new THREE.Vector3(1,0,0);
+
+            self.camera.position.x = self.orbitController.target.x;
+            self.camera.position.z = self.orbitController.target.z;
+            self.camera.position.y = self.options.camera.depth;
+            self.orbitController.rotateLeft(Math.PI/2);
             self.orbitController.update();
+            // TweenLite.to(self.camera.position, 0.6, {
+            //     x: self.orbitController.target.x,
+            //     y: self.options.camera.depth,
+            //     z: self.orbitController.target.z,
+            //     onUpdate: function(){self.orbitController.update();},
+            //     onComplete: function(){
+            //         self.orbitController.rotateLeft(Math.PI/2);
+            //         self.orbitController.update();
+            //     }
+            // });
+
+            // var sst = self.listOfSST[self.options.sst[0]];
+
+            // self.centerToEvent();
+            // // self.scene.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
+            // // self.scene_slice.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
+            // // self.scene.rotation.z = Math.PI /2;
+            // // self.scene_slice.rotation.z= Math.PI /2;
+
+
+            // self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
+            // self.camera.position.y = self.options.camera.depth;
+            // self.camera.position.z = (sst.bounds.zmean + sst.bounds.zmean)/2 - $.fn.BEE.user_options.geom.halfz;
+
+            // self.scene.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
+            // self.scene_slice.rotation.x = -Math.PI /180 * $.fn.BEE.user_options.geom.angleU;
+            // self.camera.up = new THREE.Vector3(1,0,0);
+            // self.orbitController.update();
             // if (self.rotationCenter) {
             //     self.orbitController.target.set(
             //         self.rotationCenter.position.x,
@@ -1385,17 +1462,34 @@ if ( typeof Object.create !== 'function' ) {
 
         xvView: function() {
             var self = this;
-            var sst = self.listOfSST[self.options.sst[0]];
-
-            self.centerToEvent();
-            self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
-            self.camera.position.y = self.options.camera.depth;
-            self.camera.position.z = (sst.bounds.zmean + sst.bounds.zmean)/2 - $.fn.BEE.user_options.geom.halfz;
-
             self.scene.rotation.x = Math.PI /180 * $.fn.BEE.user_options.geom.angleV;
             self.scene_slice.rotation.x = Math.PI /180 * $.fn.BEE.user_options.geom.angleV;
-            self.camera.up = new THREE.Vector3(1,0,0);
+
+            self.camera.position.x = self.orbitController.target.x;
+            self.camera.position.z = self.orbitController.target.z;
+            self.camera.position.y = self.options.camera.depth;
+            self.orbitController.rotateLeft(Math.PI/2);
             self.orbitController.update();
+            // TweenLite.to(self.camera.position, 0.6, {
+            //     x: self.orbitController.target.x,
+            //     y: self.options.camera.depth,
+            //     z: self.orbitController.target.z,
+            //     onUpdate: function(){self.orbitController.update();},
+            //     onComplete: function(){
+            //         self.orbitController.rotateLeft(Math.PI/2);
+            //         self.orbitController.update();
+            //     }
+            // });
+            // var sst = self.listOfSST[self.options.sst[0]];
+            // self.centerToEvent();
+            // self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
+            // self.camera.position.y = self.options.camera.depth;
+            // self.camera.position.z = (sst.bounds.zmean + sst.bounds.zmean)/2 - $.fn.BEE.user_options.geom.halfz;
+
+            // self.scene.rotation.x = Math.PI /180 * $.fn.BEE.user_options.geom.angleV;
+            // self.scene_slice.rotation.x = Math.PI /180 * $.fn.BEE.user_options.geom.angleV;
+            // self.camera.up = new THREE.Vector3(1,0,0);
+            // self.orbitController.update();
             // if (self.rotationCenter) {
             //     console.log(self.rotationCenter);
             //     self.orbitController.target.set(
