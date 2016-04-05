@@ -1305,14 +1305,19 @@ if ( typeof Object.create !== 'function' ) {
             var sst = self.listOfSST[self.options.sst[0]];
 
             self.centerToEvent();
+            // TweenLite.to( self.camera.position, 1, {x:(sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx,
+            //     y:(sst.bounds.ymean + sst.bounds.ymean)/2,
+            //     z: self.options.camera.depth} )
+            // TweenLite.to(self.camera.up, 1, {x:0,y:0,z:1});
+            // TweenLite.to(self.scene.rotation, 1, {x: self.scene.rotation.x, y: self.scene.rotation.y, z: 0});
             self.camera.position.x = (sst.bounds.xmean + sst.bounds.xmean)/2 - $.fn.BEE.user_options.geom.halfx;
             self.camera.position.y = (sst.bounds.ymean + sst.bounds.ymean)/2;
             self.camera.position.z = self.options.camera.depth;
-
             self.camera.up = new THREE.Vector3(0,0,1);
             self.scene.rotation.z = 0;
             self.scene_slice.rotation.z = 0;
-            self.orbitController.update();
+            // self.orbitController.update();
+
             // if (self.rotationCenter) {
             //     self.orbitController.target.set(
             //         self.rotationCenter.position.x,
