@@ -1616,15 +1616,16 @@ if ( typeof Object.create !== 'function' ) {
         locatePointUnderMouse: function(event) {
             var self = this;
             var mouse = { x: 1, y: 1 };
-            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-            mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
+            mouse.x = ( event.clientX / window.innerWidth  ) * 2 - 1;
+            mouse.y = -( event.clientY / window.innerHeight  ) * 2 + 1;
 
             var raycaster = new THREE.Raycaster();
-            raycaster.params.PointCloud.threshold = 1;
-            var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(self.camera);
+            raycaster.params.PointCloud.threshold = 0.3;
+            raycaster.setFromCamera( mouse, self.camera );
 
-            raycaster.ray.set(self.camera.position, vector.sub(self.camera.position).normalize());
-            self.scene.updateMatrixWorld();
+            // var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(self.camera);
+            // raycaster.ray.set(self.camera.position, vector.sub(self.camera.position).normalize());
+            // self.scene.updateMatrixWorld();
             var sst = self.listOfSST[$.fn.BEE.user_options.sst[0]];
             var intersects = raycaster.intersectObject(sst.pointCloud);
 
@@ -1662,16 +1663,19 @@ if ( typeof Object.create !== 'function' ) {
             mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
 
             var raycaster = new THREE.Raycaster();
-            raycaster.params.PointCloud.threshold = 1;  // 1cm
-            var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(self.camera);
 
-            raycaster.ray.set(self.camera.position, vector.sub(self.camera.position).normalize());
-            self.scene.updateMatrixWorld();
+            raycaster.params.PointCloud.threshold = 0.3;  // 1cm
+            raycaster.setFromCamera( mouse, self.camera );
+
+            // var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(self.camera);
+            // raycaster.ray.set(self.camera.position, vector.sub(self.camera.position).normalize());
+            // self.scene.updateMatrixWorld();
             var sst = self.listOfSST[$.fn.BEE.user_options.sst[0]];
             var intersects = raycaster.intersectObject(sst.pointCloud);
 
             // console.log(vector.x + ', ' + vector.y + ', ' + vector.z);
             if (intersects.length>0) {
+                console.log(intersects);
                 var index = intersects[0].index;
                 // console.log(intersects[0]);
                 // var x = sst.geometry.vertices[index].x; // local coordinates
@@ -1698,12 +1702,6 @@ if ( typeof Object.create !== 'function' ) {
                 self.rotationCenter.position.z = z;
                 self.scene.add(self.rotationCenter);
                 self.orbitController.target.set(x, y, z);
-                // self.el_statusbar.html(
-                //     '(x, y, z) = ('
-                //     + sst.x[index].toFixed(1) + ', '
-                //     + sst.y[index].toFixed(1) + ', '
-                //     + sst.z[index].toFixed(1) + ')'
-                // );
             }
             else {
                 self.el_statusbar.html('none detected');
