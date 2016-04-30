@@ -161,31 +161,37 @@ if ( typeof Object.create !== 'function' ) {
 
         initData: function(data) {
             var self = this;
-            self.x = [];
-            self.y = [];
-            self.z = [];
-            self.q = [];
-            self.nq = [];
+            var size = data.x.length; // all data must have x
+            var indices = [];
+            for (var i = 0; i < size; i++) {
+                if (data.q != undefined && data.q[i]<QTHRESH) continue;
+                indices.push(i);
+            }
+            var size_reduced = indices.length;
+            self.x = new Float32Array(size_reduced);
+            self.y = new Float32Array(size_reduced);
+            self.z = new Float32Array(size_reduced);
+            self.q = new Float32Array(size_reduced);
+            // self.nq = [];
             self.runNo = data.runNo;
             self.subRunNo = data.subRunNo;
             self.eventNo = data.eventNo;
 
-            var size = data.x.length; // all data must have x
             var QTHRESH = 0;
             if (self.name == "truth") {
                 QTHRESH = 500;
             }
-            for (var i = 0; i < size; i++) {
-                if (data.q != undefined && data.q[i]<QTHRESH) continue;
-                self.x.push(data.x[i]);
-                self.y.push(data.y[i]);
-                self.z.push(data.z[i]);
+            for (var i = 0; i < size_reduced; i++) {
+                // if (data.q != undefined && data.q[i]<QTHRESH) continue;
+                self.x[i] = data.x[ indices[i] ];
+                self.y[i] = data.y[ indices[i] ];
+                self.z[i] = data.z[ indices[i] ];
                 data.q == undefined
-                    && self.q.push(0)
-                    || self.q.push(data.q[i]);
-                data.nq == undefined
-                    && self.nq.push(1)
-                    || self.nq.push(data.nq[i]);
+                    && (self.q[i] = 0)
+                    || (self.q[i] = data.q[ indices[i] ]);
+                // data.nq == undefined
+                //     && self.nq.push(1)
+                //     || self.nq.push(data.nq[i]);
             }
         },
 
@@ -226,8 +232,34 @@ if ( typeof Object.create !== 'function' ) {
                 self.containedIn.remove(self.pointCloud);
             }
 
-            self.geometry = new THREE.Geometry();
+            // self.geometry = new THREE.Geometry();
 
+            // for (var i=0; i<size; i++) {
+            //     var x = toLocalX(self.x[i]);
+            //     var y = toLocalY(self.y[i]);
+            //     var z = toLocalZ(self.z[i]);
+            //     if (x  < start || x > start+width) {
+            //         continue;
+            //     }
+            //     self.geometry.vertices.push(new THREE.Vector3(x, y, z));
+            //     // if (self.geometry.vertices.length==10) break;
+            //     var color = new THREE.Color();
+            //     if ($.fn.BEE.user_options.material.showCharge) {
+            //         var scale = self.options.material.colorScale;
+            //         color.setHSL(getColorAtScalar(self.q[i], Math.pow(scale,2)*14000*2/3), 1, 0.5);
+            //         if ( self.name.indexOf('gray')>-1 ) {
+            //             var gray = (color.r + color.g + color.b) / 3;
+            //             color.setRGB(gray, gray, gray);
+            //         }
+
+            //     }
+            //     else {
+            //         color = self.chargeColor;
+            //     }
+            //     self.geometry.colors.push(color);
+            // }
+
+            var indices  = [];
             for (var i=0; i<size; i++) {
                 var x = toLocalX(self.x[i]);
                 var y = toLocalY(self.y[i]);
@@ -235,23 +267,44 @@ if ( typeof Object.create !== 'function' ) {
                 if (x  < start || x > start+width) {
                     continue;
                 }
-                self.geometry.vertices.push(new THREE.Vector3(x, y, z));
-                // if (self.geometry.vertices.length==10) break;
+                indices.push(i);
+            }
+            var size_show = indices.length;
+            var positions = new Float32Array( size_show * 3 );
+            var colors = new Float32Array( size_show * 3 );
+            for (var i=0; i<size_show; i++) {
+                var ind = indices[i];
+                // add position
+                positions[i*3] = toLocalX(self.x[ind]);
+                positions[i*3+1] = toLocalY(self.y[ind]);
+                positions[i*3+2] = toLocalZ(self.z[ind]);
+                // add color
                 var color = new THREE.Color();
                 if ($.fn.BEE.user_options.material.showCharge) {
                     var scale = self.options.material.colorScale;
-                    color.setHSL(getColorAtScalar(self.q[i], Math.pow(scale,2)*14000*2/3), 1, 0.5);
+                    color.setHSL(getColorAtScalar(self.q[ind], Math.pow(scale,2)*14000*2/3), 1, 0.5);
                     if ( self.name.indexOf('gray')>-1 ) {
                         var gray = (color.r + color.g + color.b) / 3;
                         color.setRGB(gray, gray, gray);
                     }
-
                 }
                 else {
                     color = self.chargeColor;
                 }
-                self.geometry.colors.push(color);
+                color.toArray( colors, i * 3 );
             }
+
+            self.geometry = new THREE.BufferGeometry();
+            self.geometry.dynamic = true;
+            self.geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+            self.geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+            // geometry.addAttribute( 'size', new THREE.BufferAttribute( sizes, 1 ) );
+            // console.log(self.geometry.attributes.position);
+            // console.log(self.geometry.attributes.color);
+
+            self.geometry.attributes.position.needsUpdate = true;
+            self.geometry.attributes.color.needsUpdate = true;
+
             self.pointCloud = new THREE.PointCloud(self.geometry, self.material);
 
             if (!(self.containedIn == null)) {
@@ -1068,6 +1121,7 @@ if ( typeof Object.create !== 'function' ) {
             );
             sst.process.always(function(){
                 self.nRequestedSSTDone += 1;
+                sst.process = null; // force garbage collection (a very large JSON object)
 
                 // if (self.nRequestedSSTDone == self.options.sst.length) {
                 //     el.html(el.html()+"<br /> All done!");
@@ -1578,15 +1632,22 @@ if ( typeof Object.create !== 'function' ) {
             if (intersects.length>0) {
                 var index = intersects[0].index;
                 // console.log(intersects[0]);
-                var x = sst.geometry.vertices[index].x; // local coordinates
-                var y = sst.geometry.vertices[index].y;
-                var z = sst.geometry.vertices[index].z;
-                // console.log(x + ', ' + y + ', ' + z);
+                // var x = sst.geometry.vertices[index].x; // local coordinates
+                // var y = sst.geometry.vertices[index].y;
+                // var z = sst.geometry.vertices[index].z;
+                // var x = sst.geometry.attributes.position[index*3]; // local coordinates
+                // var y = sst.geometry.attributes.position[index*3+1];
+                // var z = sst.geometry.attributes.position[index*3+2];
+                // console.log(index, x,y,z);
+                var x = sst.geometry.attributes.position.array[index*3]; // local coordinates
+                var y = sst.geometry.attributes.position.array[index*3+1];
+                var z = sst.geometry.attributes.position.array[index*3+2];
+
                 self.el_statusbar.html(
                     '(x, y, z) = ('
-                    + sst.x[index].toFixed(1) + ', '
-                    + sst.y[index].toFixed(1) + ', '
-                    + sst.z[index].toFixed(1) + ')'
+                    + toGlobalX(x).toFixed(1) + ', '
+                    + toGlobalY(y).toFixed(1) + ', '
+                    + toGlobalZ(z).toFixed(1) + ')'
                 );
             }
             else {
@@ -1613,9 +1674,13 @@ if ( typeof Object.create !== 'function' ) {
             if (intersects.length>0) {
                 var index = intersects[0].index;
                 // console.log(intersects[0]);
-                var x = sst.geometry.vertices[index].x; // local coordinates
-                var y = sst.geometry.vertices[index].y;
-                var z = sst.geometry.vertices[index].z;
+                // var x = sst.geometry.vertices[index].x; // local coordinates
+                // var y = sst.geometry.vertices[index].y;
+                // var z = sst.geometry.vertices[index].z;
+                var x = sst.geometry.attributes.position.array[index*3]; // local coordinates
+                var y = sst.geometry.attributes.position.array[index*3+1];
+                var z = sst.geometry.attributes.position.array[index*3+2];
+                // console.log(index, x,y,z);
 
                 if (self.rotationCenter!=undefined) self.scene.remove(self.rotationCenter);
                 var geometry2 = new THREE.SphereGeometry( 0.2, 32, 32 );
@@ -1987,5 +2052,8 @@ if ( typeof Object.create !== 'function' ) {
     function toLocalX(value) { return value - $.fn.BEE.user_options.geom.center[0]; }
     function toLocalY(value) { return value - $.fn.BEE.user_options.geom.center[1]; }
     function toLocalZ(value) { return value - $.fn.BEE.user_options.geom.center[2]; }
+    function toGlobalX(value) { return value + $.fn.BEE.user_options.geom.center[0]; }
+    function toGlobalY(value) { return value + $.fn.BEE.user_options.geom.center[1]; }
+    function toGlobalZ(value) { return value + $.fn.BEE.user_options.geom.center[2]; }
 
 })( jQuery, window, document );
