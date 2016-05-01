@@ -27,6 +27,11 @@ body {
     bottom: 0px;
     width: 25%;
 }
+#statsbar {
+    position: absolute;
+    top: 0px;
+    display: none;
+}
 #container {
     /* this size is set by renderer.setSize()*/
 }

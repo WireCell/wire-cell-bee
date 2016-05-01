@@ -19,6 +19,7 @@ if ( typeof Object.create !== 'function' ) {
     var event_url = base_url.substring(0, base_url.indexOf('event')) + 'event/';
     // console.log(index_of_query_postion, base_url, base_query, event_url);
     var listOfReconElems= {};
+    var stats = new Stats();
 
 
     var USER_COLORS = {
@@ -401,6 +402,8 @@ if ( typeof Object.create !== 'function' ) {
             self.initGuiSlice();
             self.initGuiCamera();
 
+            self.initStats();
+
             self.addEventListener();
             $('.dg .c select').css({
                 'width': 136,
@@ -412,6 +415,13 @@ if ( typeof Object.create !== 'function' ) {
                 'margin-top': 0
             });
 
+        },
+
+        initStats: function() {
+            stats.dom.style.position = 'relative';
+            stats.dom.style.float = 'left';
+            stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+            $('#statsbar').append(stats.dom);
         },
 
         initGui: function() {
@@ -1212,6 +1222,18 @@ if ( typeof Object.create !== 'function' ) {
             }
         },
 
+        toggleStats: function() {
+            var el = $('#toggleStats');
+            if (el.html().indexOf("Show")>=0) {
+                $("#statsbar").show();
+                el.html(el.html().replace("Show", "Hide"));
+            }
+            else {
+                $("#statsbar").hide();
+                el.html(el.html().replace("Hide", "Show"));
+            }
+        },
+
         toggleSidebar: function() {
             $.fn.BEE.ui_sst.$el_container.toggle("slide");
         },
@@ -1675,7 +1697,7 @@ if ( typeof Object.create !== 'function' ) {
 
             // console.log(vector.x + ', ' + vector.y + ', ' + vector.z);
             if (intersects.length>0) {
-                console.log(intersects);
+                // console.log(intersects);
                 var index = intersects[0].index;
                 // console.log(intersects[0]);
                 // var x = sst.geometry.vertices[index].x; // local coordinates
@@ -1746,6 +1768,7 @@ if ( typeof Object.create !== 'function' ) {
             self.addClickEvent($('#toggleSidebar') , self.toggleSidebar);
             self.addClickEvent($('#preset-default'), clearLocalStorageAndReload);
             self.addClickEvent($('#toggleMC')      , self.toggleMC);
+            self.addClickEvent($('#toggleStats')   , self.toggleStats);
             self.addClickEvent($('#toggleCharge')  , self.toggleCharge);
             self.addClickEvent($('#nextEvent')     , self.nextEvent);
             self.addClickEvent($('#prevEvent')     , self.prevEvent);
@@ -1794,6 +1817,7 @@ if ( typeof Object.create !== 'function' ) {
             //     }
             // });
             self.addKeyEvent('m', self.toggleMC);
+            self.addKeyEvent('s', self.toggleStats);
             self.addKeyEvent('q', self.toggleCharge);
             self.addKeyEvent('shift+n', self.nextEvent);
             self.addKeyEvent('shift+p', self.prevEvent);
@@ -1856,6 +1880,7 @@ if ( typeof Object.create !== 'function' ) {
                 self.renderer.render(self.scene, self.camera);
                 self.renderer.clearDepth();
                 self.renderer.render(self.scene_slice, self.camera);
+                stats.update();
             }
             window.animate();
         }
