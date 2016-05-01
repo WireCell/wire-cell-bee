@@ -18,6 +18,8 @@ if ( typeof Object.create !== 'function' ) {
     }
     var event_url = base_url.substring(0, base_url.indexOf('event')) + 'event/';
     // console.log(index_of_query_postion, base_url, base_query, event_url);
+    var root_url = base_url.substring(0, base_url.indexOf('set'));
+
     var listOfReconElems= {};
     var stats = new Stats();
 
@@ -883,7 +885,16 @@ if ( typeof Object.create !== 'function' ) {
                     wireframe: false
                 });
 
-                var worker = new Worker("/static/js/worker_deadarea.js");
+                var worker_url = root_url;
+                if (worker_url.indexOf('localhost') > 1) {
+                    worker_url += "static/js/worker_deadarea.js";
+                }
+                else {
+                    worker_url = worker_url.replace('bee', 'bee-static');
+                    worker_url += "js/worker_deadarea.js";
+                }
+                // console.log(worker_url);
+                var worker = new Worker(worker_url);
                 worker.onmessage = function(e) {
                   // console.log('Message received from worker', e.data);
                   // var positions = new Float32Array(e.data);

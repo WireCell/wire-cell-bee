@@ -1,4 +1,4 @@
-importScripts('/static/js/lib/three.min.js');
+importScripts('lib/three.min.js');
 
 onmessage = function(e) {
   // console.log('Message received from main script', e.data);
