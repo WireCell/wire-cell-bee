@@ -870,11 +870,11 @@ if ( typeof Object.create !== 'function' ) {
             var xhr = $.getJSON(url, function(data) {
                 // console.log(data);
 
-                var extrudeSettings = {
-                    steps           : 100,
-                    bevelEnabled    : false,
-                    extrudePath     : null
-                };
+                // var extrudeSettings = {
+                //     steps           : 100,
+                //     bevelEnabled    : false,
+                //     extrudePath     : null
+                // };
                 var material = new THREE.MeshBasicMaterial({
                     color: 0x888888,
                     transparent: true,
@@ -883,38 +883,64 @@ if ( typeof Object.create !== 'function' ) {
                     wireframe: false
                 });
 
-                var mergedGeometry = new THREE.Geometry();
-                for (var i=0; i<data.length; i++) {
-                    var pts = [];
-                    var raw_pts = data[i];
-                    var cy = 0;
-                    var cz = 0;
-                    for (var j = 0; j < raw_pts.length; j ++ ) {
-                        cy += raw_pts[j][0];
-                        cz += raw_pts[j][1];
-                    }
-                    cy /= raw_pts.length;
-                    cz /= raw_pts.length;
-                    for (var j = 0; j < raw_pts.length; j ++ ) {
-                        pts.push( new THREE.Vector2(-raw_pts[j][1]+cz, raw_pts[j][0]-cy) );
-                    }
-                    var spline = new THREE.SplineCurve3( [
-                        new THREE.Vector3( -$.fn.BEE.user_options.geom.halfx, toLocalY(cy),  toLocalZ(cz)),
-                        // new THREE.Vector3( $.fn.BEE.user_options.geom.halfx, toLocalY(cy),  toLocalZ(cz)),
-                        new THREE.Vector3( -$.fn.BEE.user_options.geom.halfx+2, toLocalY(cy),  toLocalZ(cz)),
-                    ] );
-                    extrudeSettings.extrudePath = spline;
-                    var shape = new THREE.Shape(pts);
-                    var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-                    mergedGeometry.merge(geometry);
-                    // var mesh = new THREE.Mesh( geometry, material );
-                    // self.listOfDeadAreas.push(mesh);
-                    // self.scene.add(mesh);
+                var worker = new Worker("/static/js/worker_deadarea.js");
+                worker.onmessage = function(e) {
+                  // console.log('Message received from worker', e.data);
+                  // var positions = new Float32Array(e.data);
+                  var mergedGeometry = new THREE.BufferGeometry();
+                  // console.log(e.data);
+                  mergedGeometry.addAttribute( 'position', new THREE.BufferAttribute( e.data.position , 3 ) );
+                  mergedGeometry.addAttribute( 'normal', new THREE.BufferAttribute( e.data.normal , 3 ) );
+                  // var mergedGeometry = e.data;
+                  var mesh = new THREE.Mesh( mergedGeometry, material );
+                  self.listOfDeadAreas.push(mesh);
+                  self.scene.add(mesh);
+                  self.isShowDeadArea = true;
                 };
-                var mesh = new THREE.Mesh( mergedGeometry, material );
-                self.listOfDeadAreas.push(mesh);
-                self.scene.add(mesh);
-                self.isShowDeadArea = true;
+                var geoForWorker = {
+                    halfx: $.fn.BEE.user_options.geom.halfx,
+                    center_y: $.fn.BEE.user_options.geom.center[1],
+                    center_z: $.fn.BEE.user_options.geom.center[2]
+                }
+                worker.postMessage({
+                    vertices: data,
+                    geo: geoForWorker
+                });
+
+                // var mergedGeometry = new THREE.Geometry();
+                // for (var i=0; i<data.length; i++) {
+                //     var pts = [];
+                //     var raw_pts = data[i];
+                //     var cy = 0;
+                //     var cz = 0;
+                //     for (var j = 0; j < raw_pts.length; j ++ ) {
+                //         cy += raw_pts[j][0];
+                //         cz += raw_pts[j][1];
+                //     }
+                //     cy /= raw_pts.length;
+                //     cz /= raw_pts.length;
+                //     for (var j = 0; j < raw_pts.length; j ++ ) {
+                //         pts.push( new THREE.Vector2(-raw_pts[j][1]+cz, raw_pts[j][0]-cy) );
+                //     }
+                //     var spline = new THREE.SplineCurve3( [
+                //         new THREE.Vector3( -$.fn.BEE.user_options.geom.halfx, toLocalY(cy),  toLocalZ(cz)),
+                //         // new THREE.Vector3( $.fn.BEE.user_options.geom.halfx, toLocalY(cy),  toLocalZ(cz)),
+                //         new THREE.Vector3( -$.fn.BEE.user_options.geom.halfx+2, toLocalY(cy),  toLocalZ(cz)),
+                //     ] );
+                //     extrudeSettings.extrudePath = spline;
+                //     var shape = new THREE.Shape(pts);
+                //     var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+                //     mergedGeometry.merge(geometry);
+
+                //     // var mesh = new THREE.Mesh( geometry, material );
+                //     // self.listOfDeadAreas.push(mesh);
+                //     // self.scene.add(mesh);
+                // };
+
+                // var mesh = new THREE.Mesh( mergedGeometry, material );
+                // self.listOfDeadAreas.push(mesh);
+                // self.scene.add(mesh);
+                // self.isShowDeadArea = true;
             });
 
             var el = $('#loadingbar');
