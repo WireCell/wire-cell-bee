@@ -1671,6 +1671,16 @@ if ( typeof Object.create !== 'function' ) {
             else { $.fn.BEE.current_sst.material.size -= 0.5; }
             $.fn.BEE.ui_sst.$el_size.slider("value", $.fn.BEE.current_sst.material.size);
         },
+        minimizeOpacity: function() {
+            $.fn.BEE.current_sst.material.opacity = 0.;
+            $.fn.BEE.ui_sst.$el_opacity.slider("value", $.fn.BEE.current_sst.material.opacity);
+            checkSST($.fn.BEE.current_sst);
+        },
+        maximizeOpacity: function() {
+            $.fn.BEE.current_sst.material.opacity = 1.;
+            $.fn.BEE.ui_sst.$el_opacity.slider("value", $.fn.BEE.current_sst.material.opacity);
+            checkSST($.fn.BEE.current_sst);
+        },
 
         locatePointUnderMouse: function(event) {
             var self = this;
@@ -1872,6 +1882,8 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent('-', self.decreaseOpacity);
             self.addKeyEvent('+', self.increaseSize);
             self.addKeyEvent('_', self.decreaseSize);
+            self.addKeyEvent('{', self.minimizeOpacity);
+            self.addKeyEvent('}', self.maximizeOpacity);
             Mousetrap.bindGlobal('esc', function(){
                 // console.log($('input'));
                 $('input').blur(); // remove focus from input elements
@@ -1896,7 +1908,6 @@ if ( typeof Object.create !== 'function' ) {
                 self.camera.updateProjectionMatrix();
                 return false;
             });
-
         },
 
         animate: function() {
