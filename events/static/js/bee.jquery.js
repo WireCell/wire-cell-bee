@@ -19,6 +19,7 @@ if ( typeof Object.create !== 'function' ) {
     var event_url = base_url.substring(0, base_url.indexOf('event')) + 'event/';
     // console.log(index_of_query_postion, base_url, base_query, event_url);
     var root_url = base_url.substring(0, base_url.indexOf('set'));
+    $('#evd-2d').attr('href', base_url+'evd-2d/');
 
     var listOfReconElems= {};
     var stats = new Stats();

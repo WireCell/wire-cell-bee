@@ -157,6 +157,16 @@ def data(request, set_id, event_id, name):
         return HttpResponse(filename + ' does not exist')
 
 
+def evd_2D(request, set_id, event_id):
+    # print
+    d = "%smedia/%s/plots/%s/" % (settings.STATIC_URL, set_id, event_id)
+
+    context = {
+        'base_plots_url': d,
+    }
+    return render(request, 'events/evd_2D.html', context)
+    # return HttpResponse(d)
+
 def upload(request):
     '''file upload'''
     import uuid, subprocess

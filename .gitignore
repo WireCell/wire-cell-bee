@@ -8,3 +8,4 @@ data/
 tmp/
 fabfile.py
 wc.json
+media/

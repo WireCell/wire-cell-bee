@@ -1,0 +1,61 @@
+{% load staticfiles %}
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Plots</title>
+    <link rel="stylesheet" href="{% static 'css/lib/bootstrap.min.css' %}" media="screen" />
+    <link rel="stylesheet" href="{% static 'css/lib/imageviewer.css' %}" media="screen" />
+    <link rel="stylesheet" href="{% static 'css/bee.css' %}" />
+  </head>
+
+  <body>
+    <div class="container">
+<!--       <div class="page-header">
+        <h1>
+          Plots
+        </h1>
+      </div> -->
+
+      <div class='span12' align='left'>
+        <a href="{{base_plots_url}}evd_y.png"><img class='pannable' src="{{base_plots_url}}evd_y.png" style="height:500px;" /></a>
+        <a href="{{base_plots_url}}evd_v.png"><img class='pannable' src="{{base_plots_url}}evd_v.png" style="height:500px;" /></a>
+        <a href="{{base_plots_url}}evd_u.png"><img class='pannable' src="{{base_plots_url}}evd_u.png" style="height:500px;" /></a>
+      </div>
+
+    </div>
+
+    <script type="text/javascript" src="{% static 'js/lib/jquery-2.1.4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/imageviewer.min.js' %}"></script>
+    <script>
+      // $('img').on('click', function(){
+      //   console.log($(this).attr('src'));
+      //   var win = window.open($(this).attr('src'), '_blank');
+      //   win.focus();
+      // });
+    // $('.pop').on('click', function() {
+    //   $('.imagepreview').attr('src', $(this).find('img').attr('src'));
+    //   $('#imagemodal').modal('show');
+    // });
+      // $('.pannable').ImageViewer({
+      //   zoomValue: 100,
+      //   maxZoom: 1000
+      // });
+      // $image = $('#evd_y');
+      // imgPos = [
+      //     $image.offset().left,
+      //     $image.offset().top,
+      //     $image.offset().left + $image.outerWidth(),
+      //     $image.offset().top + $image.outerHeight()
+      // ];
+      // console.log(imgPos);
+
+      // $image.click(function(e){
+      //   console.log((e.pageX-imgPos[0]) +', '+ (4800-(e.pageY-imgPos[1])*9) );
+      //   // $('#coords').html((e.pageX-imgPos[0]) +', '+ (e.pageY-imgPos[1]));
+      // });
+    </script>
+  </body>
+
+</html>

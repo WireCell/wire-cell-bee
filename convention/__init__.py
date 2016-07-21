@@ -8,8 +8,8 @@ FILENAME_ALIAS = {
 SORTED_RECON_FILES = [
     "rec_charge_blob",
     "truth",
-    "rec_simple",
     "rec_charge_cell",
+    "rec_simple",
     "pandoraCosmic",
     "pandoraNu",
     "pandoraCosmicKHit",
