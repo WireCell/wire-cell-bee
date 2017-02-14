@@ -133,6 +133,36 @@ if ( typeof Object.create !== 'function' ) {
         }
     }
 
+    var AutoSel = {
+        init: function(name) {
+            var self = this;
+            self.name = name;
+            self.url = base_url + name + "auto-sel/";
+            self.loadData();
+        },
+
+        loadData: function() {
+            var self = this;
+            self.process = $.getJSON(self.url, function(data) {
+                self.vtx = data['vtx'];
+                // console.log(data);
+                // var tracks = data['tracks'];
+                // for (var i=0; i<tracks.length; i++) {
+                //     var track = Object.create(TRACK);
+                //     var track_data = tracks[i];
+                //     track.init(track_data);
+                //     self.tracks.push(track);
+                // }
+                // console.log(self.tracks);
+                // self.initData(data);
+                // self.initPointCloud();
+            })
+            .fail(function(){
+                console.log("load " + self.url + " failed");
+            });
+        }
+    }
+
     // SST class
     var SST = {
         init: function(name, options) {
@@ -399,6 +429,7 @@ if ( typeof Object.create !== 'function' ) {
                     + "<br /><strong class='info'>Info:</strong> No MC found, skiping. ");
             }
             self.initSST(); // SST's are added asynchronously into the scene
+            self.initAutoSel();
             self.initCT();
             self.initDeadArea();
 
@@ -1064,6 +1095,58 @@ if ( typeof Object.create !== 'function' ) {
                     el.html(el.html()+"<br /><strong class='warning'>Warning!</strong> loading MC ... failed. ")
                 }
             );
+        },
+
+        initAutoSel: function() {
+            var self = this;
+            self.autoSel = Object.create(AutoSel);
+            self.autoSel.init("");
+            self.showAutoVtx = false;
+        },
+
+        toggleShowAutoVtx: function() {
+            var self = this;
+
+            if (! self.autoSel.vtx) {
+                var el = $('#loadingbar');
+                el.html('No auto-selection vertex found');
+                el.show();
+                window.setTimeout(function(){
+                    el.html('');
+                    el.hide();
+                }, 1000);
+                return;
+            }
+            if (self.showAutoVtx == false) {
+                self.showAutoVtx = true;
+                if (self.autoVtxSphere) {
+                    self.scene.add(self.autoVtxSphere);
+                }
+                else {
+                    var geometry2 = new THREE.SphereGeometry( 6, 32, 32 );
+                    var material2 = new THREE.MeshBasicMaterial({
+                        blending: THREE.NormalBlending,
+                        color: 0xff0000,
+                        opacity: 0.5,
+                        transparent: true,
+                        depthWrite: false,
+                        sizeAttenuation: false
+                    });
+                    self.autoVtxSphere = new THREE.Mesh( geometry2, material2 );
+                    self.autoVtxSphere.overdraw = true;
+                    self.autoVtxSphere.position.x = toLocalX(self.autoSel.vtx[0]);
+                    self.autoVtxSphere.position.y = toLocalY(self.autoSel.vtx[1]);
+                    self.autoVtxSphere.position.z = toLocalZ(self.autoSel.vtx[2]);
+                    self.scene.add(self.autoVtxSphere);
+                }
+            }
+            else {
+                self.showAutoVtx = false;
+                if (self.autoVtxSphere) {
+                    self.scene.remove(self.autoVtxSphere);
+                }
+            }
+
         },
 
         initCT: function() {
@@ -1757,7 +1840,7 @@ if ( typeof Object.create !== 'function' ) {
                 // console.log(index, x,y,z);
 
                 if (self.rotationCenter!=undefined) self.scene.remove(self.rotationCenter);
-                var geometry2 = new THREE.SphereGeometry( 0.2, 32, 32 );
+                var geometry2 = new THREE.SphereGeometry( 2, 32, 32 );
                 var material2 = new THREE.MeshNormalMaterial({
                     blending: THREE.NormalBlending,
                     opacity: 0.4,
@@ -1865,6 +1948,7 @@ if ( typeof Object.create !== 'function' ) {
             //     }
             // });
             self.addKeyEvent('m', self.toggleMC);
+            self.addKeyEvent('a', self.toggleShowAutoVtx);
             self.addKeyEvent('s', self.toggleStats);
             self.addKeyEvent('q', self.toggleCharge);
             self.addKeyEvent('shift+n', self.nextEvent);

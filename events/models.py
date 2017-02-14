@@ -69,7 +69,10 @@ class EventSet(models.Model):
                 results.append(convention.FILENAME_ALIAS.get(name, name))
                 info.pop(name, None)
         for name in info.keys():
-            if (name.find('-track')>0 or name.startswith('channel')):
+            if (name.find('-track')>0
+                or name.startswith('channel')
+                or name.find('auto-sel')>=0
+            ):
                 info.pop(name)
             else:
                 results.append(name)
