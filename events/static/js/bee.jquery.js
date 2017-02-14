@@ -24,7 +24,6 @@ if ( typeof Object.create !== 'function' ) {
     var listOfReconElems= {};
     var stats = new Stats();
 
-
     var USER_COLORS = {
         'dark' :     [
             0xffffff, // white
@@ -100,6 +99,94 @@ if ( typeof Object.create !== 'function' ) {
         }
     }
 
+    // optical infomation
+    var OP = {
+        init: function() {
+            var self = this;
+            self.url = base_url + 'op/';
+            self.driftV = 0.1105; // drift velocity cm/us
+            self.currentFlash = 0;
+            self.loadData();
+        },
+        loadData: function() {
+            var self = this;
+            self.process = $.getJSON(self.url, function(data) {
+                // console.log(data);
+                self.t = data.op_t;
+                self.peTotal = data.op_peTotal;
+            })
+            .fail(function(){
+                console.log("load " + self.url + " failed");
+            });
+        },
+        next: function() {
+            var self = this;
+            if(self.currentFlash<self.t.length-1) {
+                self.currentFlash+=1;
+            }
+            else {
+                self.currentFlash=0;
+            }
+            self.draw(self.currentFlash);
+        },
+        prev: function() {
+            var self = this;
+            if(self.currentFlash>0) {
+                self.currentFlash-=1;
+            }
+            else {
+                self.currentFlash=self.t.length-1;
+            }
+            self.draw(self.currentFlash);
+        },
+        toggle: function() {
+            var self = this;
+            if(self.boxhelper == undefined) {
+                self.draw();
+            }
+            else {
+                $.fn.BEE.scene3D.scene.remove(self.boxhelper);
+                self.boxhelper = undefined;
+                // console.log('cleared')
+            }
+        },
+        draw: function() {
+            var self = this;
+            var i = self.currentFlash;
+            var t = self.t[i];
+            var peTotal = self.peTotal[i];
+            // console.log(t, peTotal, self.driftV*t);
+            if(self.boxhelper != undefined) {
+                $.fn.BEE.scene3D.scene.remove(self.boxhelper);
+            }
+            self.boxhelper = new THREE.Object3D;
+
+            var halfx = $.fn.BEE.user_options.geom.halfx;
+            var halfy = $.fn.BEE.user_options.geom.halfy;
+            var halfz = $.fn.BEE.user_options.geom.halfz;
+            var opBox = new THREE.Mesh(
+                new THREE.BoxGeometry(halfx*2, halfy*2, halfz*2 ),
+                new THREE.MeshBasicMaterial( {
+                    color: 0x96f97b,
+                    transparent: true,
+                    depthWrite: true,
+                    // blending: THREE.AdditiveBlending,
+                    opacity: 0.5,
+                    // wireframe: true
+            }));
+            var box = new THREE.BoxHelper(opBox);
+            box.material.color.setHex(0xff0000);
+            self.boxhelper.add(box);
+            self.boxhelper.position.x = toLocalX($.fn.BEE.user_options.geom.center[0]+self.driftV*t);
+            self.boxhelper.position.y = toLocalY($.fn.BEE.user_options.geom.center[1]);
+            self.boxhelper.position.z = toLocalZ($.fn.BEE.user_options.geom.center[2]);
+            $.fn.BEE.scene3D.scene.add(self.boxhelper);  // slice has its own scene
+            $.fn.BEE.scene3D.el_statusbar.html(
+               '#' + self.currentFlash + ': (' + t + ' us, ' + peTotal + ' pe)'
+            )
+        }
+    };
+
     // clustering and tracking collections;
     var CT = {
         init: function(name) {
@@ -158,7 +245,7 @@ if ( typeof Object.create !== 'function' ) {
                 // self.initPointCloud();
             })
             .fail(function(){
-                console.log("load " + self.url + " failed");
+                // console.log("load " + self.url + " failed");
             });
         }
     }
@@ -217,7 +304,7 @@ if ( typeof Object.create !== 'function' ) {
             }
             for (var i = 0; i < size_reduced; i++) {
                 // if (data.q != undefined && data.q[i]<QTHRESH) continue;
-                self.x[i] = data.x[ indices[i] ];
+                self.x[i] = data.x[ indices[i] ] / 0.109 * 0.1105;
                 self.y[i] = data.y[ indices[i] ];
                 self.z[i] = data.z[ indices[i] ];
                 data.q == undefined
@@ -430,6 +517,7 @@ if ( typeof Object.create !== 'function' ) {
             }
             self.initSST(); // SST's are added asynchronously into the scene
             self.initAutoSel();
+            self.initOP();
             self.initCT();
             self.initDeadArea();
 
@@ -604,6 +692,7 @@ if ( typeof Object.create !== 'function' ) {
                     }
 
                 });
+            folder_general.add(self, 'toggleOp').name('Toggle Flash');
             folder_general.open();
         },
 
@@ -918,7 +1007,7 @@ if ( typeof Object.create !== 'function' ) {
                 });
 
                 var worker_url = root_url;
-                if (worker_url.indexOf('localhost') > 1) {
+                if (worker_url.indexOf('localhost')>1 || worker_url.indexOf('127.0.0.1')>1) {
                     worker_url += "static/js/worker_deadarea.js";
                 }
                 else {
@@ -1147,6 +1236,16 @@ if ( typeof Object.create !== 'function' ) {
                 }
             }
 
+        },
+
+        initOP: function() {
+            var self = this;
+            var op = Object.create(OP);
+            self.op = op;
+            op.init();
+            op.process.done(function(){
+                // op.draw();
+            });
         },
 
         initCT: function() {
@@ -1402,6 +1501,10 @@ if ( typeof Object.create !== 'function' ) {
                     : currentIndex - 1;
             disp.setValue(self.options.sst[newIndex]);
         },
+
+        toggleOp: function() { this.op.toggle(); },
+        nextOp: function() { this.op.next(); },
+        prevOp: function() { this.op.prev(); },
 
         nextSlice: function () {
             var self = this;
@@ -1969,6 +2072,9 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent('_', self.decreaseSize);
             self.addKeyEvent('{', self.minimizeOpacity);
             self.addKeyEvent('}', self.maximizeOpacity);
+            self.addKeyEvent('<', self.prevOp);
+            self.addKeyEvent('>', self.nextOp);
+
             Mousetrap.bindGlobal('esc', function(){
                 // console.log($('input'));
                 $('input').blur(); // remove focus from input elements
@@ -2047,6 +2153,7 @@ if ( typeof Object.create !== 'function' ) {
             showTPCs : true,
             showAxises : false,
             deadAreaOpacity : 0.0,
+            showFlash: false
         },
         geom     : {
             name  : 'uboone',
