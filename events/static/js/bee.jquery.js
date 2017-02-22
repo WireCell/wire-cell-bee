@@ -106,7 +106,49 @@ if ( typeof Object.create !== 'function' ) {
             self.url = base_url + 'op/';
             self.driftV = 0.1105; // drift velocity cm/us
             self.currentFlash = 0;
+            self.locations = {};
+            self.loadOpLocations();
             self.loadData();
+        },
+        loadOpLocations: function() {
+            var self = this;
+            if ($.fn.BEE.user_options.geom.name == "uboone") {
+                self.locations = {
+                   4 : [2.645, -28.625, 990.356],
+                   2 : [2.682, 27.607 , 989.712],
+                   5 : [2.324, -56.514, 951.865],
+                   0 : [2.458, 55.313 , 951.861],
+                   6 : [2.041, -56.309, 911.939],
+                   1 : [2.265, 55.822 , 911.066],
+                   3 : [1.923, -0.722 , 865.598],
+                   9 : [1.795, -0.502 , 796.208],
+                   11: [1.495, -56.284, 751.905],
+                   7 : [1.559, 55.625 , 751.884],
+                   12: [1.487, -56.408, 711.274],
+                   8 : [1.438, 55.8   , 711.073],
+                   10: [1.475, -0.051 , 664.203],
+                   15: [1.448, -0.549 , 585.284],
+                   13: [1.226, 55.822 , 540.929],
+                   17: [1.479, -56.205, 540.616],
+                   18: [1.505, -56.323, 500.221],
+                   14: [1.116, 55.771 , 500.134],
+                   16: [1.481, -0.875 , 453.096],
+                   21: [1.014, -0.706 , 373.839],
+                   23: [1.451, -57.022, 328.341],
+                   19: [0.913, 54.693 , 328.212],
+                   20: [0.682, 54.646 , 287.976],
+                   24: [1.092, -56.261, 287.639],
+                   22: [0.949, -0.829 , 242.014],
+                   28: [0.658, -0.303 , 173.743],
+                   25: [0.703, 55.249 , 128.355],
+                   30: [0.821,1-56.203, 128.179],
+                   31: [0.862, -56.615, 87.8695],
+                   26: [0.558, 55.249 , 87.7605],
+                   27: [0.665, 27.431 , 51.1015],
+                   29: [0.947, -28.576, 50.4745]
+                };
+            }
+            // console.log(self.locations);
         },
         loadData: function() {
             var self = this;
@@ -114,6 +156,7 @@ if ( typeof Object.create !== 'function' ) {
                 // console.log(data);
                 self.t = data.op_t;
                 self.peTotal = data.op_peTotal;
+                self.pes = data.op_pes;
             })
             .fail(function(){
                 console.log("load " + self.url + " failed");
@@ -141,25 +184,29 @@ if ( typeof Object.create !== 'function' ) {
         },
         toggle: function() {
             var self = this;
-            if(self.boxhelper == undefined) {
+            if(self.group_op == undefined) {
                 self.draw();
             }
             else {
-                $.fn.BEE.scene3D.scene.remove(self.boxhelper);
-                self.boxhelper = undefined;
+                $.fn.BEE.scene3D.scene.remove(self.group_op);
+                self.group_op = undefined;
                 // console.log('cleared')
             }
         },
         draw: function() {
             var self = this;
-            var i = self.currentFlash;
-            var t = self.t[i];
-            var peTotal = self.peTotal[i];
+            var currentFlash = self.currentFlash;
+            var t = self.t[currentFlash];
+            var peTotal = self.peTotal[currentFlash];
+            var pes = self.pes[currentFlash];
             // console.log(t, peTotal, self.driftV*t);
-            if(self.boxhelper != undefined) {
-                $.fn.BEE.scene3D.scene.remove(self.boxhelper);
+
+            if(self.group_op != undefined) {
+                $.fn.BEE.scene3D.scene.remove(self.group_op);
+                // $.fn.BEE.scene3D.scene.remove(self.boxhelper);
             }
-            self.boxhelper = new THREE.Object3D;
+            self.group_op = new THREE.Group();
+            var boxhelper = new THREE.Object3D;
 
             var halfx = $.fn.BEE.user_options.geom.halfx;
             var halfy = $.fn.BEE.user_options.geom.halfy;
@@ -176,11 +223,56 @@ if ( typeof Object.create !== 'function' ) {
             }));
             var box = new THREE.BoxHelper(opBox);
             box.material.color.setHex(0xff0000);
-            self.boxhelper.add(box);
-            self.boxhelper.position.x = toLocalX($.fn.BEE.user_options.geom.center[0]+self.driftV*t);
-            self.boxhelper.position.y = toLocalY($.fn.BEE.user_options.geom.center[1]);
-            self.boxhelper.position.z = toLocalZ($.fn.BEE.user_options.geom.center[2]);
-            $.fn.BEE.scene3D.scene.add(self.boxhelper);  // slice has its own scene
+            boxhelper.add(box);
+            boxhelper.position.x = toLocalX($.fn.BEE.user_options.geom.center[0]+self.driftV*t);
+            boxhelper.position.y = toLocalY($.fn.BEE.user_options.geom.center[1]);
+            boxhelper.position.z = toLocalZ($.fn.BEE.user_options.geom.center[2]);
+            self.group_op.add(boxhelper);
+            // $.fn.BEE.scene3D.scene.add(self.boxhelper);  // slice has its own scene
+
+            for (var i=0; i<32; i++) {
+                var radius = 10;
+                var segments = 32; //<-- Increase or decrease for more resolution I guess
+
+                var circleGeometry = new THREE.CircleGeometry( radius, segments );
+                var circle = new THREE.Mesh(circleGeometry, new THREE.MeshBasicMaterial({
+                    color: 0xbbbbbb,
+                    opacity: 0.01,
+                    side: THREE.DoubleSide
+                    // depthWrite: false
+                    // wireframe: true
+                }));
+                // console.log(self.locations);
+                circle.rotation.y = Math.PI / 2;
+                circle.position.x = toLocalX(self.locations[i][0]+self.driftV*t);
+                circle.position.y = toLocalY(self.locations[i][1]);
+                circle.position.z = toLocalZ(self.locations[i][2]);
+                self.group_op.add(circle);
+            }
+
+            for (var i=0; i<32; i++) {
+                if (pes[i] < 0.01 ) continue;
+                var radius = Math.sqrt(pes[i]);
+                var segments = 32; //<-- Increase or decrease for more resolution I guess
+
+                var circleGeometry = new THREE.CircleGeometry( radius, segments );
+                var circle = new THREE.Mesh(circleGeometry, new THREE.MeshBasicMaterial({
+                    color: 0xff0000,
+                    opacity: 0.2,
+                    side: THREE.DoubleSide
+                    // depthWrite: false
+                    // wireframe: true
+                }));
+                // console.log(self.locations);
+                circle.rotation.y = Math.PI / 2;
+                circle.position.x = toLocalX(self.locations[i][0]+self.driftV*t);
+                circle.position.y = toLocalY(self.locations[i][1]);
+                circle.position.z = toLocalZ(self.locations[i][2]);
+                self.group_op.add(circle);
+            }
+
+            $.fn.BEE.scene3D.scene.add( self.group_op );
+
             $.fn.BEE.scene3D.el_statusbar.html(
                '#' + self.currentFlash + ': (' + t + ' us, ' + peTotal + ' pe)'
             )
