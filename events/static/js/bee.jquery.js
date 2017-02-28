@@ -20,6 +20,9 @@ if ( typeof Object.create !== 'function' ) {
     // console.log(index_of_query_postion, base_url, base_query, event_url);
     var root_url = base_url.substring(0, base_url.indexOf('set'));
     $('#evd-2d').attr('href', base_url+'evd-2d/');
+    $( "#progressbar" ).progressbar({
+      value: 0
+    });
 
     var listOfReconElems= {};
     var stats = new Stats();
@@ -362,6 +365,7 @@ if ( typeof Object.create !== 'function' ) {
             self.process = $.getJSON(self.url, function(data) {
                 self.initData(data);
                 self.initPointCloud();
+                // self.initKdTree();
                 // self.process.responseJSON = null;
                 // self.process.responseText = null;
             })
@@ -435,6 +439,205 @@ if ( typeof Object.create !== 'function' ) {
             }
             self.drawInsideThreeFrames();
             // self.drawInsideBeamFrame()
+        },
+
+        doCluster: function() {
+            var self = this;
+            self.listOfClusteredPoints = {};
+
+            var size = self.x.length;
+            var kd_positions = new Float32Array( size * 3 );
+
+            for (var i=0; i<size; i++) {
+                kd_positions[i*3] = toLocalX(self.x[i]);
+                kd_positions[i*3+1] = toLocalY(self.y[i]);
+                kd_positions[i*3+2] = toLocalZ(self.z[i]);
+            }
+
+            var worker_url = root_url;
+            if (worker_url.indexOf('localhost')>1 || worker_url.indexOf('127.0.0.1')>1) {
+                worker_url += "static/js/worker_cluster.js";
+            }
+            else {
+                worker_url = worker_url.replace('bee', 'bee-static');
+                worker_url += "js/worker_cluster.js";
+            }
+            console.log(worker_url);
+            var worker = new Worker(worker_url);
+            worker.postMessage({
+                kd_positions: kd_positions
+            });
+
+            var nClusters = 0;
+            worker.onmessage = function(e) {
+                $('#cluster-message').html(e.data.message);
+                if (!('nodes' in e.data)) return;
+                $('#progressbar').progressbar('value', e.data.percentage);
+                var clustered_positions = [];
+                for (var key in e.data.nodes) {
+                    clustered_positions.push(e.data.nodes[key]);
+                }
+                var size = clustered_positions.length;
+
+                // if (size < 20) return;
+
+                var positions = new Float32Array( size * 3 );
+                for (var i=0; i<size; i++) {
+                  positions[i*3]   = clustered_positions[i][0];
+                  positions[i*3+1] = clustered_positions[i][1];
+                  positions[i*3+2] = clustered_positions[i][2];
+                }
+
+                var theme = $.fn.BEE.user_options['theme'];
+                var color = Math.floor(Math.random() * USER_COLORS[theme].length);
+                var material = new THREE.PointCloudMaterial({
+                  // vertexColors    : true,
+                  color           :  USER_COLORS[theme][color],
+                  size            : 2,
+                  blending        : THREE.NormalBlending,
+                  opacity         : 0.5,
+                  transparent     : true,
+                  depthWrite      : false,
+                  sizeAttenuation : false
+                });
+                var geometry = new THREE.BufferGeometry();
+                geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+                var clusterPointCloud = new THREE.PointCloud(geometry, material);
+                if (!(self.containedIn == null)) {
+                  self.containedIn.add(clusterPointCloud);
+                }
+                self.listOfClusteredPoints[nClusters] = clusterPointCloud;
+                nClusters += 1;
+            };
+
+        },
+
+        cleanUpCluster: function(minPoints) {
+            var self = this;
+            for (var key in self.listOfClusteredPoints) {
+                var cluster = self.listOfClusteredPoints[key];
+                var positions = cluster.geometry.attributes.position.array;
+                if (positions.length < minPoints) {
+                    self.containedIn.remove(cluster);
+                }
+            }
+        },
+
+        clusterAll: function() {
+            var self = this;
+            var totalPoints = self.kd_positions.length /3;
+            var all_nodes = {};
+            for (var i=0; i<totalPoints; i++) {
+                all_nodes[i] = true;
+            }
+
+            var measureStart = new Date().getTime();
+            var percentage = 0.;
+            // setInterval( function(){
+            //     $('#progressbar').progressbar( "value", percentage );
+            //     console.log(percentage);
+            // }, 2000);
+            do {
+                var count = 0;
+                for (var key in all_nodes) {
+                    var position = [
+                        self.kd_positions[key*3],
+                        self.kd_positions[key*3+1],
+                        self.kd_positions[key*3+2]
+                    ]
+                    var clustered_nodes = self.drawCluster(position, 100, 4);
+                    for (var clustered_key in clustered_nodes) {
+                        delete all_nodes[clustered_key];
+                    }
+                    count += 1;
+                    if (count == 1) {
+                        break;
+                    }
+                }
+                percentage = (1 - countKeys(all_nodes)/totalPoints )*100;
+                console.log( percentage+'% done' );
+            } while (percentage<1)
+
+            console.log('TIME cluster', new Date().getTime() - measureStart);
+
+        },
+
+        drawCluster: function(position, maxNodes, maxDistance) {
+            var self = this;
+
+            var clustered_nodes = {};
+            var tobe_clustered_nodes = {};
+            var new_nodes = {};
+            var lastSize = 0;
+
+            var positionsInRange = self.kdtree.nearest(position, maxNodes, maxDistance);
+            var size = positionsInRange.length;
+            for (var i=0; i<size; i++) {
+                var pos = positionsInRange[i][0].obj;
+                // clustered_positions.push(pos);
+
+                var index = positionsInRange[i][0].pos;
+                tobe_clustered_nodes[index] = pos;
+            }
+
+            do {
+                new_nodes = {};
+                for (var key in tobe_clustered_nodes) {
+                    if (key in clustered_nodes) continue;
+                    var positionsInRange = self.kdtree.nearest(tobe_clustered_nodes[key], maxNodes, maxDistance);
+                    var size = positionsInRange.length;
+                    for (var i=0; i<size; i++) {
+                        var pos = positionsInRange[i][0].obj;
+                        var index = positionsInRange[i][0].pos;
+                        new_nodes[index] = pos;
+                    }
+                    clustered_nodes[key] = tobe_clustered_nodes[key];
+                }
+                for (var key in new_nodes) {
+                    if (key in clustered_nodes) {
+                        delete new_nodes[key];
+                    }
+                }
+                tobe_clustered_nodes = new_nodes;
+                // console.log(countKeys(clustered_nodes), countKeys(new_nodes));
+            } while (countKeys(new_nodes)>0);
+
+
+            var clustered_positions = [];
+            for (var key in clustered_nodes) {
+                clustered_positions.push(clustered_nodes[key]);
+            }
+
+
+            // size = clustered_positions.length;
+            // if (size<50) return clustered_nodes;
+
+            // var positions = new Float32Array( size * 3 );
+            // for (var i=0; i<size; i++) {
+            //     positions[i*3] = clustered_positions[i][0];
+            //     positions[i*3+1] = clustered_positions[i][1];
+            //     positions[i*3+2] = clustered_positions[i][2];
+            // }
+
+            // var theme = $.fn.BEE.user_options['theme'];
+            // var color = Math.floor(Math.random() * USER_COLORS[theme].length);
+            // var material = new THREE.PointCloudMaterial({
+            //     // vertexColors    : true,
+            //     color           :  USER_COLORS[theme][color],
+            //     size            : 3,
+            //     blending        : THREE.NormalBlending,
+            //     opacity         : 0.8,
+            //     transparent     : true,
+            //     depthWrite      : false,
+            //     sizeAttenuation : false
+            // });
+            // var geometry = new THREE.BufferGeometry();
+            // geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+            // var clusterPointCloud = new THREE.PointCloud(geometry, material);
+            // if (!(self.containedIn == null)) {
+            //     self.containedIn.add(clusterPointCloud);
+            // }
+            // return clustered_nodes;
         },
 
         drawInsideSlice: function(start, width) {
@@ -1095,6 +1298,7 @@ if ( typeof Object.create !== 'function' ) {
                     transparent: true,
                     depthWrite: true,
                     opacity: $.fn.BEE.user_options.helper.deadAreaOpacity,
+                    side: THREE.DoubleSide,
                     wireframe: false
                 });
 
@@ -1118,8 +1322,14 @@ if ( typeof Object.create !== 'function' ) {
                   // var mergedGeometry = e.data;
                   var mesh = new THREE.Mesh( mergedGeometry, material );
                   self.listOfDeadAreas.push(mesh);
-                  self.scene.add(mesh);
-                  self.isShowDeadArea = true;
+                  if ($.fn.BEE.user_options.helper.deadAreaOpacity>0.05) {
+                    self.scene.add(mesh);
+                    self.isShowDeadArea = true;
+                  }
+                  else {
+                    self.isShowDeadArea = false;
+                  }
+
                 };
                 var geoForWorker = {
                     halfx: $.fn.BEE.user_options.geom.halfx,
@@ -1550,6 +1760,10 @@ if ( typeof Object.create !== 'function' ) {
             $.fn.BEE.ui_sst.$el_container.toggle("slide");
         },
 
+        toggleCluster: function() {
+            $('#cluster').slideToggle();
+        },
+
         updateStatusBar: function() {
             var ctrl = this.guiController;
             // this.el_slice_x.html();
@@ -1906,6 +2120,14 @@ if ( typeof Object.create !== 'function' ) {
             // }
         },
 
+        doCluster: function() {
+            $.fn.BEE.current_sst.doCluster();
+        },
+
+        cleanUpCluster: function() {
+            $.fn.BEE.current_sst.cleanUpCluster(40);
+        },
+
         redrawAllSST: function() {
             var self = this;
             var ctrl = self.guiController;
@@ -1987,10 +2209,10 @@ if ( typeof Object.create !== 'function' ) {
                 // var x = sst.geometry.attributes.position[index*3]; // local coordinates
                 // var y = sst.geometry.attributes.position[index*3+1];
                 // var z = sst.geometry.attributes.position[index*3+2];
-                // console.log(index, x,y,z);
                 var x = sst.geometry.attributes.position.array[index*3]; // local coordinates
                 var y = sst.geometry.attributes.position.array[index*3+1];
                 var z = sst.geometry.attributes.position.array[index*3+2];
+                console.log(index, x,y,z);
 
                 self.el_statusbar.html(
                     '(x, y, z) = ('
@@ -2092,6 +2314,7 @@ if ( typeof Object.create !== 'function' ) {
                 });
             }
             self.addClickEvent($('#toggleSidebar') , self.toggleSidebar);
+            self.addClickEvent($('#toggleCluster') , self.toggleCluster);
             self.addClickEvent($('#preset-default'), clearLocalStorageAndReload);
             self.addClickEvent($('#toggleMC')      , self.toggleMC);
             self.addClickEvent($('#toggleStats')   , self.toggleStats);
@@ -2108,6 +2331,9 @@ if ( typeof Object.create !== 'function' ) {
             self.addClickEvent($('#xzView')        , self.xzView);
             self.addClickEvent($('#xuView')        , self.xuView);
             self.addClickEvent($('#xvView')        , self.xvView);
+            self.addClickEvent($('#btn-cluster')   , self.doCluster);
+            self.addClickEvent($('#btn-cleanUpCluster') , self.cleanUpCluster);
+
             $('#play').on('click', function(e){
                 e.preventDefault();
                 var el = $(this);
@@ -2410,5 +2636,13 @@ if ( typeof Object.create !== 'function' ) {
     function toGlobalX(value) { return value + $.fn.BEE.user_options.geom.center[0]; }
     function toGlobalY(value) { return value + $.fn.BEE.user_options.geom.center[1]; }
     function toGlobalZ(value) { return value + $.fn.BEE.user_options.geom.center[2]; }
+
+    function countKeys (o) {
+        var i = 0;
+        for (var key in o) {
+            i += 1;
+        }
+        return i;
+    }
 
 })( jQuery, window, document );

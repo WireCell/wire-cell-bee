@@ -71,6 +71,7 @@
                 <li><a href="#" id="prevSlice">Prev Slice <span class="hotkey">j</span></a></li>
                 <li role="separator" class="divider"></li>
                 <li><a href="#" id="toggleSidebar">Toggle Sidebar</a></li>
+                <li><a href="#" id="toggleCluster">Toggle Cluster Panel</a></li>
               </ul>
             </li>
 
@@ -95,6 +96,18 @@
         </div>
       </div>
     </nav>
+    <div id="cluster">
+      <button type="button" class="btn btn-primary" aria-label="Left Align" id="btn-cluster">
+        Do Cluster
+      </button>
+      <button type="button" class="btn btn-primary" aria-label="Left Align" id="btn-cleanUpCluster">
+        Clean Up
+      </button>
+      <!-- <input type="text" class="form-control" value="40" aria-describedby="basic-addon1"> -->
+      <div id="progressbar"></div>
+      <div id="cluster-message"></div>
+    </div>
+
 
     <div id="eventinfo">
 
@@ -215,6 +228,7 @@
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="{% static 'js/lib/dat.gui.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/lib/three.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/TypedArrayUtils.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/lib/OrbitControls.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/lib/stats.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/lib/screenfull.min.js' %}"></script>
