@@ -10,6 +10,9 @@ void WireCell2JSON(TString filename, TString option = "truth", TString outfile="
     else if (option == "channel-deadarea") {
         r.DumpDeadArea();
     }
+    else if (option == "op") {
+        r.DumpOp();
+    }
     else {
         r.DumpSpacePoints(option);
     }

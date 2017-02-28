@@ -11,6 +11,8 @@
 #include "TString.h"
 #include "TLorentzVector.h"
 #include "TDatabasePDG.h"
+#include "TClonesArray.h"
+#include "TH1F.h"
 
 using namespace std;
 
@@ -101,6 +103,52 @@ void WCReader::DumpDeadArea()
     jsonFile << "]" << endl;
 }
 
+void WCReader::DumpOp()
+{
+    vector<double> *of_t = new vector<double>;
+    vector<double> *of_peTotal = new vector<double>;
+    TClonesArray *pe_opdet = 0;
+
+    TTree *t = (TTree*)rootFile->Get("T_op");
+    if (t) {
+        t->SetBranchAddress("of_t", &of_t);
+        t->SetBranchAddress("of_peTotal", &of_peTotal);
+        t->SetBranchAddress("pe_opdet", &pe_opdet);
+
+        t->GetEntry(0);
+    }
+
+    jsonFile << "{" << endl;
+
+    jsonFile << fixed << setprecision(2);
+    print_vector(jsonFile, *of_t, "op_t");
+    print_vector(jsonFile, *of_peTotal, "op_peTotal");
+
+    if(pe_opdet) {
+        vector<vector<double> > op_pes;
+
+        int size = of_t->size();
+        for (int i=0; i!=size; i++) {
+            vector<double> tmp;
+            op_pes.push_back(tmp);
+            TH1F *h = (TH1F*)pe_opdet->At(i);
+            int nEntries = h->GetEntries();
+            for (int j=0; j!=nEntries; j++) {
+                double content = h->GetBinContent(j);
+                op_pes[i].push_back(content);
+            }
+        }
+        print_vector_vector(jsonFile, op_pes, "op_pes");
+
+    }
+
+    // always dump runinfo in the end
+    DumpRunInfo();
+
+    jsonFile << "}" << endl;
+
+}
+
 //----------------------------------------------------------------
 void WCReader::DumpSpacePoints(TString option)
 {
@@ -172,18 +220,17 @@ void WCReader::DumpMC()
 {
     TTree *t = (TTree*)rootFile->Get("TMC");
 
-    t->SetBranchAddress("mc_Ntrack"       , &mc_Ntrack);
-    t->SetBranchAddress("mc_id"           , &mc_id);
-    t->SetBranchAddress("mc_pdg"          , &mc_pdg);
-    t->SetBranchAddress("mc_process"      , &mc_process);
-    t->SetBranchAddress("mc_mother"       , &mc_mother);
-    t->SetBranchAddress("mc_daughters"    , &mc_daughters);
-    t->SetBranchAddress("mc_startXYZT"    , &mc_startXYZT);
-    t->SetBranchAddress("mc_endXYZT"      , &mc_endXYZT);
-    t->SetBranchAddress("mc_startMomentum", &mc_startMomentum);
-    t->SetBranchAddress("mc_endMomentum"  , &mc_endMomentum);
-
     if (t) {
+        t->SetBranchAddress("mc_Ntrack"       , &mc_Ntrack);
+        t->SetBranchAddress("mc_id"           , &mc_id);
+        t->SetBranchAddress("mc_pdg"          , &mc_pdg);
+        t->SetBranchAddress("mc_process"      , &mc_process);
+        t->SetBranchAddress("mc_mother"       , &mc_mother);
+        t->SetBranchAddress("mc_daughters"    , &mc_daughters);
+        t->SetBranchAddress("mc_startXYZT"    , &mc_startXYZT);
+        t->SetBranchAddress("mc_endXYZT"      , &mc_endXYZT);
+        t->SetBranchAddress("mc_startMomentum", &mc_startMomentum);
+        t->SetBranchAddress("mc_endMomentum"  , &mc_endMomentum);
         t->GetEntry(0);
         ProcessTracks();
         DumpMCJSON(jsonFile);
@@ -378,6 +425,34 @@ void WCReader::print_vector(ostream& out, vector<double>& v, TString desc, bool 
         if (i!=N-1) {
             out << ",";
         }
+    }
+    out << "]";
+    if (!end) out << ",";
+    out << endl;
+}
+
+void WCReader::print_vector_vector(ostream& out, vector<vector<double> >& vv, TString desc, bool end)
+{
+    int NN = vv.size();
+
+    out << '"' << desc << '"' << ":[";
+    for (int i=0; i!=NN; i++) {
+        out << "[";
+
+        int N = vv[i].size();
+        for (int j=0; j!=N; j++) {
+            double value = vv[i][j];
+            out << value;
+            if (j!=N-1) {
+                out << ",";
+            }
+        }
+
+        out << "]";
+        if (i!=NN-1) {
+            out << ",";
+        }
+
     }
     out << "]";
     if (!end) out << ",";

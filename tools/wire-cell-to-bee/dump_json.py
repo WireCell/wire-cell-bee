@@ -8,6 +8,7 @@ ALIAS = {
     'deblob' : 'rec_charge_cell',
     'mc' : 'mc',
     'deadarea' : 'channel-deadarea',
+    'op' : 'op',
 }
 
 def main(filename, options):
