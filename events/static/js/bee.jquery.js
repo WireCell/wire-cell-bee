@@ -107,7 +107,7 @@ if ( typeof Object.create !== 'function' ) {
         init: function() {
             var self = this;
             self.url = base_url + 'op/';
-            self.driftV = 0.1105; // drift velocity cm/us
+            self.driftV = 0.1101; // drift velocity cm/us
             self.currentFlash = 0;
             self.locations = {};
             self.loadOpLocations();
@@ -400,7 +400,7 @@ if ( typeof Object.create !== 'function' ) {
             }
             for (var i = 0; i < size_reduced; i++) {
                 // if (data.q != undefined && data.q[i]<QTHRESH) continue;
-                self.x[i] = data.x[ indices[i] ] / 0.109 * 0.1105;
+                self.x[i] = data.x[ indices[i] ];
                 self.y[i] = data.y[ indices[i] ];
                 self.z[i] = data.z[ indices[i] ];
                 data.q == undefined
