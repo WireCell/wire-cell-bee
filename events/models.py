@@ -64,6 +64,7 @@ class EventSet(models.Model):
         results = []
         info = self.data_info(eventNo)
         info.pop('mc', None)
+        info.pop('op', None)
         for name in convention.SORTED_RECON_FILES:
             if (name in info):
                 results.append(convention.FILENAME_ALIAS.get(name, name))

@@ -23,6 +23,24 @@ body {
     color: #feffca;
 }
 
+#cluster {
+    position: absolute;
+    top: 100px;
+    right: 350px;
+    width: 200px;
+    padding: 5px;
+    display: none;
+    /*background-color: #ccc*/
+}
+#progressbar {
+    margin-top: 5px;
+    height: 10px;
+}
+#progressbar .ui-progressbar-value {
+    background: #ccc
+}
+
+
 #imgbar {
     position: absolute;
     top: 10px;

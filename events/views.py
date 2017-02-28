@@ -138,6 +138,8 @@ def data(request, set_id, event_id, name):
     filename = eventset.data_dir() + '/' + event_id + '/' + event_id
     if (name == 'mc'):
         filename += "-mc.json"
+    if (name == 'op'):
+        filename += "-op.json"
     elif (name == 'WireCell-charge'):
         filename += "-rec_charge_blob.json"
     elif (name == 'WireCell-simple'):
