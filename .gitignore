@@ -9,3 +9,4 @@ tmp/
 fabfile.py
 wc.json
 media/
+*.root
