@@ -10,3 +10,4 @@ fabfile.py
 wc.json
 media/
 *.root
+Thumbs.db

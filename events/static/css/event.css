@@ -40,6 +40,17 @@ body {
     background: #ccc
 }
 
+#event-info {
+    position: absolute;
+    bottom: 10px;
+    right: 250px;
+    width: 200px;
+}
+
+.invert-color {
+    -webkit-filter: invert(.99);
+    filter: invert(.99);
+}
 
 #imgbar {
     position: absolute;

@@ -395,11 +395,11 @@ if ( typeof Object.create !== 'function' ) {
             self.eventNo = data.eventNo;
 
             var QTHRESH = 0;
-            if (self.name == "truth") {
+            if (self.name == "truth" || self.name == "L1") {
                 QTHRESH = 500;
             }
             for (var i = 0; i < size_reduced; i++) {
-                // if (data.q != undefined && data.q[i]<QTHRESH) continue;
+                if (data.q != undefined && data.q[i]<QTHRESH) continue;
                 self.x[i] = data.x[ indices[i] ];
                 self.y[i] = data.y[ indices[i] ];
                 self.z[i] = data.z[ indices[i] ];
@@ -832,6 +832,7 @@ if ( typeof Object.create !== 'function' ) {
                 'margin-top': 0
             });
 
+            self.setLogo();
         },
 
         initStats: function() {
@@ -1730,6 +1731,17 @@ if ( typeof Object.create !== 'function' ) {
         initObitController: function() {
             var self = this;
             self.orbitController = new THREE.OrbitControls(self.camera, self.renderer.domElement);
+        },
+
+        setLogo: function() {
+            if ($.fn.BEE.user_options.theme == 'light') {
+              $('#event-info').removeClass('invert-color');
+            }
+            if ($.fn.BEE.user_options.geom.name == 'uboone') {
+              var $logo = $('#event-logo');
+              var new_src = $logo.attr('src').replace('dummy', $.fn.BEE.user_options.geom.name);
+              $logo.attr('src', new_src);
+            }
         },
 
         toggleMC: function() {
