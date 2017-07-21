@@ -1635,8 +1635,8 @@ if ( typeof Object.create !== 'function' ) {
                     // }
                     // console.log(self.selected_sst)
                     if (sst.runNo) {
-                        $('#runNo').html(sst.runNo + ' - ');
-                        $('#subRunNo').html(sst.subRunNo + ' - ');
+                        $('#runNo').html(sst.runNo);
+                        // $('#subRunNo').html(sst.subRunNo + ' - ');
                         $('#eventNo').html(sst.eventNo);
                     }
                     // console.log(sst);

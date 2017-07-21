@@ -8,6 +8,11 @@ body {
     overflow: hidden;
 }
 
+.not-active-link {
+   pointer-events: none;
+   cursor: default;
+}
+
 #info {
     position: absolute;
     top: 0px;

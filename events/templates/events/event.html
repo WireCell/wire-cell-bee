@@ -19,7 +19,7 @@
         <div>
           <ul class="nav navbar-nav">
             <li class="active">
-                <a href="{% url 'eventsets' %}"
+                <a class="not-active-link" href="{% url 'eventsets' %}"
                    style="background-color:#5B8F09; padding-left: 8px; border-radius: 0px 0px 10px 0px;">
                    <img src="{% static 'css/bee.png' %}" height="20" width="20" />
                    &nbsp;Bee
@@ -28,19 +28,18 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                  role="button" aria-haspopup="true" aria-expanded="false">
-                 Event
-                 <span id="runNo"></span>
-                 <span id="subRunNo"></span>
-                 <span id="eventNo"></span>
+                 Run <span id="runNo"></span> |
+                 <!-- <span id="subRunNo"></span> -->
+                 Event <span id="eventNo"></span>
                  <span class="caret"></span>
               </a>
               <ul class="dropdown-menu">
               <li><a href="#" id="toggleMC">Show MC <span class="hotkey">m</span></a></li>
               <li><a href="#" id="toggleCharge">Toggle Charge <span class="hotkey">q</span></a></li>
-                <li role="separator" class="divider"></li>
+<!--                 <li role="separator" class="divider"></li>
                 <li><a href="{% url 'event_list' set_id %}">
                   Go to Event List ...
-                </a></li>
+                </a></li> -->
               </ul>
             </li>
 
