@@ -144,7 +144,7 @@ if ( typeof Object.create !== 'function' ) {
                    22: [0.949, -0.829 , 242.014],
                    28: [0.658, -0.303 , 173.743],
                    25: [0.703, 55.249 , 128.355],
-                   30: [0.821,1-56.203, 128.179],
+                   30: [0.821, -56.203, 128.179],
                    31: [0.862, -56.615, 87.8695],
                    26: [0.558, 55.249 , 87.7605],
                    27: [0.665, 27.431 , 51.1015],
@@ -380,36 +380,40 @@ if ( typeof Object.create !== 'function' ) {
             var self = this;
             var size = data.x.length; // all data must have x
             var indices = [];
+            var QTHRESH = 0;
+            if (self.name == "truth" || self.name == "L1") {
+                QTHRESH = 500;
+            }
             for (var i = 0; i < size; i++) {
                 if (data.q != undefined && data.q[i]<QTHRESH) continue;
                 indices.push(i);
             }
             var size_reduced = indices.length;
+            // console.log(size_reduced, size)
             self.x = new Float32Array(size_reduced);
             self.y = new Float32Array(size_reduced);
             self.z = new Float32Array(size_reduced);
             self.q = new Float32Array(size_reduced);
+            self.cluster_id = new Float32Array(size_reduced);
             // self.nq = [];
             self.runNo = data.runNo;
             self.subRunNo = data.subRunNo;
             self.eventNo = data.eventNo;
 
-            var QTHRESH = 0;
-            if (self.name == "truth" || self.name == "L1") {
-                QTHRESH = 500;
-            }
             for (var i = 0; i < size_reduced; i++) {
-                if (data.q != undefined && data.q[i]<QTHRESH) continue;
+                // if (data.q != undefined && data.q[i]<QTHRESH) continue;
                 self.x[i] = data.x[ indices[i] ];
                 self.y[i] = data.y[ indices[i] ];
                 self.z[i] = data.z[ indices[i] ];
                 data.q == undefined
                     && (self.q[i] = 0)
                     || (self.q[i] = data.q[ indices[i] ]);
-                // data.nq == undefined
-                //     && self.nq.push(1)
-                //     || self.nq.push(data.nq[i]);
+                data.cluster_id == undefined
+                    && (self.cluster_id[i] = 0)
+                    || (self.cluster_id[i] = data.cluster_id[ indices[i] ]);
             }
+            self.nCluster = getMaxOfArray(self.cluster_id);
+            // console.log(self.nCluster);
         },
 
         initPointCloud: function() {
@@ -696,7 +700,12 @@ if ( typeof Object.create !== 'function' ) {
                 positions[i*3+2] = toLocalZ(self.z[ind]);
                 // add color
                 var color = new THREE.Color();
-                if ($.fn.BEE.user_options.material.showCharge) {
+                if ($.fn.BEE.user_options.material.showCluster) {
+                    var theme = $.fn.BEE.user_options['theme'];
+                    var color_id = Math.floor(self.cluster_id[ind] % USER_COLORS[theme].length);
+                    color = new THREE.Color(USER_COLORS[theme][color_id])
+                }
+                else if ($.fn.BEE.user_options.material.showCharge) {
                     var scale = self.options.material.colorScale;
                     color.setHSL(getColorAtScalar(self.q[ind], Math.pow(scale,2)*14000*2/3), 1, 0.5);
                     if ( self.name.indexOf('gray')>-1 ) {
@@ -989,6 +998,11 @@ if ( typeof Object.create !== 'function' ) {
 
                 });
             folder_general.add(self, 'toggleOp').name('Toggle Flash');
+            folder_general.add($.fn.BEE.user_options.material, "showCluster")
+                .name("Show Cluster")
+                .onChange(function(value) {
+                    self.redrawAllSST();
+                });
             folder_general.open();
         },
 
@@ -2507,7 +2521,8 @@ if ( typeof Object.create !== 'function' ) {
         material : {
             colorScale: 1.0,
             opacity : 0.2,
-            showCharge : true
+            showCharge : true,
+            showCluster : true
         },
         sst : [
             // "WireCell-charge",

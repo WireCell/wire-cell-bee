@@ -4,7 +4,7 @@
 python dump_json.py [filename] [alg1 alg2 ...]
 ```
 
-The currently available Wire-Cell algorithms are `simple`, `charge`, `true`, `deblob`, `deadarea` and `op`.
+The currently available Wire-Cell algorithms are `simple`, `charge`, `true`, `deblob`, `deadarea`, `op` and `cluster`.
 In the end, a `to_upload.zip` file is created and can be drag-to-upload to [BEE](http://www.phy.bnl.gov/wire-cell/bee/)
 
 Some notes:
