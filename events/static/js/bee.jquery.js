@@ -405,12 +405,18 @@ if ( typeof Object.create !== 'function' ) {
                 self.x[i] = data.x[ indices[i] ];
                 self.y[i] = data.y[ indices[i] ];
                 self.z[i] = data.z[ indices[i] ];
-                data.q == undefined
-                    && (self.q[i] = 0)
-                    || (self.q[i] = data.q[ indices[i] ]);
-                data.cluster_id == undefined
-                    && (self.cluster_id[i] = 0)
-                    || (self.cluster_id[i] = data.cluster_id[ indices[i] ]);
+                if (data.q == undefined) {
+                    self.q[i] = 0;
+                }
+                else {
+                    self.q[i] = data.q[ indices[i] ];
+                }
+                if (data.cluster_id == undefined) {
+                    self.cluster_id[i] = 0;
+                }
+                else {
+                    self.cluster_id[i] = data.cluster_id[ indices[i] ];
+                }
             }
             self.nCluster = getMaxOfArray(self.cluster_id);
             // console.log(self.nCluster);
@@ -652,33 +658,6 @@ if ( typeof Object.create !== 'function' ) {
                 self.containedIn.remove(self.pointCloud);
             }
 
-            // self.geometry = new THREE.Geometry();
-
-            // for (var i=0; i<size; i++) {
-            //     var x = toLocalX(self.x[i]);
-            //     var y = toLocalY(self.y[i]);
-            //     var z = toLocalZ(self.z[i]);
-            //     if (x  < start || x > start+width) {
-            //         continue;
-            //     }
-            //     self.geometry.vertices.push(new THREE.Vector3(x, y, z));
-            //     // if (self.geometry.vertices.length==10) break;
-            //     var color = new THREE.Color();
-            //     if ($.fn.BEE.user_options.material.showCharge) {
-            //         var scale = self.options.material.colorScale;
-            //         color.setHSL(getColorAtScalar(self.q[i], Math.pow(scale,2)*14000*2/3), 1, 0.5);
-            //         if ( self.name.indexOf('gray')>-1 ) {
-            //             var gray = (color.r + color.g + color.b) / 3;
-            //             color.setRGB(gray, gray, gray);
-            //         }
-
-            //     }
-            //     else {
-            //         color = self.chargeColor;
-            //     }
-            //     self.geometry.colors.push(color);
-            // }
-
             var indices  = [];
             for (var i=0; i<size; i++) {
                 var x = toLocalX(self.x[i]);
@@ -692,6 +671,8 @@ if ( typeof Object.create !== 'function' ) {
             var size_show = indices.length;
             var positions = new Float32Array( size_show * 3 );
             var colors = new Float32Array( size_show * 3 );
+
+            // var ran = Math.floor(Math.random()*5);
             for (var i=0; i<size_show; i++) {
                 var ind = indices[i];
                 // add position
@@ -702,8 +683,8 @@ if ( typeof Object.create !== 'function' ) {
                 var color = new THREE.Color();
                 if ($.fn.BEE.user_options.material.showCluster) {
                     var theme = $.fn.BEE.user_options['theme'];
-                    var color_id = Math.floor(self.cluster_id[ind] % USER_COLORS[theme].length);
-                    color = new THREE.Color(USER_COLORS[theme][color_id])
+                    var color_id = Math.floor( self.cluster_id[ind] % (USER_COLORS[theme].length) );
+                    color = new THREE.Color(USER_COLORS[theme][color_id]);
                 }
                 else if ($.fn.BEE.user_options.material.showCharge) {
                     var scale = self.options.material.colorScale;
@@ -2522,7 +2503,7 @@ if ( typeof Object.create !== 'function' ) {
             colorScale: 1.0,
             opacity : 0.2,
             showCharge : true,
-            showCluster : true
+            showCluster : false
         },
         sst : [
             // "WireCell-charge",
