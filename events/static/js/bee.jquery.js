@@ -1112,7 +1112,8 @@ if ( typeof Object.create !== 'function' ) {
 
             if ($.fn.BEE.user_options.geom.name == "uboone") {
                 self.tpcLoc = [
-                    [0., 256., -116., 116., 0., 1040.]
+                    // [0., 256., -116., 116., 0., 1040.]
+                    [0., 256., -115.51, 117.45, 0., 1036.96]
                 ];
                 $.fn.BEE.user_options.geom.halfx = (self.tpcLoc[0][1]-self.tpcLoc[0][0])/2;
                 $.fn.BEE.user_options.geom.halfy = (self.tpcLoc[0][3]-self.tpcLoc[0][2])/2;
