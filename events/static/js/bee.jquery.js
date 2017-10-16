@@ -698,7 +698,7 @@ if ( typeof Object.create !== 'function' ) {
             var positions = new Float32Array( size_show * 3 );
             var colors = new Float32Array( size_show * 3 );
 
-            // var ran = Math.floor(Math.random()*5);
+            var ran = Math.floor(Math.random()*5);
             for (var i=0; i<size_show; i++) {
                 var ind = indices[i];
                 // add position
@@ -709,33 +709,8 @@ if ( typeof Object.create !== 'function' ) {
                 var color = new THREE.Color();
                 if ($.fn.BEE.user_options.material.showCluster) {
                     var theme = $.fn.BEE.user_options['theme'];
-                    var color_id = Math.floor( self.cluster_id[ind] % (USER_COLORS[theme].length) );
+                    var color_id = Math.floor( self.cluster_id[ind] % (USER_COLORS[theme].length-ran) );
                     color = new THREE.Color(USER_COLORS[theme][color_id]);
-
-                    // for (var id in self.clusterInfo) {
-                    //     var material = new THREE.LineBasicMaterial({
-                    //         color: color
-                    //     });
-                    //     var geo =  new THREE.TextBufferGeometry('test', {
-                    //         // font: font,
-                    //         size: 5,
-                    //         height: 3,
-                    //         curveSegments: 4,
-                    //         bevelThickness: 2,
-                    //         bevelSize: 1.5,
-                    //         bevelEnabled: true,
-                    //         material: 0,
-                    //         extrudeMaterial: 1
-                    //     });
-                    //     var text = new THREE.Mesh( geo, material );
-                    //     text.position.x = self.clusterInfo[id].x_mean;
-                    //     text.position.y = self.clusterInfo[id].y_mean;
-                    //     text.position.z = self.clusterInfo[id].z_mean;
-                    //     // self.listOfMCObjects.push(line);
-                    //     if (!(self.containedIn == null)) {
-                    //         self.containedIn.add(text);
-                    //     }
-                    // }
                 }
                 else if ($.fn.BEE.user_options.material.showCharge) {
                     var scale = self.options.material.colorScale;
@@ -767,6 +742,7 @@ if ( typeof Object.create !== 'function' ) {
             if (!(self.containedIn == null)) {
                 self.containedIn.add(self.pointCloud);
             }
+
         },
 
         drawInsideThreeFrames: function() {
@@ -2451,6 +2427,7 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent('}', self.maximizeOpacity);
             self.addKeyEvent('<', self.prevOp);
             self.addKeyEvent('>', self.nextOp);
+            self.addKeyEvent('shift+r', self.redrawAllSST);
 
             Mousetrap.bindGlobal('esc', function(){
                 // console.log($('input'));
