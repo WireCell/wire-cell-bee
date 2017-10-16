@@ -153,7 +153,7 @@ void WCReader::DumpOp()
 void WCReader::DumpSpacePoints(TString option)
 {
     double x=0, y=0, z=0, q=0, nq=1;
-    int cluster_id=1;
+    int cluster_id=0;
     vector<double> vx, vy, vz, vq, vnq, vcluster_id;
     TTree * t = 0;
 

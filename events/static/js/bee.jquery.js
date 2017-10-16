@@ -399,6 +399,7 @@ if ( typeof Object.create !== 'function' ) {
             self.runNo = data.runNo;
             self.subRunNo = data.subRunNo;
             self.eventNo = data.eventNo;
+            self.clusterInfo = {};
 
             for (var i = 0; i < size_reduced; i++) {
                 // if (data.q != undefined && data.q[i]<QTHRESH) continue;
@@ -411,15 +412,40 @@ if ( typeof Object.create !== 'function' ) {
                 else {
                     self.q[i] = data.q[ indices[i] ];
                 }
+
                 if (data.cluster_id == undefined) {
                     self.cluster_id[i] = 0;
                 }
                 else {
                     self.cluster_id[i] = data.cluster_id[ indices[i] ];
                 }
+
+                var thisCluster = self.cluster_id[i];
+                if (!(thisCluster in self.clusterInfo)) {
+                    self.clusterInfo[thisCluster] = {
+                        'x_mean': 0,
+                        'y_mean': 0,
+                        'z_mean': 0,
+                        'n': 0
+                    };
+                }
+                else {
+                    self.clusterInfo[thisCluster].x_mean += self.x[i];
+                    self.clusterInfo[thisCluster].y_mean += self.y[i];
+                    self.clusterInfo[thisCluster].z_mean += self.z[i];
+                    self.clusterInfo[thisCluster].n += 1;
+                }
             }
-            self.nCluster = getMaxOfArray(self.cluster_id);
-            // console.log(self.nCluster);
+            self.nCluster = 0;
+            for (var id in self.clusterInfo) {
+                // console.log(attr)
+                self.nCluster += 1;
+                self.clusterInfo[id].x_mean /= self.clusterInfo[id].n;
+                self.clusterInfo[id].y_mean /= self.clusterInfo[id].n;
+                self.clusterInfo[id].z_mean /= self.clusterInfo[id].n;
+            }
+            // console.log(self.cluster_id);
+            // console.log(self.clusterInfo, self.nCluster);
         },
 
         initPointCloud: function() {
@@ -685,6 +711,31 @@ if ( typeof Object.create !== 'function' ) {
                     var theme = $.fn.BEE.user_options['theme'];
                     var color_id = Math.floor( self.cluster_id[ind] % (USER_COLORS[theme].length) );
                     color = new THREE.Color(USER_COLORS[theme][color_id]);
+
+                    // for (var id in self.clusterInfo) {
+                    //     var material = new THREE.LineBasicMaterial({
+                    //         color: color
+                    //     });
+                    //     var geo =  new THREE.TextBufferGeometry('test', {
+                    //         // font: font,
+                    //         size: 5,
+                    //         height: 3,
+                    //         curveSegments: 4,
+                    //         bevelThickness: 2,
+                    //         bevelSize: 1.5,
+                    //         bevelEnabled: true,
+                    //         material: 0,
+                    //         extrudeMaterial: 1
+                    //     });
+                    //     var text = new THREE.Mesh( geo, material );
+                    //     text.position.x = self.clusterInfo[id].x_mean;
+                    //     text.position.y = self.clusterInfo[id].y_mean;
+                    //     text.position.z = self.clusterInfo[id].z_mean;
+                    //     // self.listOfMCObjects.push(line);
+                    //     if (!(self.containedIn == null)) {
+                    //         self.containedIn.add(text);
+                    //     }
+                    // }
                 }
                 else if ($.fn.BEE.user_options.material.showCharge) {
                     var scale = self.options.material.colorScale;
