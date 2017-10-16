@@ -452,7 +452,7 @@ if ( typeof Object.create !== 'function' ) {
             var self = this;
             var size = self.x.length;
 
-            self.material = new THREE.PointCloudMaterial({
+            self.material = new THREE.PointsMaterial({
                 vertexColors    : true,
                 size            : 2,
                 blending        : THREE.NormalBlending,
@@ -526,7 +526,7 @@ if ( typeof Object.create !== 'function' ) {
 
                 var theme = $.fn.BEE.user_options['theme'];
                 var color = Math.floor(Math.random() * USER_COLORS[theme].length);
-                var material = new THREE.PointCloudMaterial({
+                var material = new THREE.PointsMaterial({
                   // vertexColors    : true,
                   color           :  USER_COLORS[theme][color],
                   size            : 2,
@@ -538,7 +538,7 @@ if ( typeof Object.create !== 'function' ) {
                 });
                 var geometry = new THREE.BufferGeometry();
                 geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-                var clusterPointCloud = new THREE.PointCloud(geometry, material);
+                var clusterPointCloud = new THREE.Points(geometry, material);
                 if (!(self.containedIn == null)) {
                   self.containedIn.add(clusterPointCloud);
                 }
@@ -657,7 +657,7 @@ if ( typeof Object.create !== 'function' ) {
 
             // var theme = $.fn.BEE.user_options['theme'];
             // var color = Math.floor(Math.random() * USER_COLORS[theme].length);
-            // var material = new THREE.PointCloudMaterial({
+            // var material = new THREE.PointsMaterial({
             //     // vertexColors    : true,
             //     color           :  USER_COLORS[theme][color],
             //     size            : 3,
@@ -669,7 +669,7 @@ if ( typeof Object.create !== 'function' ) {
             // });
             // var geometry = new THREE.BufferGeometry();
             // geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-            // var clusterPointCloud = new THREE.PointCloud(geometry, material);
+            // var clusterPointCloud = new THREE.Points(geometry, material);
             // if (!(self.containedIn == null)) {
             //     self.containedIn.add(clusterPointCloud);
             // }
@@ -762,7 +762,7 @@ if ( typeof Object.create !== 'function' ) {
             self.geometry.attributes.position.needsUpdate = true;
             self.geometry.attributes.color.needsUpdate = true;
 
-            self.pointCloud = new THREE.PointCloud(self.geometry, self.material);
+            self.pointCloud = new THREE.Points(self.geometry, self.material);
 
             if (!(self.containedIn == null)) {
                 self.containedIn.add(self.pointCloud);
@@ -1491,8 +1491,8 @@ if ( typeof Object.create !== 'function' ) {
                             blending: THREE.NormalBlending,
                             opacity: 0.8,
                             transparent: true,
-                            depthWrite: false,
-                            sizeAttenuation: false
+                            depthWrite: false
+                            // sizeAttenuation: false
                         });
                         var sphere = new THREE.Mesh( geometry2, material2 );
                         sphere.overdraw = true;
@@ -1568,8 +1568,8 @@ if ( typeof Object.create !== 'function' ) {
                         color: 0xff0000,
                         opacity: 0.5,
                         transparent: true,
-                        depthWrite: false,
-                        sizeAttenuation: false
+                        depthWrite: false
+                        // sizeAttenuation: false
                     });
                     self.autoVtxSphere = new THREE.Mesh( geometry2, material2 );
                     self.autoVtxSphere.overdraw = true;
@@ -2249,7 +2249,7 @@ if ( typeof Object.create !== 'function' ) {
             mouse.y = -( event.clientY / window.innerHeight  ) * 2 + 1;
 
             var raycaster = new THREE.Raycaster();
-            raycaster.params.PointCloud.threshold = 0.3;
+            raycaster.params.Points.threshold = 0.3;
             raycaster.setFromCamera( mouse, self.camera );
 
             // var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(self.camera);
@@ -2293,7 +2293,7 @@ if ( typeof Object.create !== 'function' ) {
 
             var raycaster = new THREE.Raycaster();
 
-            raycaster.params.PointCloud.threshold = 0.3;  // 1cm
+            raycaster.params.Points.threshold = 0.3;  // 1cm
             raycaster.setFromCamera( mouse, self.camera );
 
             // var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(self.camera);
@@ -2321,8 +2321,8 @@ if ( typeof Object.create !== 'function' ) {
                     blending: THREE.NormalBlending,
                     opacity: 0.4,
                     transparent: true,
-                    depthWrite: false,
-                    sizeAttenuation: false
+                    depthWrite: false
+                    // sizeAttenuation: false
                 });
                 self.rotationCenter = new THREE.Mesh( geometry2, material2 );
                 self.rotationCenter.overdraw = true;
