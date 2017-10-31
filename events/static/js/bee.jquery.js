@@ -709,7 +709,8 @@ if ( typeof Object.create !== 'function' ) {
                 var color = new THREE.Color();
                 if ($.fn.BEE.user_options.material.showCluster) {
                     var theme = $.fn.BEE.user_options['theme'];
-                    var color_id = Math.floor( self.cluster_id[ind] % (USER_COLORS[theme].length-ran) );
+                    var length = USER_COLORS[theme].length;
+                    var color_id = Math.floor( (self.cluster_id[ind]+length) % (length-ran) );
                     color = new THREE.Color(USER_COLORS[theme][color_id]);
                 }
                 else if ($.fn.BEE.user_options.material.showCharge) {
