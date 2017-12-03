@@ -491,8 +491,12 @@ if ( typeof Object.create !== 'function' ) {
             }
 
             var worker_url = root_url;
-            if (worker_url.indexOf('localhost')>1 || worker_url.indexOf('127.0.0.1')>1) {
+            if (worker_url.indexOf('localhost')>1
+                || worker_url.indexOf('127.0.0.1')>1) {
                 worker_url += "static/js/worker_cluster.js";
+            }
+            else if (worker_url.indexOf('twister')>1) {
+                worker_url = worker_url.replace('bee/', 'static/js/worker_cluster.js');
             }
             else {
                 worker_url = worker_url.replace('bee', 'bee-static');
@@ -1328,8 +1332,12 @@ if ( typeof Object.create !== 'function' ) {
                 });
 
                 var worker_url = root_url;
-                if (worker_url.indexOf('localhost')>1 || worker_url.indexOf('127.0.0.1')>1) {
+                if (worker_url.indexOf('localhost')>1
+                    || worker_url.indexOf('127.0.0.1')>1) {
                     worker_url += "static/js/worker_deadarea.js";
+                }
+                else if (worker_url.indexOf('twister')>1) {
+                    worker_url = worker_url.replace('bee/', 'static/js/worker_deadarea.js');
                 }
                 else {
                     worker_url = worker_url.replace('bee', 'bee-static');

@@ -14,13 +14,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 import socket
 HOST_NAME = socket.gethostname()
-SITE_LOCAL = SITE_BNL = False
+SITE_LOCAL = SITE_BNL = SITE_TWISTER = False
 DATA_DIR = 'nothing'
 if HOST_NAME.startswith('lycastus'):
     SITE_BNL = True
     DATA_DIR = '../../public_html/examples'
     DEBUG = False
     ALLOWED_HOSTS = ['phy.bnl.gov', 'lycastus.phy.bnl.gov']
+elif HOST_NAME.startswith('twister'):
+    SITE_TWISTER = True
+    DEBUG = True
+    DATA_DIR = '../../public_html/examples'
 else:
     SITE_LOCAL = True
     DATA_DIR = '../wire-cell'
@@ -92,6 +96,8 @@ if SITE_LOCAL:
     STATIC_URL = '/static/'
 elif SITE_BNL:
     STATIC_URL = 'http://www.phy.bnl.gov/wire-cell/bee-static/'
+elif SITE_TWISTER:
+    STATIC_URL = '/twister/static/'
 
 # STATICFILES_DIRS = (
 #     os.path.join(BASE_DIR, "static"),
@@ -101,7 +107,7 @@ elif SITE_BNL:
 # path to store uploaded filels
 if SITE_LOCAL:
     MEDIA_ROOT = BASE_DIR + '/tmp/'
-elif SITE_BNL:
+else:
     MEDIA_ROOT = conf.get('common', 'MEDIA_ROOT')
 
 SITE_ID = 1
