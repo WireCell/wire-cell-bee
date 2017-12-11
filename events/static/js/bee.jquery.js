@@ -2436,7 +2436,7 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent('}', self.maximizeOpacity);
             self.addKeyEvent('<', self.prevOp);
             self.addKeyEvent('>', self.nextOp);
-            self.addKeyEvent('shift+r', self.redrawAllSST);
+            self.addKeyEvent('o', self.redrawAllSST);
 
             Mousetrap.bindGlobal('esc', function(){
                 // console.log($('input'));
