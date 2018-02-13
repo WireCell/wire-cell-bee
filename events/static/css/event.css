@@ -115,6 +115,10 @@ body {
 /*right:50%;*/
 /*outline: none;*/
 }
+
+#cmdModal td:nth-child(2) {color: #c20078;}
+#cmdModal td:nth-child(4) {color: #c20078;}
+
 /*a {color: #82beb7;}*/
 .function {font-weight: bold;}
 .key {color: orange; font-weight: bold;}

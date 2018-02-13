@@ -95,7 +95,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, '../bee-static')
 if SITE_LOCAL:
     STATIC_URL = '/static/'
 elif SITE_BNL:
-    STATIC_URL = 'http://www.phy.bnl.gov/wire-cell/bee-static/'
+    # STATIC_URL = 'http://www.phy.bnl.gov/wire-cell/bee-static/'
+    STATIC_URL = '/wire-cell/bee-static/'
 elif SITE_TWISTER:
     STATIC_URL = '/twister/static/'
 

@@ -908,19 +908,19 @@ if ( typeof Object.create !== 'function' ) {
                     window.location.assign(event_url + value + '/' + base_query);
                 });
 
-            folder_general.add(ctrl, 'display', self.options.sst)
-               .name("Display")
-               .onChange(function(value) {
-                    var ssts = self.listOfSST;
-                    var sst;
-                    for (var name in ssts) {
-                        sst = ssts[name];
-                        if (name == value) sst.material.opacity = self.options.material.opacity;
-                        else sst.material.opacity = 0;
-                        sst.material.needsUpdate = true;
-                        checkSST(sst);
-                    }
-               });
+            // folder_general.add(ctrl, 'display', self.options.sst)
+            //    .name("Display")
+            //    .onChange(function(value) {
+            //         var ssts = self.listOfSST;
+            //         var sst;
+            //         for (var name in ssts) {
+            //             sst = ssts[name];
+            //             if (name == value) sst.material.opacity = self.options.material.opacity;
+            //             else sst.material.opacity = 0;
+            //             sst.material.needsUpdate = true;
+            //             checkSST(sst);
+            //         }
+            //    });
 
             folder_general.add($.fn.BEE.user_options, 'theme', ['dark', 'light'])
                .name("Theme")
