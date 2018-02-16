@@ -294,11 +294,11 @@ if ( typeof Object.create !== 'function' ) {
             }
 
             if ($.fn.BEE.options.flash.matchTiming) {
-                $.fn.BEE.current_sst.drawInsideSlice(boxhelper.position.x-halfx, boxhelper.position.x+halfx);
+                $.fn.BEE.current_sst.drawInsideSlice(boxhelper.position.x-halfx, 2*halfx);
             }
-            // else {
-            //     $.fn.BEE.current_sst.drawInsideThreeFrames();
-            // }
+            else {
+                $.fn.BEE.current_sst.drawInsideThreeFrames();
+            }
 
             $.fn.BEE.scene3D.scene.add( self.group_op );
 
@@ -706,7 +706,7 @@ if ( typeof Object.create !== 'function' ) {
             // return clustered_nodes;
         },
 
-        drawInsideSlice: function(start, width) {
+        drawInsideSlice: function(start, width, randomClusterColor=false) {
             var self = this;
             var size = self.x.length;
 
@@ -729,6 +729,7 @@ if ( typeof Object.create !== 'function' ) {
             var colors = new Float32Array( size_show * 3 );
 
             var ran = Math.floor(Math.random()*5);
+            if (!randomClusterColor) {ran = 0;}
             for (var i=0; i<size_show; i++) {
                 var ind = indices[i];
                 // add position
@@ -776,8 +777,8 @@ if ( typeof Object.create !== 'function' ) {
 
         },
 
-        drawInsideThreeFrames: function() {
-            this.drawInsideSlice(-3*this.options.geom.halfx, this.options.geom.halfx*6);
+        drawInsideThreeFrames: function(randomClusterColor=false) {
+            this.drawInsideSlice(-3*this.options.geom.halfx, this.options.geom.halfx*6, randomClusterColor);
         },
 
         drawInsideBeamFrame: function() {
@@ -2246,6 +2247,21 @@ if ( typeof Object.create !== 'function' ) {
             }
         },
 
+        redrawAllSSTRandom: function() {
+            var self = this;
+            var ctrl = self.guiController;
+            var sst;
+            for (var name in self.listOfSST) {
+                sst = self.listOfSST[name];
+                if(self.guiController.slice.sliced_mode) {
+                    sst.drawInsideSlice(ctrl.slice.position-ctrl.slice.width/2, ctrl.slice.width);
+                }
+                else {
+                    sst.drawInsideThreeFrames(true);
+                }
+            }
+        },
+
         toggleCharge: function() {
             var self = this;
             $.fn.BEE.user_options.material.showCharge = !($.fn.BEE.user_options.material.showCharge);
@@ -2495,7 +2511,7 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent('}', self.maximizeOpacity);
             self.addKeyEvent('<', self.prevOp);
             self.addKeyEvent('>', self.nextOp);
-            self.addKeyEvent('o', self.redrawAllSST);
+            self.addKeyEvent('o', self.redrawAllSSTRandom);
 
             Mousetrap.bindGlobal('esc', function(){
                 // console.log($('input'));
