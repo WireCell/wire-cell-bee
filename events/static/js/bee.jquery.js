@@ -251,6 +251,16 @@ if ( typeof Object.create !== 'function' ) {
                 circle.position.y = toLocalY(self.locations[i][1]);
                 circle.position.z = toLocalZ(self.locations[i][2]);
                 self.group_op.add(circle);
+
+                if ($.fn.BEE.options.flash.showPMTClone) {
+                    // console.log('hah', $.fn.BEE.options.flash.showPMTClone)
+                    var circle2 =circle.clone();
+                    circle2.rotation.x = Math.PI / 2;
+                    circle2.rotation.y = 0;
+                    circle2.position.x = boxhelper.position.x + toLocalY(self.locations[i][1]);
+                    circle2.position.y = boxhelper.position.y + $.fn.BEE.user_options.geom.halfy;
+                    self.group_op.add(circle2);
+                }
             }
 
             for (var i=0; i<32; i++) {
@@ -272,7 +282,23 @@ if ( typeof Object.create !== 'function' ) {
                 circle.position.y = toLocalY(self.locations[i][1]);
                 circle.position.z = toLocalZ(self.locations[i][2]);
                 self.group_op.add(circle);
+
+                if ($.fn.BEE.options.flash.showPMTClone) {
+                    var circle2 =circle.clone();
+                    circle2.rotation.x = Math.PI / 2;
+                    circle2.rotation.y = 0;
+                    circle2.position.x = boxhelper.position.x + toLocalY(self.locations[i][1]);
+                    circle2.position.y = boxhelper.position.y + $.fn.BEE.user_options.geom.halfy;
+                    self.group_op.add(circle2);
+                }
             }
+
+            if ($.fn.BEE.options.flash.matchTiming) {
+                $.fn.BEE.current_sst.drawInsideSlice(boxhelper.position.x-halfx, boxhelper.position.x+halfx);
+            }
+            // else {
+            //     $.fn.BEE.current_sst.drawInsideThreeFrames();
+            // }
 
             $.fn.BEE.scene3D.scene.add( self.group_op );
 
@@ -895,10 +921,12 @@ if ( typeof Object.create !== 'function' ) {
             var ctrl = self.guiController;
 
             var folder_general = self.gui.addFolder("General");
+            var folder_flash = self.gui.addFolder("Flash");
             var folder_recon = self.gui.addFolder("Recon");
             // console.log(self.gui.__folders.Recon)
             var options = {
-                'id' : $.fn.BEE.user_options.id
+                'id' : $.fn.BEE.user_options.id,
+                'flash_id': 0
             };
             folder_general.add(options, 'id', 0, $.fn.BEE.user_options.nEvents-1)
                 .name("Event").step(1)
@@ -1010,13 +1038,43 @@ if ( typeof Object.create !== 'function' ) {
                     }
 
                 });
-            folder_general.add(self, 'toggleOp').name('Toggle Flash');
+            // folder_general.add(self, 'toggleOp').name('Toggle Flash');
+
             folder_general.add($.fn.BEE.user_options.material, "showCluster")
                 .name("Show Cluster")
                 .onChange(function(value) {
                     self.redrawAllSST();
                 });
             folder_general.open();
+
+            folder_flash.add($.fn.BEE.user_options.flash, "showFlash")
+                .name("Show Flash")
+                .onChange(function(value) {
+                    self.toggleOp();
+                });
+            folder_flash.add($.fn.BEE.user_options.flash, "showPMTClone")
+                .name("Show PMT Clone")
+                .onChange(function(value) {
+                    $.fn.BEE.options.flash.showPMTClone = value;
+                    self.drawOp();
+                });
+            folder_flash.add($.fn.BEE.user_options.flash, "matchTiming")
+                .name("Match Timing")
+                .onChange(function(value) {
+                    $.fn.BEE.options.flash.matchTiming = value;
+                    self.drawOp();
+                });
+            folder_flash.add(options, 'flash_id', 0, 200)
+                .name("Flash ID").step(1)
+                .onFinishChange(function(value) {
+                    var nFlash = self.op.t.length;
+                    if (value<nFlash) {
+                        self.op.currentFlash = value;
+                        self.drawOp();
+                    }
+                    // console.log($.fn.BEE.user_options.id, value);
+                    // if (value == $.fn.BEE.user_options.id) { return; }
+                });
         },
 
         initGuiCamera: function() {
@@ -1853,6 +1911,7 @@ if ( typeof Object.create !== 'function' ) {
         },
 
         toggleOp: function() { this.op.toggle(); },
+        drawOp: function() { this.op.draw(); },
         nextOp: function() { this.op.next(); },
         prevOp: function() { this.op.prev(); },
 
@@ -2517,6 +2576,11 @@ if ( typeof Object.create !== 'function' ) {
             showAxises : false,
             deadAreaOpacity : 0.0,
             showFlash: false
+        },
+        flash    : {
+            showFlash: false,
+            showPMTClone: false,
+            matchTiming: false
         },
         geom     : {
             name  : 'uboone',
