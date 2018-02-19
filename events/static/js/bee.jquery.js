@@ -160,6 +160,8 @@ if ( typeof Object.create !== 'function' ) {
                 self.t = data.op_t;
                 self.peTotal = data.op_peTotal;
                 self.pes = data.op_pes;
+                self.cluster_ids = data.op_cluster_ids;
+                self.pes_pred = data.op_pes_pred;
             })
             .fail(function(){
                 console.log("load " + self.url + " failed");
@@ -264,33 +266,61 @@ if ( typeof Object.create !== 'function' ) {
             }
 
             for (var i=0; i<32; i++) {
-                if (pes[i] < 0.01 ) continue;
-                var radius = Math.sqrt(pes[i]);
-                var segments = 32; //<-- Increase or decrease for more resolution I guess
+                if (pes[i] > 0.01 ) {
+                    var radius = Math.sqrt(pes[i]);
+                    var segments = 32; //<-- Increase or decrease for more resolution I guess
 
-                var circleGeometry = new THREE.CircleGeometry( radius, segments );
-                var circle = new THREE.Mesh(circleGeometry, new THREE.MeshBasicMaterial({
-                    color: 0xff0000,
-                    opacity: 0.2,
-                    side: THREE.DoubleSide
-                    // depthWrite: false
-                    // wireframe: true
-                }));
-                // console.log(self.locations);
-                circle.rotation.y = Math.PI / 2;
-                circle.position.x = toLocalX(self.locations[i][0]+self.driftV*t);
-                circle.position.y = toLocalY(self.locations[i][1]);
-                circle.position.z = toLocalZ(self.locations[i][2]);
-                self.group_op.add(circle);
+                    var circleGeometry = new THREE.CircleGeometry( radius, segments );
+                    var circle = new THREE.Mesh(circleGeometry, new THREE.MeshBasicMaterial({
+                        color: 0xff0000,
+                        opacity: 0.2,
+                        side: THREE.DoubleSide
+                        // depthWrite: false
+                        // wireframe: true
+                    }));
+                    // console.log(self.locations);
+                    circle.rotation.y = Math.PI / 2;
+                    circle.position.x = toLocalX(self.locations[i][0]+self.driftV*t);
+                    circle.position.y = toLocalY(self.locations[i][1]);
+                    circle.position.z = toLocalZ(self.locations[i][2]);
+                    self.group_op.add(circle);
 
-                if ($.fn.BEE.options.flash.showPMTClone) {
-                    var circle2 =circle.clone();
-                    circle2.rotation.x = Math.PI / 2;
-                    circle2.rotation.y = 0;
-                    circle2.position.x = boxhelper.position.x + toLocalY(self.locations[i][1]);
-                    circle2.position.y = boxhelper.position.y + $.fn.BEE.user_options.geom.halfy;
-                    self.group_op.add(circle2);
+
+                    if ($.fn.BEE.options.flash.showPMTClone) {
+                        var circle2 =circle.clone();
+                        circle2.rotation.x = Math.PI / 2;
+                        circle2.rotation.y = 0;
+                        circle2.position.x = boxhelper.position.x + toLocalY(self.locations[i][1]);
+                        circle2.position.y = boxhelper.position.y + $.fn.BEE.user_options.geom.halfy;
+                        self.group_op.add(circle2);
+                    }
                 }
+
+                if ($.fn.BEE.options.flash.showPred) {
+                    try {
+                        var pes_pred = self.pes_pred[currentFlash];
+                        if (pes_pred[i] > 0.01 ) {
+                            var radius_pred = Math.sqrt(self.pes_pred[currentFlash][i]);
+                            var circleGeometry_pred = new THREE.CircleGeometry( radius_pred, segments );
+                            // console.log(radius, radius_pred);
+                            var circle_pred = new THREE.Mesh(circleGeometry_pred, new THREE.MeshBasicMaterial({
+                                color: 0x15b01a,
+                                opacity: 0.2,
+                                side: THREE.DoubleSide
+                            }));
+                            circle_pred.rotation.y = Math.PI / 2;
+                            circle_pred.position.x = toLocalX(self.locations[i][0]+self.driftV*t);
+                            circle_pred.position.y = toLocalY(self.locations[i][1]-halfy*2);
+                            circle_pred.position.z = toLocalZ(self.locations[i][2]);
+                            self.group_op.add(circle_pred);
+                        }
+                    }
+                    catch(err) {
+                        // console.log(err);
+                    }
+                }
+
+
             }
 
             if ($.fn.BEE.options.flash.matchTiming) {
@@ -730,8 +760,26 @@ if ( typeof Object.create !== 'function' ) {
 
             var ran = Math.floor(Math.random()*5);
             if (!randomClusterColor) {ran = 0;}
+            // console.log( $.fn.BEE.scene3D.op.currentFlash );
+            // console.log( $.fn.BEE.user_options.flash.showMatchingCluster );
             for (var i=0; i<size_show; i++) {
                 var ind = indices[i];
+                if ($.fn.BEE.user_options.flash.showMatchingCluster) {
+                    try {
+                        var op = $.fn.BEE.scene3D.op;
+                        var op_cluster_ids = op.cluster_ids[op.currentFlash];
+                        if(! op_cluster_ids.includes(self.cluster_id[ind]) ) {
+                            continue;
+                        }
+                        else {
+                            // console.log(op_cluster_ids, self.cluster_id[ind]);
+                        }
+                    }
+                    catch(err) {
+                        console.log(err);
+                    }
+
+                }
                 // add position
                 positions[i*3] = toLocalX(self.x[ind]);
                 positions[i*3+1] = toLocalY(self.y[ind]);
@@ -1059,10 +1107,22 @@ if ( typeof Object.create !== 'function' ) {
                     $.fn.BEE.options.flash.showPMTClone = value;
                     self.drawOp();
                 });
+            folder_flash.add($.fn.BEE.user_options.flash, "showMatchingCluster")
+                .name("Matching Cluster")
+                .onChange(function(value) {
+                    $.fn.BEE.options.flash.showMatchingCluster = value;
+                    self.drawOp();
+                });
             folder_flash.add($.fn.BEE.user_options.flash, "matchTiming")
-                .name("Match Timing")
+                .name("Matching Box")
                 .onChange(function(value) {
                     $.fn.BEE.options.flash.matchTiming = value;
+                    self.drawOp();
+                });
+            folder_flash.add($.fn.BEE.user_options.flash, "showPred")
+                .name("Prediction")
+                .onChange(function(value) {
+                    $.fn.BEE.options.flash.showPred = value;
                     self.drawOp();
                 });
             folder_flash.add(options, 'flash_id', 0, 200)
@@ -2596,7 +2656,9 @@ if ( typeof Object.create !== 'function' ) {
         flash    : {
             showFlash: false,
             showPMTClone: false,
-            matchTiming: false
+            matchTiming: false,
+            showMatchingCluster: false,
+            showPred: true
         },
         geom     : {
             name  : 'uboone',
