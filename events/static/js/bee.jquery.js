@@ -776,7 +776,7 @@ if ( typeof Object.create !== 'function' ) {
                         }
                     }
                     catch(err) {
-                        console.log(err);
+                        // console.log(err);
                     }
                 }
                 else if ($.fn.BEE.user_options.flash.showMatchingCluster) {
