@@ -162,6 +162,7 @@ if ( typeof Object.create !== 'function' ) {
                 self.pes = data.op_pes;
                 self.cluster_ids = data.op_cluster_ids;
                 self.pes_pred = data.op_pes_pred;
+                self.nomatching_cluster_ids = data.op_nomatching_cluster_ids;
             })
             .fail(function(){
                 console.log("load " + self.url + " failed");
@@ -764,7 +765,21 @@ if ( typeof Object.create !== 'function' ) {
             // console.log( $.fn.BEE.user_options.flash.showMatchingCluster );
             for (var i=0; i<size_show; i++) {
                 var ind = indices[i];
-                if ($.fn.BEE.user_options.flash.showMatchingCluster) {
+                if ($.fn.BEE.options.flash.showNonMatchingCluster) {
+                    try {
+                        var op = $.fn.BEE.scene3D.op;
+                        if(! op.nomatching_cluster_ids.includes(self.cluster_id[ind]) ) {
+                            continue;
+                        }
+                        else {
+                            // console.log(op_cluster_ids, self.cluster_id[ind]);
+                        }
+                    }
+                    catch(err) {
+                        console.log(err);
+                    }
+                }
+                else if ($.fn.BEE.user_options.flash.showMatchingCluster) {
                     try {
                         var op = $.fn.BEE.scene3D.op;
                         var op_cluster_ids = op.cluster_ids[op.currentFlash];
@@ -1096,6 +1111,15 @@ if ( typeof Object.create !== 'function' ) {
                 });
             folder_general.open();
 
+            folder_flash.add(options, 'flash_id', 0, 200)
+                .name("Flash ID").step(1)
+                .onFinishChange(function(value) {
+                    var nFlash = self.op.t.length;
+                    if (value<nFlash) {
+                        self.op.currentFlash = value;
+                        self.drawOp();
+                    }
+                });
             folder_flash.add($.fn.BEE.user_options.flash, "showFlash")
                 .name("Show Flash")
                 .onChange(function(value) {
@@ -1125,17 +1149,13 @@ if ( typeof Object.create !== 'function' ) {
                     $.fn.BEE.options.flash.showPred = value;
                     self.drawOp();
                 });
-            folder_flash.add(options, 'flash_id', 0, 200)
-                .name("Flash ID").step(1)
-                .onFinishChange(function(value) {
-                    var nFlash = self.op.t.length;
-                    if (value<nFlash) {
-                        self.op.currentFlash = value;
-                        self.drawOp();
-                    }
-                    // console.log($.fn.BEE.user_options.id, value);
-                    // if (value == $.fn.BEE.user_options.id) { return; }
+            folder_flash.add($.fn.BEE.user_options.flash, "showNonMatchingCluster")
+                .name("Non-matching")
+                .onChange(function(value) {
+                    $.fn.BEE.options.flash.showNonMatchingCluster = value;
+                    self.drawOp();
                 });
+
         },
 
         initGuiCamera: function() {
@@ -2658,7 +2678,8 @@ if ( typeof Object.create !== 'function' ) {
             showPMTClone: false,
             matchTiming: false,
             showMatchingCluster: false,
-            showPred: true
+            showPred: true,
+            showNonMatchingCluster: false
         },
         geom     : {
             name  : 'uboone',
