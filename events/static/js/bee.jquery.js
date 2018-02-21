@@ -797,6 +797,7 @@ if ( typeof Object.create !== 'function' ) {
             if (!randomClusterColor) {ran = 0;}
             // console.log( $.fn.BEE.scene3D.op.currentFlash );
             // console.log( $.fn.BEE.user_options.flash.showMatchingCluster );
+            var size_actual = 0;
             for (var i=0; i<size_show; i++) {
                 var ind = indices[i];
                 if ($.fn.BEE.options.flash.showNonMatchingCluster) {
@@ -830,9 +831,9 @@ if ( typeof Object.create !== 'function' ) {
 
                 }
                 // add position
-                positions[i*3] = toLocalX(self.x[ind]);
-                positions[i*3+1] = toLocalY(self.y[ind]);
-                positions[i*3+2] = toLocalZ(self.z[ind]);
+                positions[size_actual*3] = toLocalX(self.x[ind]);
+                positions[size_actual*3+1] = toLocalY(self.y[ind]);
+                positions[size_actual*3+2] = toLocalZ(self.z[ind]);
                 // add color
                 var color = new THREE.Color();
                 if ($.fn.BEE.user_options.material.showCluster) {
@@ -852,8 +853,15 @@ if ( typeof Object.create !== 'function' ) {
                 else {
                     color = self.chargeColor;
                 }
-                color.toArray( colors, i * 3 );
+                color.toArray( colors, size_actual * 3 );
+
+                size_actual += 1;
+
             }
+
+            positions = positions.slice(0, size_actual*3);
+            colors = colors.slice(0, size_actual*3);
+            // console.log(positions);
 
             self.geometry = new THREE.BufferGeometry();
             self.geometry.dynamic = true;
