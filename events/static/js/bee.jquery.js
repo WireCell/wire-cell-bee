@@ -188,6 +188,32 @@ if ( typeof Object.create !== 'function' ) {
             }
             self.draw(self.currentFlash);
         },
+        nextMatching: function() {
+            var self = this;
+            do {
+               if(self.currentFlash<self.t.length-1) {
+                   self.currentFlash+=1;
+               }
+               else {
+                   self.currentFlash=0;
+               }
+            } while (self.cluster_ids[self.currentFlash].length==0)
+            // console.log(self.cluster_ids[self.currentFlash]);
+            self.draw(self.currentFlash);
+        },
+        prevMatching: function() {
+            var self = this;
+            do {
+                if(self.currentFlash>0) {
+                    self.currentFlash-=1;
+                }
+                else {
+                    self.currentFlash=self.t.length-1;
+                }
+            } while (self.cluster_ids[self.currentFlash].length==0)
+            // console.log(self.cluster_ids[self.currentFlash]);
+            self.draw(self.currentFlash);
+        },
         toggle: function() {
             var self = this;
             if(self.group_op == undefined) {
@@ -336,6 +362,14 @@ if ( typeof Object.create !== 'function' ) {
             $.fn.BEE.scene3D.el_statusbar.html(
                '#' + self.currentFlash + ': (' + t + ' us, ' + peTotal + ' pe)'
             )
+            if (self.cluster_ids) {
+                $.fn.BEE.scene3D.el_statusbar.html(
+                    $.fn.BEE.scene3D.el_statusbar.html() +
+                   '<br/>matching: ' + self.cluster_ids[self.currentFlash]
+                )
+
+            }
+
         }
     };
 
@@ -791,7 +825,7 @@ if ( typeof Object.create !== 'function' ) {
                         }
                     }
                     catch(err) {
-                        console.log(err);
+                        // console.log(err);
                     }
 
                 }
@@ -1995,6 +2029,8 @@ if ( typeof Object.create !== 'function' ) {
         drawOp: function() { this.op.draw(); },
         nextOp: function() { this.op.next(); },
         prevOp: function() { this.op.prev(); },
+        nextMatchingOp: function() { this.op.nextMatching(); },
+        prevMatchingOp: function() { this.op.prevMatching(); },
 
         nextSlice: function () {
             var self = this;
@@ -2591,6 +2627,8 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent('}', self.maximizeOpacity);
             self.addKeyEvent('<', self.prevOp);
             self.addKeyEvent('>', self.nextOp);
+            self.addKeyEvent('.', self.nextMatchingOp);
+            self.addKeyEvent(',', self.prevMatchingOp);
             self.addKeyEvent('o', self.redrawAllSSTRandom);
 
             Mousetrap.bindGlobal('esc', function(){
