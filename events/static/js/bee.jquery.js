@@ -2048,6 +2048,10 @@ if ( typeof Object.create !== 'function' ) {
             $('#cluster').slideToggle();
         },
 
+        toggleScan: function() {
+            $('#scan').slideToggle();
+        },
+
         updateStatusBar: function() {
             var ctrl = this.guiController;
             // this.el_slice_x.html();
@@ -2619,6 +2623,7 @@ if ( typeof Object.create !== 'function' ) {
             }
             self.addClickEvent($('#toggleSidebar') , self.toggleSidebar);
             self.addClickEvent($('#toggleCluster') , self.toggleCluster);
+            self.addClickEvent($('#toggleScan')    , self.toggleScan);
             self.addClickEvent($('#preset-default'), clearLocalStorageAndReload);
             self.addClickEvent($('#toggleMC')      , self.toggleMC);
             self.addClickEvent($('#toggleStats')   , self.toggleStats);
@@ -2700,6 +2705,7 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent(',', self.prevMatchingOp);
             self.addKeyEvent('/', self.nextMatchingBeamOp);
             self.addKeyEvent('o', self.redrawAllSSTRandom);
+            self.addKeyEvent('\\', self.toggleScan);
 
             Mousetrap.bindGlobal('esc', function(){
                 // console.log($('input'));
@@ -2838,6 +2844,11 @@ if ( typeof Object.create !== 'function' ) {
         $el_color: $('#sst-color')
     }
 
+    $.fn.BEE.ui_scan = {
+        $el_radio: $('input[name=scanResult]:checked'),
+        $el_sure: $('input[name=sureCheck]:checked'),
+    }
+
     $.fn.BEE.ui_sst.$el_size.slider({
       min: 1, max: 8, step: 0.5, value: 0,
       slide: function(event, ui) {
@@ -2868,6 +2879,7 @@ if ( typeof Object.create !== 'function' ) {
         if ($.fn.BEE.current_sst) {
             options['selected_sst'] = $.fn.BEE.current_sst.name;
         }
+
         var sst_options = {};
         for (var name in $.fn.BEE.scene3D.listOfSST) {
             var sst = $.fn.BEE.scene3D.listOfSST[name];
@@ -2878,8 +2890,19 @@ if ( typeof Object.create !== 'function' ) {
             }
             // console.log(sst_options[name].chargeColor);
         }
+
+        var scan_results = Lockr.get('scan_results');
+        if (!scan_results) scan_results = {};
+        var scan_id = $.fn.BEE.current_sst.runNo + '-' + $.fn.BEE.current_sst.subRunNo + '-' + $.fn.BEE.current_sst.eventNo;
+        scan_results[scan_id] = {
+            'url': base_url,
+            'event_type': $('input[name=scanResult]:checked').val(),
+            'unsure': $('input[name=sureCheck]').is(':checked')
+        };
+        // console.log(scan_results);
         Lockr.set('options', options);
         Lockr.set('sst_options', sst_options);
+        Lockr.set('scan_results', scan_results);
     }
 
     window.setInterval(saveLocalStorage, 30000);
@@ -2894,6 +2917,24 @@ if ( typeof Object.create !== 'function' ) {
         Lockr.flush();
         window.location.reload();
     }
+
+    function printScanResults() {
+        var results = Lockr.get("scan_results");
+        var txt = '<pre>';
+        for (var event in results) {
+            var thisEvent = results[event];
+            txt += event + ' '
+                + (thisEvent['event_type']?thisEvent['event_type']:-1) + ' '
+                + (thisEvent['unsure']?'unsure':'sure') + ' '
+                + thisEvent['url']
+                + '\n';
+        }
+        txt += '</pre>'
+        return txt;
+    }
+    $('#scanResultsModalLink').click(function(e){
+        $('#scanResultsModelBody').html(printScanResults());
+    });
 
     //
     function checkSST(sst) {

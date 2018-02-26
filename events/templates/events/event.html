@@ -71,6 +71,10 @@
                 <li role="separator" class="divider"></li>
                 <li><a href="#" id="toggleSidebar">Toggle Sidebar</a></li>
                 <li><a href="#" id="toggleCluster">Toggle Cluster Panel</a></li>
+                <li><a href="#" id="toggleScan">Toggle Scan Panel</a></li>
+                <li role="separator" class="divider"></li>
+                <!-- <li><a href="#" id="toggleScanResults">Show Scan Results</a></li> -->
+                <li><a href="" data-toggle="modal" data-target="#scanResultsModal" id="scanResultsModalLink">Show Scan Results</a></li>
               </ul>
             </li>
 
@@ -105,6 +109,46 @@
       <!-- <input type="text" class="form-control" value="40" aria-describedby="basic-addon1"> -->
       <div id="progressbar"></div>
       <div id="cluster-message"></div>
+    </div>
+
+    <div id="scan">
+      <form >
+
+        Neutrino:
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult11" value="11"> nu_mu
+        </label>
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult12" value="12"> nu_e
+        </label>
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult13" value="13"> nu_nc
+        </label>
+        <br />
+
+        Background:
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult21" value="21"> wrong light
+        </label>
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult21" value="22"> through muon
+        </label>
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult22" value="23"> muon capture
+        </label>
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult23" value="24"> muon decay
+        </label>
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult23" value="25"> others
+        </label>
+        <br />
+
+        <label class="checkbox">
+          <input type="checkbox" name="sureCheck" id="sureCheck" value=""> Not sure
+        </label>
+
+      </form>
     </div>
 
 
@@ -216,6 +260,22 @@
                   </tr>
                 </tbody>
             </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="scanResultsModal" class="modal hide fade" role="dialog" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">ScanResults</h4>
+          </div>
+          <div class="modal-body" id="scanResultsModelBody">
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

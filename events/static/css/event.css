@@ -37,6 +37,17 @@ body {
     display: none;
     /*background-color: #ccc*/
 }
+
+#scan {
+    position: absolute;
+    top: 80px;
+    right: 220px;
+    width: 180px;
+    padding: 5px;
+    display: none;
+    background-color: #fff
+}
+
 #progressbar {
     margin-top: 5px;
     height: 10px;
