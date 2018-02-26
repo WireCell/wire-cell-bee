@@ -214,6 +214,35 @@ if ( typeof Object.create !== 'function' ) {
             // console.log(self.cluster_ids[self.currentFlash]);
             self.draw(self.currentFlash);
         },
+        nextMatchingBeam: function() {
+            var self = this;
+            var n = 0;
+            do {
+               if(self.currentFlash<self.t.length-1) {
+                   self.currentFlash+=1;
+                   n+=1;
+               }
+               else {
+                   self.currentFlash=0;
+                   n+=1
+               }
+               // console.log(self.t[self.currentFlash]);
+               if (n>self.t.length) break;
+            } while (
+                self.cluster_ids[self.currentFlash].length==0
+                || self.t[self.currentFlash] < 2
+                || self.t[self.currentFlash] > 6
+            )
+            // console.log(self.cluster_ids[self.currentFlash]);
+            if (n<=self.t.length) {
+                self.draw(self.currentFlash);
+            }
+            else {
+                $.fn.BEE.scene3D.el_statusbar.html(
+                   'No matching flash found inside (2us , 6us)'
+                )
+            }
+        },
         toggle: function() {
             var self = this;
             if(self.group_op == undefined) {
@@ -1196,6 +1225,11 @@ if ( typeof Object.create !== 'function' ) {
                 .onChange(function(value) {
                     $.fn.BEE.options.flash.showNonMatchingCluster = value;
                     self.drawOp();
+                    if (value) {
+                      $.fn.BEE.scene3D.el_statusbar.html(
+                          'non-matching: ' + self.op.nomatching_cluster_ids
+                      );
+                    }
                 });
 
         },
@@ -2039,6 +2073,8 @@ if ( typeof Object.create !== 'function' ) {
         prevOp: function() { this.op.prev(); },
         nextMatchingOp: function() { this.op.nextMatching(); },
         prevMatchingOp: function() { this.op.prevMatching(); },
+        nextMatchingBeamOp: function() { this.op.nextMatchingBeam(); },
+
 
         nextSlice: function () {
             var self = this;
@@ -2637,6 +2673,7 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent('>', self.nextOp);
             self.addKeyEvent('.', self.nextMatchingOp);
             self.addKeyEvent(',', self.prevMatchingOp);
+            self.addKeyEvent('/', self.nextMatchingBeamOp);
             self.addKeyEvent('o', self.redrawAllSSTRandom);
 
             Mousetrap.bindGlobal('esc', function(){
