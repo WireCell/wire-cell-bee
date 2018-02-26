@@ -2935,6 +2935,10 @@ if ( typeof Object.create !== 'function' ) {
     $('#scanResultsModalLink').click(function(e){
         $('#scanResultsModelBody').html(printScanResults());
     });
+    $('#clear-scan').click(function(e){
+        e.preventDefault();
+        Lockr.set('scan_results', {});
+    });
 
     //
     function checkSST(sst) {
