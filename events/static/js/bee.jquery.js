@@ -843,6 +843,11 @@ if ( typeof Object.create !== 'function' ) {
             var size_actual = 0;
             for (var i=0; i<size_show; i++) {
                 var ind = indices[i];
+                if ($.fn.BEE.user_options.flash.tpc_cluster_id != -1) {
+                    if (self.cluster_id[ind] != $.fn.BEE.user_options.flash.tpc_cluster_id) {
+                        continue;
+                    }
+                }
                 if ($.fn.BEE.options.flash.showNonMatchingCluster) {
                     try {
                         var op = $.fn.BEE.scene3D.op;
@@ -1244,6 +1249,12 @@ if ( typeof Object.create !== 'function' ) {
                           'non-matching: ' + self.op.nomatching_cluster_ids
                       );
                     }
+                });
+            folder_flash.add($.fn.BEE.user_options.flash, 'tpc_cluster_id', -1, 200)
+                .name("Cluster ID").step(1)
+                .onFinishChange(function(value) {
+                    $.fn.BEE.user_options.flash.tpc_cluster_id = value;
+                    self.drawOp();
                 });
 
         },
@@ -2776,7 +2787,8 @@ if ( typeof Object.create !== 'function' ) {
             matchTiming: false,
             showMatchingCluster: false,
             showPred: true,
-            showNonMatchingCluster: false
+            showNonMatchingCluster: false,
+            tpc_cluster_id: -1
         },
         geom     : {
             name  : 'uboone',
