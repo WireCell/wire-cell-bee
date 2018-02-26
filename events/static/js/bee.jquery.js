@@ -168,8 +168,18 @@ if ( typeof Object.create !== 'function' ) {
                 console.log("load " + self.url + " failed");
             });
         },
+        enableDrawFlash: function() {
+            var disp = $.fn.BEE.scene3D.gui.__folders.Flash.__controllers[1];
+            disp.setValue(true);
+        },
+        enableMachingCluster: function() {
+            this.enableDrawFlash();
+            var disp = $.fn.BEE.scene3D.gui.__folders.Flash.__controllers[3];
+            disp.setValue(true);
+        },
         next: function() {
             var self = this;
+            self.enableDrawFlash();
             if(self.currentFlash<self.t.length-1) {
                 self.currentFlash+=1;
             }
@@ -180,6 +190,7 @@ if ( typeof Object.create !== 'function' ) {
         },
         prev: function() {
             var self = this;
+            self.enableDrawFlash();
             if(self.currentFlash>0) {
                 self.currentFlash-=1;
             }
@@ -190,6 +201,7 @@ if ( typeof Object.create !== 'function' ) {
         },
         nextMatching: function() {
             var self = this;
+            self.enableMachingCluster();
             do {
                if(self.currentFlash<self.t.length-1) {
                    self.currentFlash+=1;
@@ -203,6 +215,7 @@ if ( typeof Object.create !== 'function' ) {
         },
         prevMatching: function() {
             var self = this;
+            self.enableMachingCluster();
             do {
                 if(self.currentFlash>0) {
                     self.currentFlash-=1;
@@ -216,6 +229,7 @@ if ( typeof Object.create !== 'function' ) {
         },
         nextMatchingBeam: function() {
             var self = this;
+            self.enableMachingCluster();
             var n = 0;
             do {
                if(self.currentFlash<self.t.length-1) {
