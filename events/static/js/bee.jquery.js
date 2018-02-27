@@ -2049,7 +2049,8 @@ if ( typeof Object.create !== 'function' ) {
         },
 
         toggleScan: function() {
-            $('#scan').slideToggle();
+            $('#scan').slideToggle('fast');
+            loadPreviousScanResults();
         },
 
         updateStatusBar: function() {
@@ -2894,15 +2895,18 @@ if ( typeof Object.create !== 'function' ) {
         var scan_results = Lockr.get('scan_results');
         if (!scan_results) scan_results = {};
         var scan_id = $.fn.BEE.current_sst.runNo + '-' + $.fn.BEE.current_sst.subRunNo + '-' + $.fn.BEE.current_sst.eventNo;
-        scan_results[scan_id] = {
-            'url': base_url,
-            'event_type': $('input[name=scanResult]:checked').val(),
-            'unsure': $('input[name=sureCheck]').is(':checked')
-        };
-        // console.log(scan_results);
+        var event_type = $('input[name=scanResult]:checked').val();
+        if (event_type) {
+            scan_results[scan_id] = {
+                'url': base_url,
+                'event_type': event_type,
+                'unsure': $('input[name=sureCheck]').is(':checked')
+            };
+            // console.log(scan_results);
+            Lockr.set('scan_results', scan_results);
+        }
         Lockr.set('options', options);
         Lockr.set('sst_options', sst_options);
-        Lockr.set('scan_results', scan_results);
     }
 
     window.setInterval(saveLocalStorage, 30000);
@@ -2916,6 +2920,25 @@ if ( typeof Object.create !== 'function' ) {
         $(window).unbind('beforeunload');
         Lockr.flush();
         window.location.reload();
+    }
+
+    function loadPreviousScanResults() {
+        var scan_id = $.fn.BEE.current_sst.runNo + '-' + $.fn.BEE.current_sst.subRunNo + '-' + $.fn.BEE.current_sst.eventNo;
+        var results = Lockr.get('scan_results');
+        if (results) {
+            var thisEvent = results[scan_id];
+            if (thisEvent) {
+                var event_type = thisEvent['event_type'];
+                if (event_type) {
+                    $('#scanResult'+event_type).prop('checked', true);
+                }
+                var unsure = thisEvent['unsure'];
+                if (unsure) {
+                    $('#sureCheck').prop('checked', true);
+                }
+                // console.log(thisEvent);
+            }
+        }
     }
 
     function printScanResults() {
@@ -2949,8 +2972,6 @@ if ( typeof Object.create !== 'function' ) {
         var rgb_string = 'rgb(' + color.r*255 + ', ' + color.g*255 + ', ' + color.b*255 + ', ' + sst.material.opacity+')';
         // console.log(rgb_string)
         $el.css('background-color', rgb_string);
-
-
     }
 
     // Utility funcitons
