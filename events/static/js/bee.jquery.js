@@ -2077,25 +2077,25 @@ if ( typeof Object.create !== 'function' ) {
             window.location.assign(event_url + newId + '/' + base_query);
         },
 
-        nextRecon: function() {
-            var self = this;
-            var disp = self.gui.__folders.General.__controllers[1];
-            var currentIndex = self.options.sst.indexOf(self.guiController.display);
-            var newIndex = currentIndex == self.options.sst.length - 1
-                    ? 0
-                    : currentIndex + 1;
-            disp.setValue(self.options.sst[newIndex]);
-        },
+        // nextRecon: function() {
+        //     var self = this;
+        //     var disp = self.gui.__folders.General.__controllers[1];
+        //     var currentIndex = self.options.sst.indexOf(self.guiController.display);
+        //     var newIndex = currentIndex == self.options.sst.length - 1
+        //             ? 0
+        //             : currentIndex + 1;
+        //     disp.setValue(self.options.sst[newIndex]);
+        // },
 
-        prevRecon: function() {
-            var self = this;
-            var disp = self.gui.__folders.General.__controllers[1];
-            var currentIndex = self.options.sst.indexOf(self.guiController.display);
-            var newIndex = currentIndex == 0
-                    ? self.options.sst.length - 1
-                    : currentIndex - 1;
-            disp.setValue(self.options.sst[newIndex]);
-        },
+        // prevRecon: function() {
+        //     var self = this;
+        //     var disp = self.gui.__folders.General.__controllers[1];
+        //     var currentIndex = self.options.sst.indexOf(self.guiController.display);
+        //     var newIndex = currentIndex == 0
+        //             ? self.options.sst.length - 1
+        //             : currentIndex - 1;
+        //     disp.setValue(self.options.sst[newIndex]);
+        // },
 
         toggleOp: function() { this.op.toggle(); },
         drawOp: function() { this.op.draw(); },
@@ -2633,8 +2633,8 @@ if ( typeof Object.create !== 'function' ) {
             self.addClickEvent($('#prevEvent')     , self.prevEvent);
             self.addClickEvent($('#nextSlice')     , self.nextSlice);
             self.addClickEvent($('#prevSlice')     , self.prevSlice);
-            self.addClickEvent($('#nextRecon')     , self.nextRecon);
-            self.addClickEvent($('#prevRecon')     , self.prevRecon);
+            // self.addClickEvent($('#nextRecon')     , self.nextRecon);
+            // self.addClickEvent($('#prevRecon')     , self.prevRecon);
             self.addClickEvent($('#centerToEvent') , self.centerToEvent);
             self.addClickEvent($('#resetCamera')   , self.resetCamera);
             self.addClickEvent($('#xyView')        , self.xyView);
@@ -2686,8 +2686,8 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent('shift+p', self.prevEvent);
             self.addKeyEvent('k', self.nextSlice);
             self.addKeyEvent('j', self.prevSlice);
-            self.addKeyEvent(']', self.nextRecon);
-            self.addKeyEvent('[', self.prevRecon);
+            // self.addKeyEvent(']', self.nextRecon);
+            // self.addKeyEvent('[', self.prevRecon);
             self.addKeyEvent('c', self.centerToEvent);
             self.addKeyEvent('x', self.xyView);
             self.addKeyEvent('z', self.xzView);
