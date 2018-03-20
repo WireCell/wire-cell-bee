@@ -25,7 +25,8 @@ body {
     bottom: 0px;
     right: 0px;
     padding: 5px;
-    color: orange;
+    color: #ee5f5b;
+    text-align: right;
 }
 
 #cluster {

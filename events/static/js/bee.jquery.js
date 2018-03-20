@@ -49,15 +49,15 @@ if ( typeof Object.create !== 'function' ) {
             0xe50000, // red
             0x15b01a, // green
             0x7e1e9c, // purple
-            0x95d0fc, // light blue
+            0x00035b, // dark blue
             0xc20078, // magenta
             0x029386, // teal
             0xff81c0, // pink
-            0x96f97b, // light green
-            0xbf77f6, // light purple
-            0xe6daa6, // beige
+            0x0a888a, // dark cyan
+            0x014d4e, // dark teal
+            0x960056, // dark magenta
             0xf97306, // orange
-            0xffff14, // yellow
+            0xcb416b, // dark pink
             0x000000, // black
         ]
     }
@@ -163,6 +163,8 @@ if ( typeof Object.create !== 'function' ) {
                 self.cluster_ids = data.op_cluster_ids;
                 self.pes_pred = data.op_pes_pred;
                 self.nomatching_cluster_ids = data.op_nomatching_cluster_ids;
+                self.op_l1_t = data.op_l1_t;
+                self.op_l1_pe = data.op_l1_pe;
             })
             .fail(function(){
                 console.log("load " + self.url + " failed");
@@ -405,6 +407,17 @@ if ( typeof Object.create !== 'function' ) {
             $.fn.BEE.scene3D.el_statusbar.html(
                '#' + self.currentFlash + ': (' + t + ' us, ' + peTotal + ' pe)'
             )
+            if (self.op_l1_t) {
+                var l1size = self.op_l1_t[self.currentFlash].length;
+                if (l1size>1) {
+                    var txt = $.fn.BEE.scene3D.el_statusbar.html();
+                    for (var i=0; i<l1size; i++) {
+                        txt += '<br/>L1: (' + self.op_l1_t[self.currentFlash][i] + ' us, ' + self.op_l1_pe[self.currentFlash][i] + ' pe)';
+                    }
+
+                    $.fn.BEE.scene3D.el_statusbar.html(txt);
+                }
+            }
             if (self.cluster_ids) {
                 $.fn.BEE.scene3D.el_statusbar.html(
                     $.fn.BEE.scene3D.el_statusbar.html() +
@@ -1288,6 +1301,10 @@ if ( typeof Object.create !== 'function' ) {
                     }
                     window.location.assign(base_url+new_query);
                 });
+            folder_camera.add($.fn.BEE.user_options.camera, "multiview")
+                .name("Multi-view")
+                .onChange(function(value) {
+                });
             folder_camera.add(prop, 'view', [ 'YZ', 'XY', 'XZ', 'XU', 'XV'])
                .name("2D View ")
                .onChange(function(value) {
@@ -1356,6 +1373,19 @@ if ( typeof Object.create !== 'function' ) {
             camera.position.z = depth*Math.cos(Math.PI/4);
             camera.position.x = -depth*Math.sin(Math.PI/4);
             camera.position.y = depth*Math.sin(Math.PI/6);
+
+            self.frontCamera = new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
+            self.frontCamera.position.set (-1000,0,0);
+            self.frontCamera.lookAt (new THREE.Vector3(0,0,0));
+
+            self.sideCamera = new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
+            self.sideCamera.position.set(0,0,1000);
+            self.sideCamera.lookAt (new THREE.Vector3(0,0,0));
+
+            self.topCamera = new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
+            self.topCamera.position.set(0,1000,0);
+            self.topCamera.up.set(1,0,0);
+            self.topCamera.lookAt(new THREE.Vector3(0,0,0));
 
         },
 
@@ -2499,7 +2529,7 @@ if ( typeof Object.create !== 'function' ) {
             mouse.y = -( event.clientY / window.innerHeight  ) * 2 + 1;
 
             var raycaster = new THREE.Raycaster();
-            raycaster.params.Points.threshold = 0.3;
+            raycaster.params.Points.threshold = 5;
             raycaster.setFromCamera( mouse, self.camera );
 
             // var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(self.camera);
@@ -2531,7 +2561,7 @@ if ( typeof Object.create !== 'function' ) {
                 );
             }
             else {
-                self.el_statusbar.html('none detected');
+                // self.el_statusbar.html('none detected');
             }
         },
 
@@ -2543,7 +2573,7 @@ if ( typeof Object.create !== 'function' ) {
 
             var raycaster = new THREE.Raycaster();
 
-            raycaster.params.Points.threshold = 0.3;  // 1cm
+            raycaster.params.Points.threshold = 5;  // 1cm
             raycaster.setFromCamera( mouse, self.camera );
 
             // var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(self.camera);
@@ -2748,10 +2778,52 @@ if ( typeof Object.create !== 'function' ) {
                 }
                 self.animationId = window.requestAnimationFrame(window.animate);
                 self.renderer.autoClear = false;
+                // self.renderer.clear();
+                // self.renderer.render(self.scene, self.camera);
+                // self.renderer.clearDepth();
+                // self.renderer.render(self.scene_slice, self.camera);
+
+                var SCREEN_W, SCREEN_H;
+                SCREEN_W = window.innerWidth*self.options.camera.scale;
+                SCREEN_H = window.innerHeight;
+                var left,bottom,width,height;
+                var renderer = self.renderer;
+
+                renderer.setViewport(0, 0, SCREEN_W, SCREEN_H);
+                renderer.setScissor(0, 0, SCREEN_W, SCREEN_H);
+                renderer.setScissorTest(true);
                 self.renderer.clear();
                 self.renderer.render(self.scene, self.camera);
                 self.renderer.clearDepth();
                 self.renderer.render(self.scene_slice, self.camera);
+
+                if ($.fn.BEE.user_options.camera.multiview) {
+                    // front camera
+                    left = -10; bottom = SCREEN_H-300; width = SCREEN_W*0.3; height = SCREEN_H*0.3;
+                    renderer.setViewport (left,bottom,width,height);
+                    renderer.setScissor(left,bottom,width,height);
+                    renderer.setScissorTest(true);
+                    // frontCamera.aspect = width/height;
+                    self.frontCamera.updateProjectionMatrix();
+                    renderer.render(self.scene, self.frontCamera);
+
+                    // side camera
+                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-650; bottom = -40;
+                    renderer.setViewport (left,bottom,width,height);
+                    renderer.setScissor(left,bottom,width,height);
+                    renderer.setScissorTest(true);
+                    self.sideCamera.updateProjectionMatrix();
+                    renderer.render(self.scene, self.sideCamera);
+
+                    // top camera
+                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-400; bottom = -10;
+                    renderer.setViewport (left,bottom,width,height);
+                    renderer.setScissor(left,bottom,width,height);
+                    renderer.setScissorTest(true);
+                    self.topCamera.updateProjectionMatrix();
+                    renderer.render(self.scene, self.topCamera);
+                }
+
                 stats.update();
             }
             window.animate();
@@ -2780,7 +2852,7 @@ if ( typeof Object.create !== 'function' ) {
     $.fn.BEE.options = {
         nEvents  : 100,
         id       : 0,
-        theme    : 'dark',
+        theme    : 'light',
         hasMC    : false,
         helper   : {
             showTPCs : true,
@@ -2810,7 +2882,8 @@ if ( typeof Object.create !== 'function' ) {
             scale : 0.85,
             depth : 2000,
             ortho : true,
-            rotate: false
+            rotate: false,
+            multiview: true
         },
         slice : {
             width: 0.32,
@@ -2875,7 +2948,8 @@ if ( typeof Object.create !== 'function' ) {
             'material' : $.fn.BEE.user_options.material,
             'slice' : $.fn.BEE.user_options.slice,
             'theme' : $.fn.BEE.user_options.theme,
-            'helper': $.fn.BEE.user_options.helper
+            'helper': $.fn.BEE.user_options.helper,
+            'camera': $.fn.BEE.user_options.camera
         };
         if ($.fn.BEE.current_sst) {
             options['selected_sst'] = $.fn.BEE.current_sst.name;
