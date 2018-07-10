@@ -19,7 +19,6 @@ if ( typeof Object.create !== 'function' ) {
     var event_url = base_url.substring(0, base_url.indexOf('event')) + 'event/';
     // console.log(index_of_query_postion, base_url, base_query, event_url);
     var root_url = base_url.substring(0, base_url.indexOf('set'));
-    $('#evd-2d').attr('href', base_url+'evd-2d/');
     $( "#progressbar" ).progressbar({
       value: 0
     });
@@ -1940,6 +1939,19 @@ if ( typeof Object.create !== 'function' ) {
                         $('#runNo').html(sst.runNo);
                         // $('#subRunNo').html(sst.subRunNo + ' - ');
                         $('#eventNo').html(sst.eventNo);
+                        var thousands = Math.floor(sst.runNo/1000) * 1000;
+                        console.log(thousands)
+                        thousands = "000000".substr(0, 6 - thousands.toString().length) + thousands
+                        // var plotUrl = $('#diag-plots').attr('href')
+                        var plotUrl = 'https://www.phy.bnl.gov/twister/static/plots/'
+                            + $.fn.BEE.user_options.geom.name + '/'
+                            + thousands + '/'
+                            + sst.runNo + '/'
+                            + sst.subRunNo + '/'
+                            + sst.eventNo + '/';
+
+                        $('#diag-plots').attr('href', plotUrl);
+
                     }
                     // console.log(sst);
 
