@@ -1155,7 +1155,7 @@ if ( typeof Object.create !== 'function' ) {
                     }
                 });
             folder_general.add($.fn.BEE.user_options.helper, "showAxises")
-                .name("Show Axises")
+                .name("Show Axes")
                 .onChange(function(value) {
                     if (value) {
                         self.scene.add(self.axises);
@@ -2895,7 +2895,7 @@ if ( typeof Object.create !== 'function' ) {
             depth : 2000,
             ortho : true,
             rotate: false,
-            multiview: true
+            multiview: false
         },
         slice : {
             width: 0.32,
