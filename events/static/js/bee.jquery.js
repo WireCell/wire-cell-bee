@@ -545,6 +545,9 @@ if ( typeof Object.create !== 'function' ) {
             self.runNo = data.runNo;
             self.subRunNo = data.subRunNo;
             self.eventNo = data.eventNo;
+            if (data.eventTime == undefined) {self.eventTime = "";}
+            else {self.eventTime = data.eventTime;}
+            // console.log(data);
             self.clusterInfo = {};
 
             for (var i = 0; i < size_reduced; i++) {
@@ -2234,7 +2237,12 @@ if ( typeof Object.create !== 'function' ) {
             self.animate();
             self.gui.close();
             // $("#statusbar").hide();
+            var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
+            var timeStr =  $.fn.BEE.current_sst.eventTime;
+            var text = eventStr + "<br/>" + timeStr;
+
             if (screenfull.enabled) {
+                $("#fullscreeninfo").html(text);
                 screenfull.request(document.getElementById('container'));
             }
         },
@@ -2245,6 +2253,7 @@ if ( typeof Object.create !== 'function' ) {
             self.options.camera.rotate = false;
             self.animate();
             self.gui.open();
+            $("#fullscreeninfo").html("");
             // $("#statusbar").show();
         },
 
@@ -2749,6 +2758,7 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent(',', self.prevMatchingOp);
             self.addKeyEvent('/', self.nextMatchingBeamOp);
             self.addKeyEvent('o', self.redrawAllSSTRandom);
+            self.addKeyEvent('shift+f', self.play);
             self.addKeyEvent('\\', self.toggleScan);
 
             Mousetrap.bindGlobal('esc', function(){
