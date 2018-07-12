@@ -308,6 +308,7 @@
         var xhr = $.getJSON(window.location.href, function(data){
             $.extend(true, options, data);
         }); // server options
+
         xhr.then(function(){
             // $.extend(true, options, {
             //   material: {

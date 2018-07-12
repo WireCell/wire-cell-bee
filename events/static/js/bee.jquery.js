@@ -1343,7 +1343,7 @@ if ( typeof Object.create !== 'function' ) {
                     self.slice.material.opacity = value;
                     $.fn.BEE.user_options.slice.opacity = value;
                 });
-            folder_slice.add(ctrl.slice, "width", w, halfx*2).step(w)
+            folder_slice.add(ctrl.slice, "width", 0.32, halfx*2).step(0.32)
                 .onChange(function(value){
                     $.fn.BEE.user_options.slice.width = value;
                     self.slice.scale.x = value/w; // SCALE
@@ -1364,10 +1364,11 @@ if ( typeof Object.create !== 'function' ) {
             var self = this;
             var ctrl = self.guiController;
             var depth = self.options.camera.depth;
+            // console.log(self.options);
 
             self.camera = $.fn.BEE.user_options.camera.ortho
                 ? new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000)
-                : new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 1, 4000);
+                : new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 1, 8000);
             var camera = self.camera;
             camera.position.z = depth*Math.cos(Math.PI/4);
             camera.position.x = -depth*Math.sin(Math.PI/4);
@@ -1940,7 +1941,7 @@ if ( typeof Object.create !== 'function' ) {
                         // $('#subRunNo').html(sst.subRunNo + ' - ');
                         $('#eventNo').html(sst.eventNo);
                         var thousands = Math.floor(sst.runNo/1000) * 1000;
-                        console.log(thousands)
+                        // console.log(thousands)
                         thousands = "000000".substr(0, 6 - thousands.toString().length) + thousands
                         // var plotUrl = $('#diag-plots').attr('href')
                         var plotUrl = 'https://www.phy.bnl.gov/twister/static/plots/'
@@ -2849,8 +2850,9 @@ if ( typeof Object.create !== 'function' ) {
     };
 
     $.fn.BEE = function( options ) {
-        $.fn.BEE.user_options = $.extend(true, {}, $.fn.BEE.options, options, Lockr.get('options') ); // recursive extend
-        // console.log($.fn.BEE.user_options);
+        $.fn.BEE.user_options = $.extend(true, {}, $.fn.BEE.options, Lockr.get('options'), options ); // recursive extend
+        // console.log(options);
+        // console.log(Lockr.get('options'));
 
         var scene3D = Object.create(Scene3D);
         scene3D.init($.fn.BEE.user_options, this);

@@ -8,7 +8,7 @@ from events.models import EventSet
 
 from bee import settings
 
-import os, json
+import os, json, collections
 
 def eventsets(request):
     eventset_list = EventSet.objects.all().order_by('-created_at')
@@ -92,6 +92,14 @@ def event(request, set_id, event_id):
                 options[key] = value_clean
         return options
 
+    def update(d, u):
+        for k, v in u.iteritems():
+            if isinstance(v, collections.Mapping):
+                d[k] = update(d.get(k, {}), v)
+            else:
+                d[k] = v
+        return d
+
     sst_list = eventset.recon_list(int(event_id))
     if (len(sst_list)==0):
         return HttpResponse("Sorry, no data found.")
@@ -100,6 +108,7 @@ def event(request, set_id, event_id):
         'nEvents' : eventset.event_count(),
         'id' : int(event_id),
         'geom' : {},
+        'camera' : {},
         'hasMC' : eventset.has_MC(int(event_id)),
         'sst': sst_list
     }
@@ -112,7 +121,7 @@ def event(request, set_id, event_id):
         options['geom']['angleV'] = 45
     elif (eventset.geom(event_id) == 'protodune'):
         options['camera'] = {
-            'depth': 2400,
+            'depth': 3000,
         }
         options['geom']['name'] = 'protodune'
         options['geom']['angleU'] = 35.7
@@ -124,7 +133,9 @@ def event(request, set_id, event_id):
         options['geom']['name'] = 'dune10kt_workspace'
         options['geom']['angleU'] = 35.7
         options['geom']['angleV'] = 35.7
-    options.update(queryToOptions(request))
+    # options.update(queryToOptions(request))
+    options = update(options, queryToOptions(request))
+    # print options
 
     if request.is_ajax():
         return HttpResponse(json.dumps(options))
