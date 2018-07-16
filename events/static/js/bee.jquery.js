@@ -822,39 +822,9 @@ if ( typeof Object.create !== 'function' ) {
                 clustered_positions.push(clustered_nodes[key]);
             }
 
-
-            // size = clustered_positions.length;
-            // if (size<50) return clustered_nodes;
-
-            // var positions = new Float32Array( size * 3 );
-            // for (var i=0; i<size; i++) {
-            //     positions[i*3] = clustered_positions[i][0];
-            //     positions[i*3+1] = clustered_positions[i][1];
-            //     positions[i*3+2] = clustered_positions[i][2];
-            // }
-
-            // var theme = $.fn.BEE.user_options['theme'];
-            // var color = Math.floor(Math.random() * USER_COLORS[theme].length);
-            // var material = new THREE.PointsMaterial({
-            //     // vertexColors    : true,
-            //     color           :  USER_COLORS[theme][color],
-            //     size            : 3,
-            //     blending        : THREE.NormalBlending,
-            //     opacity         : 0.8,
-            //     transparent     : true,
-            //     depthWrite      : false,
-            //     sizeAttenuation : false
-            // });
-            // var geometry = new THREE.BufferGeometry();
-            // geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-            // var clusterPointCloud = new THREE.Points(geometry, material);
-            // if (!(self.containedIn == null)) {
-            //     self.containedIn.add(clusterPointCloud);
-            // }
-            // return clustered_nodes;
         },
 
-        drawInsideSlice: function(start, width, randomClusterColor=false) {
+        drawInsideBox: function(xmin, xmax, ymin, ymax, zmin, zmax, randomClusterColor=false) {
             var self = this;
             var size = self.x.length;
 
@@ -867,7 +837,7 @@ if ( typeof Object.create !== 'function' ) {
                 var x = toLocalX(self.x[i]);
                 var y = toLocalY(self.y[i]);
                 var z = toLocalZ(self.z[i]);
-                if (x  < start || x > start+width) {
+                if (x<xmin || x>xmax || y<ymin || y>ymax || z<zmin || z>zmax ) {
                     continue;
                 }
                 indices.push(i);
@@ -967,7 +937,11 @@ if ( typeof Object.create !== 'function' ) {
             if (!(self.containedIn == null)) {
                 self.containedIn.add(self.pointCloud);
             }
+        },
 
+        drawInsideSlice: function(start, width, randomClusterColor=false) {
+            var self = this;
+            self.drawInsideBox(start, start+width, -1e9, 1e9, -1e9, 1e9, randomClusterColor);
         },
 
         drawInsideThreeFrames: function(randomClusterColor=false) {
@@ -976,6 +950,26 @@ if ( typeof Object.create !== 'function' ) {
 
         drawInsideBeamFrame: function() {
             this.drawInsideSlice(-this.options.geom.halfx, this.options.geom.halfx*2);
+        },
+
+        drawInsideTPC: function(tpcNo) {
+            var self = this;
+            var r = $.fn.BEE.scene3D.tpcLoc[tpcNo];
+            self.drawInsideBox(
+                toLocalX(r[0]), toLocalX(r[1]),
+                toLocalY(r[2]), toLocalY(r[3]),
+                toLocalZ(r[4]), toLocalZ(r[5]));
+        },
+
+        toggleROI: function() {
+            var self = this;
+            $.fn.BEE.scene3D.drawROI = !$.fn.BEE.scene3D.drawROI
+            if ($.fn.BEE.scene3D.drawROI) {
+                self.drawInsideTPC($.fn.BEE.scene3D.roiTPC);
+            }
+            else {
+                self.drawInsideThreeFrames();
+            }
         },
 
         selected: function() {
@@ -1453,6 +1447,8 @@ if ( typeof Object.create !== 'function' ) {
             var self = this;
             self.group_helper = new THREE.Group();
             self.tpcHelpers = [];
+            self.roiTPC = 0;
+            self.drawROI = false;
 
             // $.fn.BEE.user_options.geom.name = "dune35t";
 
@@ -1489,16 +1485,6 @@ if ( typeof Object.create !== 'function' ) {
             }
 
             else if ($.fn.BEE.user_options.geom.name == "dune10kt_workspace") {
-                // self.tpcLoc = [
-                //     [-363.37605, -2.53305 , -628.57875, -20.75000, -106.39000, 126.00000],
-                //     [2.53305   , 363.37605, -628.57875, -20.75000, -106.39000, 126.00000],
-                //     [-363.37605, -2.53305 , -20.75000 , 587.07875, -106.39000, 126.00000],
-                //     [2.53305   , 363.37605, -20.75000 , 587.07875, -106.39000, 126.00000],
-                //     [-363.37605, -2.53305 , -628.57875, -20.75000, 126.00000 , 358.39000],
-                //     [2.53305   , 363.37605, -628.57875, -20.75000, 126.00000 , 358.39000],
-                //     [-363.37605, -2.53305 , -20.75000 , 587.07875, 126.00000 , 358.39000],
-                //     [2.53305   , 363.37605, -20.75000 , 587.07875, 126.00000 , 358.39000]
-                // ];
                 self.tpcLoc = [
                     [-363.376, -2.53305, -607.829, 0      , -0.87625, 231.514],
                     [2.53305 ,  363.376, -607.829, 0      , -0.87625, 231.514],
@@ -1519,19 +1505,6 @@ if ( typeof Object.create !== 'function' ) {
 
             else if ($.fn.BEE.user_options.geom.name == "protodune") {
                 self.tpcLoc = [
-                    // [-387.36 , -365.917, -0.2, 607.629, -0.87625, 231.514],
-                    // [-360.851, -0.008  , -0.2, 607.629, -0.87625, 231.514],
-                    // [0.008   , 360.851 , -0.2, 607.629, -0.87625, 231.514],
-                    // [365.917 , 387.36  , -0.2, 607.629, -0.87625, 231.514],
-                    // [-387.36 , -365.917, -0.2, 607.629, 231.514 , 463.904],
-                    // [-360.851, -0.008  , -0.2, 607.629, 231.514 , 463.904],
-                    // [0.008   , 360.851 , -0.2, 607.629, 231.514 , 463.904],
-                    // [365.917 , 387.36  , -0.2, 607.629, 231.514 , 463.904],
-                    // [-387.36 , -365.917, -0.2, 607.629, 463.904 , 696.294],
-                    // [-360.851, -0.008  , -0.2, 607.629, 463.904 , 696.294],
-                    // [0.008   , 360.851 , -0.2, 607.629, 463.904 , 696.294],
-                    // [365.917 , 387.36  , -0.2, 607.629, 463.904 , 696.294],
-
                     [-380.434 , -367.504 , 0.0, 607.499, -0.49375 , 231.166],
                     [-359.884 , -0.008   , 0.0, 607.499, -0.49375 , 231.166],
                     [0.008    , 359.884  , 0.0, 607.499, -0.49375 , 231.166],
@@ -1553,6 +1526,7 @@ if ( typeof Object.create !== 'function' ) {
                 $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[11][5]+self.tpcLoc[0][4])/2;
 
                 self.guiController.slice.position = -$.fn.BEE.user_options.geom.halfx;
+                self.roiTPC = 5;
 
             }
 
@@ -1577,7 +1551,8 @@ if ( typeof Object.create !== 'function' ) {
                 // tpc.position.z = (self.tpcLoc[i][5]+self.tpcLoc[i][4])/2;
                 helper = new THREE.Object3D;
                 box = new THREE.BoxHelper(tpc);
-                box.material.color.setHex(0x111111);
+                // box.material.color.setHex(0x111111);
+                box.material.color.setHex(0x888888);
                 helper.add(box);
                 helper.position.x = toLocalX((self.tpcLoc[i][1]+self.tpcLoc[i][0])/2);
                 helper.position.y = toLocalY((self.tpcLoc[i][3]+self.tpcLoc[i][2])/2);
@@ -2522,6 +2497,11 @@ if ( typeof Object.create !== 'function' ) {
             self.redrawAllSST();
         },
 
+        toggleROI: function() {
+            var self = this;
+            $.fn.BEE.current_sst.toggleROI();
+        },
+
         increaseOpacity: function() {
             if ($.fn.BEE.current_sst.material.opacity >= 1) { return; }
             else { $.fn.BEE.current_sst.material.opacity += 0.05; }
@@ -2770,6 +2750,7 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent('/', self.nextMatchingBeamOp);
             self.addKeyEvent('o', self.redrawAllSSTRandom);
             self.addKeyEvent('shift+f', self.play);
+            self.addKeyEvent('shift+i', self.toggleROI);
             self.addKeyEvent('\\', self.toggleScan);
 
             Mousetrap.bindGlobal('esc', function(){
