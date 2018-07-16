@@ -506,6 +506,31 @@ if ( typeof Object.create !== 'function' ) {
             // self.setup();
         },
 
+        reload: function() {
+            var self = this;
+            self.setup();
+            $('#runNo').html(self.runNo);
+            $('#eventNo').html(self.eventNo);
+            var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
+            var timeStr =  $.fn.BEE.current_sst.eventTime;
+            var text = eventStr + "<br/>" + timeStr;
+            $("#fullscreeninfo").html(text);
+            console.log('reloading', eventStr);
+        },
+
+        refresh: function(sec) {
+            var self = this;
+            console.log("start refreshing at interval", sec, "sec");
+            self.refreshInterval = setInterval(function(){
+                self.reload();
+            }, sec*1000);
+        },
+
+        stopRefresh: function() {
+            clearInterval(this.refreshInterval);
+            console.log("stop refreshing");
+        },
+
         setup: function() {
             var self = this;
             self.process = $.getJSON(self.url, function(data) {
@@ -1090,6 +1115,22 @@ if ( typeof Object.create !== 'function' ) {
             var ctrl = self.guiController;
 
             var folder_general = self.gui.addFolder("General");
+            if (base_url.indexOf("live")>0) {
+                var folder_live = self.gui.addFolder("Live");
+                folder_live.add($.fn.BEE.user_options.live, "refresh")
+                    .name("Refresh")
+                    .onChange(function(value) {
+                        if(value) {
+                           $.fn.BEE.current_sst.refresh( $.fn.BEE.user_options.live.interval );
+                        }
+                        else {
+                            $.fn.BEE.current_sst.stopRefresh();
+                        }
+                    });
+                folder_live.add($.fn.BEE.user_options.live, "interval")
+                    .name("Interval");
+                folder_live.open();
+            }
             var folder_flash = self.gui.addFolder("Flash");
             var folder_recon = self.gui.addFolder("Recon");
             // console.log(self.gui.__folders.Recon)
@@ -1956,6 +1997,11 @@ if ( typeof Object.create !== 'function' ) {
 
                         $('#diag-plots').attr('href', plotUrl);
 
+                        var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
+                        var timeStr =  $.fn.BEE.current_sst.eventTime;
+                        var text = eventStr + "<br/>" + timeStr;
+                        $("#fullscreeninfo").html(text);
+
                     }
                     // console.log(sst);
 
@@ -2207,7 +2253,7 @@ if ( typeof Object.create !== 'function' ) {
             var text = eventStr + "<br/>" + timeStr;
 
             if (screenfull.enabled) {
-                $("#fullscreeninfo").html(text);
+                $("#fullscreeninfo").show();
                 screenfull.request(document.getElementById('container'));
             }
         },
@@ -2218,7 +2264,7 @@ if ( typeof Object.create !== 'function' ) {
             self.options.camera.rotate = false;
             self.animate();
             self.gui.open();
-            $("#fullscreeninfo").html("");
+            $("#fullscreeninfo").hide();
             // $("#statusbar").show();
         },
 
@@ -2877,6 +2923,10 @@ if ( typeof Object.create !== 'function' ) {
         slice : {
             width: 0.32,
             opacity: 0.05
+        },
+        live : {
+            refresh: false,
+            interval: 60
         },
         material : {
             colorScale: 1.0,

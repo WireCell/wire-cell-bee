@@ -20,7 +20,7 @@ def main(input_rootfile, output_jsonfile):
     print(cmd)
     while (True):
         os.system(cmd)
-        time.sleep(30)
+        time.sleep(10)
 
 
 def usage():
