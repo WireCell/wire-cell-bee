@@ -14,7 +14,7 @@ def main(input_rootfile, output_jsonfile):
     if not os.path.exists(dirname):
         os.makedirs(dirname)
 
-    cmd = "root -b -q -l 'run.C(\"%s\", \"%s\")'" % (
+    cmd = "root -b -q -l loadClasses.C 'run.C(\"%s\", \"%s\")'" % (
         input_rootfile,
         output_jsonfile)
     print(cmd)

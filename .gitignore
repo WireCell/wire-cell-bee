@@ -3,6 +3,7 @@
 *.d
 *.so
 *.zip
+*.pcm
 test.*
 data/
 tmp/
