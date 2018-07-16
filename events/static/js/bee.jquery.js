@@ -965,9 +965,17 @@ if ( typeof Object.create !== 'function' ) {
             var self = this;
             $.fn.BEE.scene3D.drawROI = !$.fn.BEE.scene3D.drawROI
             if ($.fn.BEE.scene3D.drawROI) {
+                for (var i=0; i<$.fn.BEE.scene3D.tpcHelpers.length; i++) {
+                    if (i!=$.fn.BEE.scene3D.roiTPC) {
+                        $.fn.BEE.scene3D.tpcHelpers[i].visible = false;
+                    }
+                }
                 self.drawInsideTPC($.fn.BEE.scene3D.roiTPC);
             }
             else {
+                for (var i=0; i<$.fn.BEE.scene3D.tpcHelpers.length; i++) {
+                    $.fn.BEE.scene3D.tpcHelpers[i].visible = true;
+                }
                 self.drawInsideThreeFrames();
             }
         },
