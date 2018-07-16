@@ -112,7 +112,14 @@ def event(request, set_id, event_id):
         'hasMC' : eventset.has_MC(int(event_id)),
         'sst': sst_list
     }
-    if (eventset.geom(event_id) == 'dune35t'):
+    if (eventset.geom(event_id) == 'uboone'):
+        options['camera'] = {
+            'depth': 2000,
+        }
+        options['geom']['name'] = 'uboone'
+        options['geom']['angleU'] = 60
+        options['geom']['angleV'] = 60
+    elif (eventset.geom(event_id) == 'dune35t'):
         options['camera'] = {
             'depth': 800,
         }

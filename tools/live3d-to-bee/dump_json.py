@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
-import os, sys, glob, shutil
+import os, sys, time
 
 def main(input_rootfile, output_jsonfile):
     rootIndex = output_jsonfile.find('protodune-live') - 1
@@ -18,7 +18,9 @@ def main(input_rootfile, output_jsonfile):
         input_rootfile,
         output_jsonfile)
     print(cmd)
-    os.system(cmd)
+    while (True):
+        os.system(cmd)
+        time.sleep(30)
 
 
 def usage():

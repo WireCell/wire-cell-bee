@@ -8,6 +8,7 @@
 #include "TTree.h"
 #include "TString.h"
 #include "TTimeStamp.h"
+#include "TRandom.h"
 
 using namespace std;
 
@@ -30,7 +31,7 @@ LiveEvent::LiveEvent(const char* filename, const char* jsonFileName)
 void LiveEvent::ReadEventTree()
 {
     T = (TTree*)rootFile->Get("sps/spt");
-    // cout << T << endl;
+    // cout << T->GetEntries() << endl;
 
     T->SetBranchAddress("run", &run);
     T->SetBranchAddress("subrun", &subrun);
@@ -41,13 +42,24 @@ void LiveEvent::ReadEventTree()
     T->SetBranchAddress("vz", &vz);
     T->SetBranchAddress("vcharge", &vcharge);
 
-    T->GetEntry(0);
     // cout << run << " " << evttime << endl;
 
 }
 
-void LiveEvent::Write()
+void LiveEvent::WriteRandom()
 {
+    gRandom->SetSeed(0);
+    int i = gRandom->Uniform(0, T->GetEntries());
+    Write(i);
+}
+
+void LiveEvent::Write(int i)
+{
+
+    T->GetEntry(i);
+    cout << "writing event " << i << ": "
+         << TString::Format("%i-%i-%i", run, subrun, event) << endl;
+
     int sec = int(evttime);
     int ns = int( (evttime-sec)*1e9 );
     TTimeStamp ts(sec, ns);

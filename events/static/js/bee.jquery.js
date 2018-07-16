@@ -1994,25 +1994,6 @@ if ( typeof Object.create !== 'function' ) {
             var self = this;
             // var folder_recon = self.gui.addFolder("Recon (" + sst.name + ")");
             var opacity = sst.name == "WireCell-charge" ? self.options.material.opacity : 0;
-            // var prop = {
-            //     size: 2,
-            //     opacity: opacity,
-            //     select: function() {
-            //         $.fn.BEE.current_sst = sst;
-            //         // console.log($.fn.BEE.current_sst);
-            //     }
-            // };
-            // folder_recon.add(prop, "size", 1, 6).step(1)
-            //     .onChange(function(value) {
-            //         sst.material.size = value;
-            //     });
-            // folder_recon.add(prop, "opacity", 0, 1)
-            //     .onChange(function(value) {
-            //         sst.material.opacity = value;
-            //     });
-            // if (sst.name == "WireCell-charge" || sst.name == "truth") {
-            //     folder_recon.open();
-            // }
 
             self.gui.__folders.Recon.add(sst, "selected")
                 .name(sst.name);
@@ -2059,6 +2040,10 @@ if ( typeof Object.create !== 'function' ) {
               var $logo = $('#event-logo');
               var new_src = $logo.attr('src').replace('dummy', $.fn.BEE.user_options.geom.name);
               $logo.attr('src', new_src);
+            }
+            else {
+                var $logo = $('#event-logo');
+                $logo.hide();
             }
         },
 
@@ -2122,26 +2107,6 @@ if ( typeof Object.create !== 'function' ) {
             var newId = id <= 0 ? maxId : id-1;
             window.location.assign(event_url + newId + '/' + base_query);
         },
-
-        // nextRecon: function() {
-        //     var self = this;
-        //     var disp = self.gui.__folders.General.__controllers[1];
-        //     var currentIndex = self.options.sst.indexOf(self.guiController.display);
-        //     var newIndex = currentIndex == self.options.sst.length - 1
-        //             ? 0
-        //             : currentIndex + 1;
-        //     disp.setValue(self.options.sst[newIndex]);
-        // },
-
-        // prevRecon: function() {
-        //     var self = this;
-        //     var disp = self.gui.__folders.General.__controllers[1];
-        //     var currentIndex = self.options.sst.indexOf(self.guiController.display);
-        //     var newIndex = currentIndex == 0
-        //             ? self.options.sst.length - 1
-        //             : currentIndex - 1;
-        //     disp.setValue(self.options.sst[newIndex]);
-        // },
 
         toggleOp: function() { this.op.toggle(); },
         drawOp: function() { this.op.draw(); },
@@ -2861,7 +2826,7 @@ if ( typeof Object.create !== 'function' ) {
 
     $.fn.BEE = function( options ) {
         $.fn.BEE.user_options = $.extend(true, {}, $.fn.BEE.options, Lockr.get('options'), options ); // recursive extend
-        // console.log(options);
+        // console.log($.fn.BEE.user_options);
         // console.log(Lockr.get('options'));
 
         var scene3D = Object.create(Scene3D);

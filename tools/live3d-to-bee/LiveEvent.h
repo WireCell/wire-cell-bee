@@ -31,7 +31,9 @@ public:
     virtual ~LiveEvent();
 
     void ReadEventTree();
-    void Write();
+    void Write(int i=0);
+    void WriteRandom();
+
 
     void print_vector(ostream& out, vector<double>& v, TString desc, bool end=false);
 };

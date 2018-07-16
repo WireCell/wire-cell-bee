@@ -309,6 +309,7 @@
         var options = {};
         var xhr = $.getJSON(window.location.href, function(data){
             $.extend(true, options, data);
+            // console.log(options);
         }); // server options
 
         xhr.then(function(){
