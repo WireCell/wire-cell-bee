@@ -1534,7 +1534,7 @@ if ( typeof Object.create !== 'function' ) {
                 $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[11][5]+self.tpcLoc[0][4])/2;
 
                 self.guiController.slice.position = -$.fn.BEE.user_options.geom.halfx;
-                self.roiTPC = 5;
+                self.roiTPC = 1;
 
             }
 
@@ -1582,6 +1582,28 @@ if ( typeof Object.create !== 'function' ) {
             // self.group_helper.add(self.helper);
             if ($.fn.BEE.user_options.helper.showTPCs == true) {
                 self.group_main.add(self.group_helper);
+            }
+
+            // add beam window
+            if ($.fn.BEE.user_options.geom.name == "protodune") {
+                var radius = 12.5;
+                var segments = 300; //<-- Increase or decrease for more resolution I guess
+
+                var circleGeometry = new THREE.CircleGeometry( radius, segments );
+                circleGeometry.vertices.shift(); // remove center vertex
+                var bw = new THREE.LineLoop(circleGeometry, new THREE.MeshBasicMaterial({
+                    color: 0xff0000,
+                    opacity: 0.2,
+                    side: THREE.DoubleSide
+                    // depthWrite: false
+                    // wireframe: true
+                }));
+                // console.log(self.locations);
+                // bw.rotation.y = Math.PI / 2;
+                bw.position.x = toLocalX(-27);
+                bw.position.y = toLocalY(423);
+                bw.position.z = toLocalZ(0);
+                self.group_main.add(bw);
             }
 
         },
