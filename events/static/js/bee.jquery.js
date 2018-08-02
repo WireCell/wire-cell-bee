@@ -647,7 +647,7 @@ if ( typeof Object.create !== 'function' ) {
                 ymean: getMeanOfArray(self.y),
                 zmean: getMeanOfArray(self.z)
             }
-            self.drawInsideThreeFrames();
+            self.drawInsideThreeFrames(false, $.fn.BEE.user_options.box.box_mode);
             // self.drawInsideBeamFrame()
         },
 
@@ -828,6 +828,11 @@ if ( typeof Object.create !== 'function' ) {
             var self = this;
             var size = self.x.length;
 
+            if(self.boxhelper != undefined) {
+                // $.fn.BEE.scene3D.scene.remove(self.group_box);
+                $.fn.BEE.scene3D.scene.remove(self.boxhelper);
+            }
+
             if (!(self.containedIn == null)) {
                 self.containedIn.remove(self.pointCloud);
             }
@@ -944,8 +949,13 @@ if ( typeof Object.create !== 'function' ) {
             self.drawInsideBox(start, start+width, -1e9, 1e9, -1e9, 1e9, randomClusterColor);
         },
 
-        drawInsideThreeFrames: function(randomClusterColor=false) {
-            this.drawInsideSlice(-3*this.options.geom.halfx, this.options.geom.halfx*6, randomClusterColor);
+        drawInsideThreeFrames: function(randomClusterColor=false, box_mode=false) {
+            if (box_mode) {
+                this.drawInsideBoxHelper();
+            }
+            else {
+                this.drawInsideSlice(-3*this.options.geom.halfx, this.options.geom.halfx*6, randomClusterColor);
+            }
         },
 
         drawInsideBeamFrame: function() {
@@ -959,6 +969,44 @@ if ( typeof Object.create !== 'function' ) {
                 toLocalX(r[0]), toLocalX(r[1]),
                 toLocalY(r[2]), toLocalY(r[3]),
                 toLocalZ(r[4]), toLocalZ(r[5]));
+        },
+
+        drawInsideBoxHelper: function() {
+            var self = this;
+
+            var xmin = toLocalX($.fn.BEE.user_options.box.xmin);
+            var xmax = toLocalX($.fn.BEE.user_options.box.xmax);
+            var ymin = toLocalY($.fn.BEE.user_options.box.ymin);
+            var ymax = toLocalY($.fn.BEE.user_options.box.ymax);
+            var zmin = toLocalZ($.fn.BEE.user_options.box.zmin);
+            var zmax = toLocalZ($.fn.BEE.user_options.box.zmax);
+
+            self.drawInsideBox(xmin, xmax, ymin, ymax, zmin, zmax);
+
+            if(self.boxhelper != undefined) {
+                // $.fn.BEE.scene3D.scene.remove(self.group_box);
+                $.fn.BEE.scene3D.scene.remove(self.boxhelper);
+            }
+            // self.group_box = new THREE.Group();
+            self.boxhelper = new THREE.Object3D;
+            var aBox = new THREE.Mesh(
+                new THREE.BoxGeometry(xmax-xmin, ymax-ymin, zmax-zmin ),
+                new THREE.MeshBasicMaterial( {
+                    color: 0x96f97b,
+                    transparent: true,
+                    depthWrite: true,
+                    opacity: 0.5,
+            }));
+            var box = new THREE.BoxHelper(aBox);
+            box.material.color.setHex(0xff0000);
+            self.boxhelper.add(box);
+            self.boxhelper.position.x = (xmax+xmin)/2;
+            self.boxhelper.position.y = (ymax+ymin)/2;
+            self.boxhelper.position.z = (zmax+zmin)/2;
+            // self.group_box.add(self.boxhelper);
+            // $.fn.BEE.scene3D.scene.add( self.group_op );
+            $.fn.BEE.scene3D.scene.add( self.boxhelper );
+
         },
 
         toggleROI: function() {
@@ -1133,8 +1181,33 @@ if ( typeof Object.create !== 'function' ) {
                     .name("Interval");
                 folder_live.open();
             }
+
             var folder_flash = self.gui.addFolder("Flash");
             var folder_recon = self.gui.addFolder("Recon");
+
+            var folder_box = self.gui.addFolder("Box");
+            folder_box.add($.fn.BEE.user_options.box, "box_mode")
+                .name("Box Mode")
+                .onChange(function(value) {
+                    if(value) {
+                       $.fn.BEE.current_sst.drawInsideBoxHelper();
+                    }
+                    else {
+                        $.fn.BEE.current_sst.drawInsideThreeFrames();
+                    }
+                });
+            folder_box.add($.fn.BEE.user_options.box, "xmin")
+                .name("x min");
+            folder_box.add($.fn.BEE.user_options.box, "xmax")
+                .name("x max");
+            folder_box.add($.fn.BEE.user_options.box, "ymin")
+                .name("y min");
+            folder_box.add($.fn.BEE.user_options.box, "ymax")
+                .name("y max");
+            folder_box.add($.fn.BEE.user_options.box, "zmin")
+                .name("z min");
+            folder_box.add($.fn.BEE.user_options.box, "zmax")
+                .name("z max");
             // console.log(self.gui.__folders.Recon)
             var options = {
                 'id' : $.fn.BEE.user_options.id,
@@ -1148,24 +1221,10 @@ if ( typeof Object.create !== 'function' ) {
                     window.location.assign(event_url + value + '/' + base_query);
                 });
 
-            // folder_general.add(ctrl, 'display', self.options.sst)
-            //    .name("Display")
-            //    .onChange(function(value) {
-            //         var ssts = self.listOfSST;
-            //         var sst;
-            //         for (var name in ssts) {
-            //             sst = ssts[name];
-            //             if (name == value) sst.material.opacity = self.options.material.opacity;
-            //             else sst.material.opacity = 0;
-            //             sst.material.needsUpdate = true;
-            //             checkSST(sst);
-            //         }
-            //    });
-
             folder_general.add($.fn.BEE.user_options, 'theme', ['dark', 'light'])
                .name("Theme")
                .onChange(function(value) {
-                    clearLocalStorage();
+                    // clearLocalStorage();
                     $(window).unbind('beforeunload');
                     var new_query;
                     if (base_query.indexOf('theme=light')>0) {
@@ -1535,7 +1594,6 @@ if ( typeof Object.create !== 'function' ) {
 
                 self.guiController.slice.position = -$.fn.BEE.user_options.geom.halfx;
                 self.roiTPC = 1;
-
             }
 
             // console.log($.fn.BEE.user_options.geom)
@@ -1560,7 +1618,7 @@ if ( typeof Object.create !== 'function' ) {
                 helper = new THREE.Object3D;
                 box = new THREE.BoxHelper(tpc);
                 // box.material.color.setHex(0x111111);
-                box.material.color.setHex(0x888888);
+                box.material.color.setHex(0x666666);
                 helper.add(box);
                 helper.position.x = toLocalX((self.tpcLoc[i][1]+self.tpcLoc[i][0])/2);
                 helper.position.y = toLocalY((self.tpcLoc[i][3]+self.tpcLoc[i][2])/2);
@@ -1977,9 +2035,13 @@ if ( typeof Object.create !== 'function' ) {
 
                        // console.log(sst_options[sst.name])
                     }
-                    sst.drawInsideThreeFrames();
                     sst.selected();
                     self.selected_sst = sst.name;
+                    // console.log('here');
+                    // sst.drawInsideThreeFrames();
+
+
+
                     // if (options && options['selected_sst'] && options['selected_sst'] == sst.name) {
                     //     sst.selected();
                     //     self.selected_sst = sst.name;
@@ -2532,6 +2594,16 @@ if ( typeof Object.create !== 'function' ) {
             $.fn.BEE.current_sst.toggleROI();
         },
 
+        toggleBox: function() {
+            $.fn.BEE.user_options.box.box_mode = !$.fn.BEE.user_options.box.box_mode
+            if($.fn.BEE.user_options.box.box_mode) {
+               $.fn.BEE.current_sst.drawInsideBoxHelper();
+            }
+            else {
+                $.fn.BEE.current_sst.drawInsideThreeFrames();
+            }
+        },
+
         increaseOpacity: function() {
             if ($.fn.BEE.current_sst.material.opacity >= 1) { return; }
             else { $.fn.BEE.current_sst.material.opacity += 0.05; }
@@ -2781,6 +2853,8 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent('o', self.redrawAllSSTRandom);
             self.addKeyEvent('shift+f', self.play);
             self.addKeyEvent('shift+i', self.toggleROI);
+            self.addKeyEvent('shift+b', self.toggleBox);
+
             self.addKeyEvent('\\', self.toggleScan);
 
             Mousetrap.bindGlobal('esc', function(){
@@ -2932,8 +3006,17 @@ if ( typeof Object.create !== 'function' ) {
             multiview: false
         },
         slice : {
-            width: 0.32,
-            opacity: 0.05
+            opacity: 0.0,
+            width: 0.32
+        },
+        box: {
+            box_mode: false,
+            xmin: 0.,
+            xmax: 0.,
+            ymin: 0.,
+            ymax: 0.,
+            zmin: 0.,
+            zmax: 0.
         },
         live : {
             refresh: false,
@@ -2953,6 +3036,14 @@ if ( typeof Object.create !== 'function' ) {
         ]
     };
     $.fn.BEE.user_options = $.fn.BEE.options;
+    if ($.fn.BEE.user_options.geom.name == "protodune") {
+        $.fn.BEE.user_options.box.xmin = -100;
+        $.fn.BEE.user_options.box.xmax = 0;
+        $.fn.BEE.user_options.box.ymin = 250;
+        $.fn.BEE.user_options.box.ymax = 500;
+        $.fn.BEE.user_options.box.zmin = 0;
+        $.fn.BEE.user_options.box.zmax = 400;
+    }
 
     $.fn.BEE.current_sst = {
         material: {
@@ -2996,6 +3087,7 @@ if ( typeof Object.create !== 'function' ) {
     function saveLocalStorage() {
         var options = {
             'material' : $.fn.BEE.user_options.material,
+            'box' : $.fn.BEE.user_options.box,
             'slice' : $.fn.BEE.user_options.slice,
             'theme' : $.fn.BEE.user_options.theme,
             'helper': $.fn.BEE.user_options.helper,
