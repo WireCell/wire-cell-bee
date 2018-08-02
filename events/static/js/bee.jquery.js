@@ -2149,7 +2149,8 @@ if ( typeof Object.create !== 'function' ) {
             if ($.fn.BEE.user_options.theme == 'light') {
               $('#event-info').removeClass('invert-color');
             }
-            if ($.fn.BEE.user_options.geom.name == 'uboone') {
+            var detector = $.fn.BEE.user_options.geom.name;
+            if ( detector == 'uboone' || detector == 'protodune') {
               var $logo = $('#event-logo');
               var new_src = $logo.attr('src').replace('dummy', $.fn.BEE.user_options.geom.name);
               $logo.attr('src', new_src);
@@ -2853,7 +2854,7 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent('o', self.redrawAllSSTRandom);
             self.addKeyEvent('shift+f', self.play);
             self.addKeyEvent('shift+i', self.toggleROI);
-            self.addKeyEvent('shift+b', self.toggleBox);
+            self.addKeyEvent('b', self.toggleBox);
 
             self.addKeyEvent('\\', self.toggleScan);
 
