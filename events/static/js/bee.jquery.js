@@ -1165,6 +1165,66 @@ if ( typeof Object.create !== 'function' ) {
             var ctrl = self.guiController;
 
             var folder_general = self.gui.addFolder("General");
+            var folder_helper = self.gui.addFolder("Helper");
+            folder_helper.add($.fn.BEE.user_options.helper, "showTPCs")
+                .name("Show TPCs")
+                .onChange(function(value) {
+                    if (value) {
+                        self.group_main.add(self.group_helper);
+                    }
+                    else {
+                        self.group_main.remove(self.group_helper);
+                    }
+                });
+            folder_helper.add($.fn.BEE.user_options.helper, "showAxises")
+                .name("Show Axes")
+                .onChange(function(value) {
+                    if (value) {
+                        self.scene.add(self.axises);
+                    }
+                    else {
+                        self.scene.remove(self.axises);
+                    }
+                });
+            folder_helper.add($.fn.BEE.user_options.helper, "showBeam")
+                .name("Show Beam")
+                .onChange(function(value) {
+                    if (value) {
+                        self.group_main.add(self.arrowHelper);
+                    }
+                    else {
+                        self.group_main.remove(self.arrowHelper);
+                    }
+                });
+            folder_helper.add($.fn.BEE.user_options.helper, "deadAreaOpacity", 0., 0.9)
+                .name("Inactivity")
+                .step(0.1)
+                .onChange(function(value) {
+                    if (value<0.05) {
+                        if (self.isShowDeadArea) {
+                            for (var i=0; i<self.listOfDeadAreas.length; i++) {
+                                self.scene.remove(self.listOfDeadAreas[i]);
+                                self.isShowDeadArea = false;
+                                // console.log('removed');
+                            }
+                        }
+                    }
+                    else {
+                        if (!self.isShowDeadArea) {
+                            self.isShowDeadArea = true;
+                            for (var i=0; i<self.listOfDeadAreas.length; i++) {
+                                var obj = self.listOfDeadAreas[i];
+                                self.scene.add(obj);
+                                // console.log('added');
+                            }
+                        }
+                        for (var i=0; i<self.listOfDeadAreas.length; i++) {
+                            var obj = self.listOfDeadAreas[i];
+                            obj.material.opacity = value;
+                            obj.material.needsUpdate = true;
+                        }
+                    }
+                });
             if (base_url.indexOf("live")>0) {
                 var folder_live = self.gui.addFolder("Live");
                 folder_live.add($.fn.BEE.user_options.live, "refresh")
@@ -1249,26 +1309,7 @@ if ( typeof Object.create !== 'function' ) {
                 .onChange(function(value) {
                     self.redrawAllSST();
                 });
-            folder_general.add($.fn.BEE.user_options.helper, "showTPCs")
-                .name("Show TPCs")
-                .onChange(function(value) {
-                    if (value) {
-                        self.group_main.add(self.group_helper);
-                    }
-                    else {
-                        self.group_main.remove(self.group_helper);
-                    }
-                });
-            folder_general.add($.fn.BEE.user_options.helper, "showAxises")
-                .name("Show Axes")
-                .onChange(function(value) {
-                    if (value) {
-                        self.scene.add(self.axises);
-                    }
-                    else {
-                        self.scene.remove(self.axises);
-                    }
-                });
+
             folder_general.add($.fn.BEE.user_options.material, "colorScale", 0., 1.9)
                 .name("Color-scale")
                 .step(0.01)
@@ -1279,36 +1320,7 @@ if ( typeof Object.create !== 'function' ) {
                         }
                     }
                 });
-            folder_general.add($.fn.BEE.user_options.helper, "deadAreaOpacity", 0., 0.9)
-                .name("Inactivity")
-                .step(0.1)
-                .onChange(function(value) {
-                    if (value<0.05) {
-                        if (self.isShowDeadArea) {
-                            for (var i=0; i<self.listOfDeadAreas.length; i++) {
-                                self.scene.remove(self.listOfDeadAreas[i]);
-                                self.isShowDeadArea = false;
-                                // console.log('removed');
-                            }
-                        }
-                    }
-                    else {
-                        if (!self.isShowDeadArea) {
-                            self.isShowDeadArea = true;
-                            for (var i=0; i<self.listOfDeadAreas.length; i++) {
-                                var obj = self.listOfDeadAreas[i];
-                                self.scene.add(obj);
-                                // console.log('added');
-                            }
-                        }
-                        for (var i=0; i<self.listOfDeadAreas.length; i++) {
-                            var obj = self.listOfDeadAreas[i];
-                            obj.material.opacity = value;
-                            obj.material.needsUpdate = true;
-                        }
-                    }
 
-                });
             // folder_general.add(self, 'toggleOp').name('Toggle Flash');
 
             folder_general.add($.fn.BEE.user_options.material, "showCluster")
@@ -1630,6 +1642,8 @@ if ( typeof Object.create !== 'function' ) {
                 // helper.material.transparent = true;
                 self.tpcHelpers.push(helper);
                 self.group_helper.add(helper);
+
+
             }
 
             // self.helper = new THREE.BoxHelper(new THREE.Mesh(
@@ -1662,6 +1676,21 @@ if ( typeof Object.create !== 'function' ) {
                 bw.position.y = toLocalY(423);
                 bw.position.z = toLocalZ(0);
                 self.group_main.add(bw);
+
+                var dir = new THREE.Vector3( -0.19, -0.13, 0.97 );
+                //normalize the direction vector (convert to vector of length 1)
+                dir.normalize();
+                var length = 200;
+                var hex = 0xffff00;
+                var origin = new THREE.Vector3(
+                    toLocalX(-27)-length*dir.x,
+                    toLocalY(423)-length*dir.y,
+                    toLocalZ(0)-length*dir.z
+                );
+                self.arrowHelper = new THREE.ArrowHelper( dir, origin, length, hex);
+                if ($.fn.BEE.user_options.helper.showBeam) {
+                    self.group_main.add( self.arrowHelper );
+                }
             }
 
         },
@@ -2979,7 +3008,8 @@ if ( typeof Object.create !== 'function' ) {
             showTPCs : true,
             showAxises : false,
             deadAreaOpacity : 0.0,
-            showFlash: false
+            showFlash: false,
+            showBeam: false
         },
         flash    : {
             showFlash: false,
