@@ -25,9 +25,9 @@ def main():
     # print(cmd_1)
     # print(cmd_2)
 
-    total_time = 60
     event_interval = 10 # sec
     transfer_ratio = 12 # 12*10 = 120 sec
+    total_time = transfer_ratio * event_interval
     while (True):
         if (total_time / event_interval == transfer_ratio):
             os.system(cmd_1)
