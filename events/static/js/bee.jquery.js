@@ -2362,6 +2362,12 @@ if ( typeof Object.create !== 'function' ) {
             var timeStr =  $.fn.BEE.current_sst.eventTime;
             var text = eventStr + "<br/>" + timeStr;
 
+            if ($.fn.BEE.user_options.geom.name == "protodune") {
+                self.playInterval = setInterval(function(){
+                    self.toggleBox();
+                }, 5000);
+            }
+
             if (screenfull.enabled) {
                 $("#fullscreeninfo").show();
                 screenfull.request(document.getElementById('container'));
@@ -2375,6 +2381,8 @@ if ( typeof Object.create !== 'function' ) {
             self.animate();
             self.gui.open();
             $("#fullscreeninfo").hide();
+            clearInterval(self.playInterval);
+
             // $("#statusbar").show();
         },
 
