@@ -509,6 +509,7 @@ if ( typeof Object.create !== 'function' ) {
         reload: function() {
             var self = this;
             self.setup();
+
             $('#runNo').html(self.runNo);
             $('#eventNo').html(self.eventNo);
             var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
@@ -625,6 +626,12 @@ if ( typeof Object.create !== 'function' ) {
         initPointCloud: function() {
             var self = this;
             var size = self.x.length;
+            if(self.material) {
+                var current_size = self.material.size;
+                var current_opacity = self.material.opacity;
+                var current_chargeColor = self.chargeColor;
+                // console.log(current_size, current_opacity, current_chargeColor);
+            }
 
             self.material = new THREE.PointsMaterial({
                 vertexColors    : true,
@@ -636,6 +643,12 @@ if ( typeof Object.create !== 'function' ) {
                 sizeAttenuation : false
             });
             if (self.name == self.options.sst[0]) self.material.opacity = self.options.material.opacity;
+            if (current_size) {
+                self.material.size = current_size;
+                self.material.opacity = current_opacity;
+                self.chargeColor = current_chargeColor;
+            }
+
             self.bounds = {
                 xmax: getMaxOfArray(self.x),
                 xmin: getMinOfArray(self.x),
@@ -1672,20 +1685,20 @@ if ( typeof Object.create !== 'function' ) {
                 }));
                 // console.log(self.locations);
                 // bw.rotation.y = Math.PI / 2;
-                bw.position.x = toLocalX(-27);
-                bw.position.y = toLocalY(423);
+                bw.position.x = toLocalX(-27.173);
+                bw.position.y = toLocalY(421.445);
                 bw.position.z = toLocalZ(0);
                 self.group_main.add(bw);
 
-                var dir = new THREE.Vector3( -0.19, -0.13, 0.97 );
+                var dir = new THREE.Vector3( -0.178177, -0.196387, 0.959408 );
                 //normalize the direction vector (convert to vector of length 1)
                 dir.normalize();
                 var length = 200;
-                var hex = 0xffff00;
+                var hex = 0xfcb001;
                 var origin = new THREE.Vector3(
-                    toLocalX(-27)-length*dir.x,
-                    toLocalY(423)-length*dir.y,
-                    toLocalZ(0)-length*dir.z
+                    bw.position.x-length*dir.x,
+                    bw.position.y-length*dir.y,
+                    bw.position.z-length*dir.z
                 );
                 self.arrowHelper = new THREE.ArrowHelper( dir, origin, length, hex);
                 if ($.fn.BEE.user_options.helper.showBeam) {
@@ -2349,6 +2362,12 @@ if ( typeof Object.create !== 'function' ) {
             var timeStr =  $.fn.BEE.current_sst.eventTime;
             var text = eventStr + "<br/>" + timeStr;
 
+            if ($.fn.BEE.user_options.geom.name == "protodune") {
+                self.playInterval = setInterval(function(){
+                    self.toggleBox();
+                }, 5000);
+            }
+
             if (screenfull.enabled) {
                 $("#fullscreeninfo").show();
                 screenfull.request(document.getElementById('container'));
@@ -2362,6 +2381,8 @@ if ( typeof Object.create !== 'function' ) {
             self.animate();
             self.gui.open();
             $("#fullscreeninfo").hide();
+            clearInterval(self.playInterval);
+
             // $("#statusbar").show();
         },
 
