@@ -20,6 +20,7 @@ LiveEvent::LiveEvent(const char* filename, const char* jsonFileName)
     rootFile = new TFile(filename);
     jsonFile.open(jsonFileName);
     T = 0;
+    trigger = 0;
     vx = new vector<double>;
     vy = new vector<double>;
     vz = new vector<double>;
@@ -38,6 +39,7 @@ void LiveEvent::ReadEventTree()
     T->SetBranchAddress("run", &run);
     T->SetBranchAddress("subrun", &subrun);
     T->SetBranchAddress("event", &event);
+    T->SetBranchAddress("trigger", &trigger);
     T->SetBranchAddress("evttime", &evttime);
     T->SetBranchAddress("vx", &vx);
     T->SetBranchAddress("vy", &vy);
@@ -100,6 +102,7 @@ void LiveEvent::Write(int i)
     jsonFile << '"' << "runNo" << '"' << ":" << '"' << run << '"' << "," << endl;
     jsonFile << '"' << "subRunNo" << '"' << ":" << '"' << subrun << '"' << "," << endl;
     jsonFile << '"' << "eventNo" << '"' << ":" << '"' << event << '"' << "," << endl;
+    jsonFile << '"' << "trigger" << '"' << ":" << '"' << trigger << '"' << "," << endl;
     jsonFile << '"' << "eventTime" << '"' << ":" << '"' << ts.AsString() << '"' << "," << endl;
     jsonFile << '"' << "geom" << '"' << ":" << '"' << "protodune" << '"' << endl;
 

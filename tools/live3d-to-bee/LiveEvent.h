@@ -20,6 +20,7 @@ public:
     int run;
     int subrun;
     int event;
+    int trigger;
     double evttime;
     std::vector<double> *vx;
     std::vector<double> *vy;
