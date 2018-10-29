@@ -25,6 +25,8 @@ public:
     std::vector<double> *vy;
     std::vector<double> *vz;
     std::vector<double> *vcharge;
+    std::vector<int> *vtrackid;
+
 
     LiveEvent();
     LiveEvent(const char* filename, const char* jsonFileName="0-3d.json");

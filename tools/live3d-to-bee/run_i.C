@@ -1,4 +1,4 @@
-void run(const char* input="tmp/eventtree.root", const char* output="20-3d.json")
+void run_i(const char* input, const char* output="0-3d.json", int i=0)
 {
     gROOT->Reset();
     // gROOT->ProcessLine(".x loadClasses.C" );
@@ -6,5 +6,5 @@ void run(const char* input="tmp/eventtree.root", const char* output="20-3d.json"
     gErrorIgnoreLevel = kError;
 
     LiveEvent ev(input, output);
-    ev.WriteRandom();
+    ev.Write(i);
 }

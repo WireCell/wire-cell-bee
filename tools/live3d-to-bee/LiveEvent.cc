@@ -23,6 +23,8 @@ LiveEvent::LiveEvent(const char* filename, const char* jsonFileName)
     vx = new vector<double>;
     vy = new vector<double>;
     vz = new vector<double>;
+    vtrackid = new vector<int>;
+
     vcharge = new vector<double>;
 
     ReadEventTree();
@@ -41,6 +43,7 @@ void LiveEvent::ReadEventTree()
     T->SetBranchAddress("vy", &vy);
     T->SetBranchAddress("vz", &vz);
     T->SetBranchAddress("vcharge", &vcharge);
+    T->SetBranchAddress("vtrackid", &vtrackid);
 
     // cout << run << " " << evttime << endl;
 
@@ -66,16 +69,28 @@ void LiveEvent::Write(int i)
     // cout << evttime-3.52507e+08 << " " << sec << endl;
     // cout << ts.AsString() << endl;
 
+    std::vector<double> vx_reco3d;
+    std::vector<double> vy_reco3d;
+    std::vector<double> vz_reco3d;
+    std::vector<double> vcharge_reco3d;
+    for (unsigned i=0; i<vx->size(); i++) {
+        if (vtrackid->at(i)>=0) continue;
+        vx_reco3d.push_back(vx->at(i));
+        vy_reco3d.push_back(vy->at(i));
+        vz_reco3d.push_back(vz->at(i));
+        vcharge_reco3d.push_back(vcharge->at(i));
+    }
+
 
     jsonFile << "{" << endl;
 
     jsonFile << fixed << setprecision(1);
-    print_vector(jsonFile, *vx, "x");
-    print_vector(jsonFile, *vy, "y");
-    print_vector(jsonFile, *vz, "z");
+    print_vector(jsonFile, vx_reco3d, "x");
+    print_vector(jsonFile, vy_reco3d, "y");
+    print_vector(jsonFile, vz_reco3d, "z");
 
     jsonFile << fixed << setprecision(0);
-    print_vector(jsonFile, *vcharge, "q");
+    print_vector(jsonFile, vcharge_reco3d, "q");
 
     jsonFile << '"' << "type" << '"' << ":" << '"' << "3d" << '"' << "," << endl;
 
