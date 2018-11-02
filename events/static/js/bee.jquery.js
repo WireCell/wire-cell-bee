@@ -508,15 +508,19 @@ if ( typeof Object.create !== 'function' ) {
 
         reload: function() {
             var self = this;
-            self.setup();
-
-            $('#runNo').html(self.runNo);
-            $('#eventNo').html(self.eventNo);
-            var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
-            var timeStr =  $.fn.BEE.current_sst.eventTime;
-            var text = eventStr + "<br/>" + timeStr;
-            $("#fullscreeninfo").html(text);
-            console.log('reloading', eventStr);
+            self.setup().then(function() {
+                $('#runNo').html(self.runNo);
+                $('#eventNo').html(self.eventNo);
+                var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
+                var timeStr =  $.fn.BEE.current_sst.eventTime;
+                var text = eventStr + " | trigger: " + $.fn.BEE.current_sst.trigger;
+                text = text + "<br/>" + timeStr;
+                // $("#fullscreeninfo").html(text);
+                if ($.fn.BEE.user_options.geom.name == "protodune") {
+                    $("#event-text").html(text);
+                }
+                console.log('reloading', eventStr);
+            });
         },
 
         refresh: function(sec) {
@@ -573,6 +577,8 @@ if ( typeof Object.create !== 'function' ) {
             self.eventNo = data.eventNo;
             if (data.eventTime == undefined) {self.eventTime = "";}
             else {self.eventTime = data.eventTime;}
+            if (data.trigger == undefined) {self.trigger = "0";}
+            else {self.trigger = data.trigger;}
             // console.log(data);
             self.clusterInfo = {};
 
@@ -1500,6 +1506,7 @@ if ( typeof Object.create !== 'function' ) {
                 ? new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000)
                 : new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 1, 8000);
             var camera = self.camera;
+            if ($.fn.BEE.user_options.camera.ortho) depth = depth*0.4;
             camera.position.z = depth*Math.cos(Math.PI/4);
             camera.position.x = -depth*Math.sin(Math.PI/4);
             camera.position.y = depth*Math.sin(Math.PI/6);
@@ -1619,6 +1626,24 @@ if ( typeof Object.create !== 'function' ) {
 
                 self.guiController.slice.position = -$.fn.BEE.user_options.geom.halfx;
                 self.roiTPC = 1;
+            }
+
+            else if ($.fn.BEE.user_options.geom.name == "icarus") {
+                self.tpcLoc = [
+                    [-365.63, -216.29, -210, 180, -995, 965],
+                    [-216.14, -66.8, -210, 180, -995, 965],
+                    [66.8, 216.14, -210, 180, -995, 965],
+                    [216.29, 365.63, -210, 180, -995, 965]
+                ];
+                $.fn.BEE.user_options.geom.halfx = (self.tpcLoc[3][1]-self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.halfy = (self.tpcLoc[3][3]-self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.halfz = (self.tpcLoc[3][5]-self.tpcLoc[0][4])/2;
+                $.fn.BEE.user_options.geom.center[0] = (self.tpcLoc[3][1]+self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.center[1] = (self.tpcLoc[3][3]+self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[3][5]+self.tpcLoc[0][4])/2;
+
+                self.guiController.slice.position = -$.fn.BEE.user_options.geom.halfx;
+                // self.roiTPC = 1;
             }
 
             // console.log($.fn.BEE.user_options.geom)
@@ -2108,8 +2133,13 @@ if ( typeof Object.create !== 'function' ) {
 
                         var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
                         var timeStr =  $.fn.BEE.current_sst.eventTime;
-                        var text = eventStr + "<br/>" + timeStr;
-                        $("#fullscreeninfo").html(text);
+                        var text = eventStr + " | trigger: " + $.fn.BEE.current_sst.trigger;
+                        text = text + "<br/>" + timeStr;
+                        // $("#fullscreeninfo").html(text);
+                        if ($.fn.BEE.user_options.geom.name == "protodune") {
+                            $("#event-text").html(text);
+                        }
+
 
                     }
                     // console.log(sst);
@@ -2358,18 +2388,18 @@ if ( typeof Object.create !== 'function' ) {
             self.animate();
             self.gui.close();
             // $("#statusbar").hide();
-            var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
-            var timeStr =  $.fn.BEE.current_sst.eventTime;
-            var text = eventStr + "<br/>" + timeStr;
+            // var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
+            // var timeStr =  $.fn.BEE.current_sst.eventTime;
+            // var text = eventStr + "<br/>" + timeStr;
 
-            if ($.fn.BEE.user_options.geom.name == "protodune") {
-                self.playInterval = setInterval(function(){
-                    self.toggleBox();
-                }, 5000);
-            }
+            // if ($.fn.BEE.user_options.geom.name == "protodune") {
+            //     self.playInterval = setInterval(function(){
+            //         self.toggleBox();
+            //     }, 5000);
+            // }
 
             if (screenfull.enabled) {
-                $("#fullscreeninfo").show();
+                // $("#fullscreeninfo").show();
                 screenfull.request(document.getElementById('container'));
             }
         },
@@ -2381,7 +2411,7 @@ if ( typeof Object.create !== 'function' ) {
             self.animate();
             self.gui.open();
             $("#fullscreeninfo").hide();
-            clearInterval(self.playInterval);
+            // clearInterval(self.playInterval);
 
             // $("#statusbar").show();
         },

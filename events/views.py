@@ -133,6 +133,13 @@ def event(request, set_id, event_id):
         options['geom']['name'] = 'protodune'
         options['geom']['angleU'] = 35.7
         options['geom']['angleV'] = 35.7
+    elif (eventset.geom(event_id) == 'icarus'):
+        options['camera'] = {
+            'depth': 3000,
+        }
+        options['geom']['name'] = 'icarus'
+        options['geom']['angleU'] = 60
+        options['geom']['angleV'] = 60
     elif (eventset.geom(event_id) == 'dune10kt_workspace'):
         options['camera'] = {
             'depth': 3000,
