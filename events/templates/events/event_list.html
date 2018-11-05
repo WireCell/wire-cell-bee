@@ -19,7 +19,7 @@
       </div>
 
       <div class='span12'>
-        <table class="table table-striped table-bordered table-hover">
+        <table class="table table-striped table-bordered table-hover" id="event-list-table">
           <thead>
             <th>Event No.</th>
             <th>DAQ ID</th>
@@ -53,6 +53,11 @@
 
 
     <script type="text/javascript" src="{% static 'js/lib/jquery-2.1.4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/picnet.table.filter.min.js' %}"></script>
+    <script>
+      $('#event-list-table').tableFilter();
+    </script>
+
   </body>
 
 </html>
