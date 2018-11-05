@@ -23,6 +23,7 @@
           <thead>
             <th>Event No.</th>
             <th>DAQ ID</th>
+            <th>Trigger</th>
             <th>Geometry</th>
             <th>Contents</th>
           </thead>
@@ -34,6 +35,7 @@
               </a>
             </td>
             <td>{{event.runNo}}-{{event.subRunNo}}-{{event.eventNo}}</td>
+            <td>{{event.trigger}}</td>
             <td>{{event.geom}}</td>
             <td>
               {% for alg in event.content_list %}

@@ -109,6 +109,7 @@ class EventSet(models.Model):
                     runNo = 0
                     subRunNo = 0
                     eventNo = 0
+                    trigger = 0
                     geom = 'uboone'
                     data_info = self.data_info(event_id)
                     recon_list = self.recon_list(event_id)
@@ -125,6 +126,7 @@ class EventSet(models.Model):
                                     subRunNo = content.get('subRunNo', 0)
                                     eventNo = content.get('eventNo', 0)
                                     geom = content.get('geom', 'uboone')
+                                    trigger = content.get('trigger', 0)
                                 except ValueError:
                                     pass
                             break
@@ -133,6 +135,7 @@ class EventSet(models.Model):
                         'subRunNo': subRunNo,
                         'eventNo': eventNo,
                         'geom': geom,
+                        'trigger': trigger,
                         'content_list': self.content_list(event_id),
                         'data': data_info
                     }
