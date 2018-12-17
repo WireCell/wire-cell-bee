@@ -24,11 +24,11 @@
             <th>Event No.</th>
             <th>DAQ ID</th>
             <th>Trigger</th>
-            <th>Geometry</th>
+            <th id="geom-head">Geometry</th>
             <th>Contents</th>
           </thead>
           {% for event in event_list %}
-          <tr>
+          <tr class='data-row'>
             <td>
               <a href="{% url 'event' set_id event.id %}">
               {{event.id}}
@@ -36,7 +36,7 @@
             </td>
             <td>{{event.runNo}}-{{event.subRunNo}}-{{event.eventNo}}</td>
             <td>{{event.trigger}}</td>
-            <td>{{event.geom}}</td>
+            <td class="geom">{{event.geom}}</td>
             <td>
               {% for alg in event.content_list %}
                 <a href="{% url 'data' set_id event.id alg%}">
@@ -56,6 +56,28 @@
     <script type="text/javascript" src="{% static 'js/lib/picnet.table.filter.min.js' %}"></script>
     <script>
       $('#event-list-table').tableFilter();
+      if ($(".geom:first").html() == 'protodune') {
+        $("#geom-head").html("Beam Momentum");
+        // protudune
+        var momentumMap = {
+          // '3936' : '2 GeV',
+          '5145' : '7 GeV',
+          '5387' : '1 GeV',
+          '5432' : '2 GeV',
+          '5770' : '6 GeV',
+          '5786' : '3 GeV',
+          '5826' : '0.5 GeV',
+          '5834' : '0.3 GeV'
+        };
+
+        $(".data-row").each(function(){
+          // console.log(this);
+          var tds = $(this).find("td");
+          var runNo = $(tds[1]).html().split('-')[0];
+          var momentum = momentumMap[runNo] || 'N/A';
+          $(tds[3]).html(momentum);
+        });
+      }
     </script>
 
   </body>

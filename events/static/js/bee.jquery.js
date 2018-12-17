@@ -506,19 +506,63 @@ if ( typeof Object.create !== 'function' ) {
             // self.setup();
         },
 
+        setEventText: function() {
+            // $("#fullscreeninfo").html(text);
+            if ($.fn.BEE.user_options.geom.name == "protodune") {
+                var text = '';
+                var momentumMap = {
+                  // '3936' : '2 GeV',
+                  '5762' : '2 GeV',
+                  '5145' : '7 GeV',
+                  '5387' : '1 GeV',
+                  '5432' : '2 GeV',
+                  '5770' : '6 GeV',
+                  '5786' : '3 GeV',
+                  '5826' : '0.5 GeV',
+                  '5834' : '0.3 GeV'
+                };
+                var triggerMap = {
+                    '12': 'Beam',
+                    '13': 'CRT',
+                    '8': 'Random'
+                };
+                var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
+                text += eventStr;
+
+                var triggerStr = triggerMap[$.fn.BEE.current_sst.trigger];
+                if (triggerStr) {
+                    triggerStr = $.fn.BEE.current_sst.trigger + ' [' + triggerStr + ']';
+                }
+                else {
+                    triggerStr = 'N/A';
+                }
+                text += '<br /> Trigger: ' + triggerStr;
+
+                var momentum = momentumMap[$.fn.BEE.current_sst.runNo];
+                if (momentum) {
+                    text += ' [momentum = ' + momentum + ']';
+                }
+
+                var timeStr =  $.fn.BEE.current_sst.eventTime;
+                text += "<br />" + timeStr;
+                $("#event-text").html(text);
+            }
+        },
+
         reload: function() {
             var self = this;
             self.setup().then(function() {
                 $('#runNo').html(self.runNo);
                 $('#eventNo').html(self.eventNo);
-                var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
-                var timeStr =  $.fn.BEE.current_sst.eventTime;
-                var text = eventStr + " | trigger: " + $.fn.BEE.current_sst.trigger;
-                text = text + "<br/>" + timeStr;
-                // $("#fullscreeninfo").html(text);
-                if ($.fn.BEE.user_options.geom.name == "protodune") {
-                    $("#event-text").html(text);
-                }
+                self.setEventText();
+                // var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
+                // var timeStr =  $.fn.BEE.current_sst.eventTime;
+                // var text = eventStr + " | trigger: " + $.fn.BEE.current_sst.trigger;
+                // text = text + "<br/>" + timeStr;
+                // // $("#fullscreeninfo").html(text);
+                // if ($.fn.BEE.user_options.geom.name == "protodune") {
+                //     $("#event-text").html(text);
+                // }
                 console.log('reloading', eventStr);
             });
         },
@@ -2130,16 +2174,16 @@ if ( typeof Object.create !== 'function' ) {
                             + sst.eventNo + '/';
 
                         $('#diag-plots').attr('href', plotUrl);
+                        sst.setEventText();
 
-                        var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
-                        var timeStr =  $.fn.BEE.current_sst.eventTime;
-                        var text = eventStr + " | trigger: " + $.fn.BEE.current_sst.trigger;
-                        text = text + "<br/>" + timeStr;
-                        // $("#fullscreeninfo").html(text);
-                        if ($.fn.BEE.user_options.geom.name == "protodune") {
-                            $("#event-text").html(text);
-                        }
-
+                        // var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
+                        // var timeStr =  $.fn.BEE.current_sst.eventTime;
+                        // var text = eventStr + " | trigger: " + $.fn.BEE.current_sst.trigger;
+                        // text = text + "<br/>" + timeStr;
+                        // // $("#fullscreeninfo").html(text);
+                        // if ($.fn.BEE.user_options.geom.name == "protodune") {
+                        //     $("#event-text").html(text);
+                        // }
 
                     }
                     // console.log(sst);
@@ -2395,7 +2439,8 @@ if ( typeof Object.create !== 'function' ) {
             // if ($.fn.BEE.user_options.geom.name == "protodune") {
             //     self.playInterval = setInterval(function(){
             //         self.toggleBox();
-            //     }, 5000);
+            //         self.toggeleTPCs();
+            //     }, 3000);
             // }
 
             if (screenfull.enabled) {
@@ -2411,7 +2456,9 @@ if ( typeof Object.create !== 'function' ) {
             self.animate();
             self.gui.open();
             $("#fullscreeninfo").hide();
-            // clearInterval(self.playInterval);
+            if (self.playInterval) {
+                clearInterval(self.playInterval);
+            }
 
             // $("#statusbar").show();
         },
@@ -2682,6 +2729,17 @@ if ( typeof Object.create !== 'function' ) {
             }
             else {
                 $.fn.BEE.current_sst.drawInsideThreeFrames();
+            }
+        },
+
+        toggeleTPCs: function() {
+            var self = this;
+            $.fn.BEE.user_options.helper.showTPCs = !$.fn.BEE.user_options.helper.showTPCs;
+            if ($.fn.BEE.user_options.helper.showTPCs) {
+                self.group_main.add(self.group_helper);
+            }
+            else {
+                self.group_main.remove(self.group_helper);
             }
         },
 
