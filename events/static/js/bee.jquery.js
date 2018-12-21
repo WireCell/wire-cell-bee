@@ -1091,6 +1091,19 @@ if ( typeof Object.create !== 'function' ) {
             }
         },
 
+        setProp: function() {
+            var self = this;
+            if (!$.fn.BEE.user_options.material.overlay) {
+                for (var name in $.fn.BEE.scene3D.listOfSST) {
+                    $.fn.BEE.scene3D.listOfSST[name].material.opacity = 0;
+                }
+                self.material.opacity = $.fn.BEE.user_options.material.opacity;
+            }
+            $.fn.BEE.ui_sst.$el_size.slider("value", self.material.size);
+            $.fn.BEE.ui_sst.$el_opacity.slider("value", self.material.opacity);
+            $.fn.BEE.ui_sst.$el_color.val('#'+self.chargeColor.getHexString());
+        },
+
         selected: function() {
             var self = this;
             $.fn.BEE.current_sst = this;
@@ -1102,15 +1115,17 @@ if ( typeof Object.create !== 'function' ) {
                 this.setup();
                 this.scene3D.registerSST(this);
                 this.process.then(function(){
-                    $.fn.BEE.ui_sst.$el_size.slider("value", self.material.size);
-                    $.fn.BEE.ui_sst.$el_opacity.slider("value", self.material.opacity);
-                    $.fn.BEE.ui_sst.$el_color.val('#'+self.chargeColor.getHexString());
+                    self.setProp();
+                    // $.fn.BEE.ui_sst.$el_size.slider("value", self.material.size);
+                    // $.fn.BEE.ui_sst.$el_opacity.slider("value", self.material.opacity);
+                    // $.fn.BEE.ui_sst.$el_color.val('#'+self.chargeColor.getHexString());
                 }, function(){});
             }
             else {
-                $.fn.BEE.ui_sst.$el_size.slider("value", self.material.size);
-                $.fn.BEE.ui_sst.$el_opacity.slider("value", self.material.opacity);
-                $.fn.BEE.ui_sst.$el_color.val('#'+self.chargeColor.getHexString());
+                self.setProp();
+                // $.fn.BEE.ui_sst.$el_size.slider("value", self.material.size);
+                // $.fn.BEE.ui_sst.$el_opacity.slider("value", self.material.opacity);
+                // $.fn.BEE.ui_sst.$el_color.val('#'+self.chargeColor.getHexString());
             }
             for (var name in listOfReconElems) {
                 listOfReconElems[name].css('color', 'white');
@@ -1391,6 +1406,14 @@ if ( typeof Object.create !== 'function' ) {
                 .onChange(function(value) {
                     self.redrawAllSST();
                 });
+
+            folder_general.add($.fn.BEE.user_options.material, "overlay")
+                .name("Overlay Reco")
+                .onChange(function(value) {
+                    // self.redrawAllSST()
+                    // console.log($.fn.BEE.user_options.overlay);
+                });
+
             folder_general.open();
 
             folder_flash.add(options, 'flash_id', 0, 200)
@@ -3224,7 +3247,8 @@ if ( typeof Object.create !== 'function' ) {
             colorScale: 1.0,
             opacity : 0.2,
             showCharge : true,
-            showCluster : false
+            showCluster : false,
+            overlay  : true
         },
         sst : [
             // "WireCell-charge",
