@@ -17,8 +17,9 @@ if ( typeof Object.create !== 'function' ) {
         base_url = base_url.substring(0, index_of_query_postion);
     }
     var event_url = base_url.substring(0, base_url.indexOf('event')) + 'event/';
-    // console.log(index_of_query_postion, base_url, base_query, event_url);
     var root_url = base_url.substring(0, base_url.indexOf('set'));
+    // console.log(index_of_query_postion, base_url, base_query, event_url, root_url);
+
     $( "#progressbar" ).progressbar({
       value: 0
     });
@@ -551,19 +552,21 @@ if ( typeof Object.create !== 'function' ) {
 
         reload: function() {
             var self = this;
+            if (base_url.indexOf("gallery")>0) {
+                var event_index = base_url.indexOf(event_url);
+                var eventNo = parseInt(base_url.substring(event_url.length));
+                if (eventNo == $.fn.BEE.user_options.nEvents-1) { eventNo = 0; }
+                else { eventNo += 1; }
+                base_url = event_url + eventNo + '/';
+                self.url =  base_url + self.name + "/";
+                // console.log($.fn.BEE.user_options.nEvents);
+            }
+
             self.setup().then(function() {
                 $('#runNo').html(self.runNo);
                 $('#eventNo').html(self.eventNo);
                 self.setEventText();
-                // var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
-                // var timeStr =  $.fn.BEE.current_sst.eventTime;
-                // var text = eventStr + " | trigger: " + $.fn.BEE.current_sst.trigger;
-                // text = text + "<br/>" + timeStr;
-                // // $("#fullscreeninfo").html(text);
-                // if ($.fn.BEE.user_options.geom.name == "protodune") {
-                //     $("#event-text").html(text);
-                // }
-                console.log('reloading', eventStr);
+                console.log('reloading: ', self.url);
             });
         },
 
@@ -1303,7 +1306,7 @@ if ( typeof Object.create !== 'function' ) {
                         }
                     }
                 });
-            if (base_url.indexOf("live")>0) {
+            if (base_url.indexOf("live")>0 || base_url.indexOf("gallery")>0) {
                 var folder_live = self.gui.addFolder("Live");
                 folder_live.add($.fn.BEE.user_options.live, "refresh")
                     .name("Refresh")
