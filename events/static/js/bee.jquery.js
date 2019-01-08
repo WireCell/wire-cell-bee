@@ -627,6 +627,8 @@ if ( typeof Object.create !== 'function' ) {
             if (data.trigger == undefined) {self.trigger = "0";}
             else {self.trigger = data.trigger;}
             // console.log(data);
+            if (data.bounding_box == undefined) { self.bounding_box = []; }
+            else { self.bounding_box = data.bounding_box;}
             self.clusterInfo = {};
 
             for (var i = 0; i < size_reduced; i++) {
@@ -1168,7 +1170,9 @@ if ( typeof Object.create !== 'function' ) {
             self.initCamera();
             self.initScene();
 
-            self.initHelper();
+            // if (! $.fn.BEE.user_options.geom.name == "dl") {
+                self.initHelper();
+            // }
             self.initSlice();
 
             self.initRenderer();
@@ -1585,10 +1589,20 @@ if ( typeof Object.create !== 'function' ) {
                 ? new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000)
                 : new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 1, 8000);
             var camera = self.camera;
-            if ($.fn.BEE.user_options.camera.ortho) depth = depth*0.4;
             camera.position.z = depth*Math.cos(Math.PI/4);
             camera.position.x = -depth*Math.sin(Math.PI/4);
             camera.position.y = depth*Math.sin(Math.PI/6);
+            // var depth0 = 3000;
+            // camera.position.z = depth0*Math.cos(Math.PI/4);
+            // camera.position.x = -depth0*Math.sin(Math.PI/4);
+            // camera.position.y = depth0*Math.sin(Math.PI/6);
+            if ($.fn.BEE.user_options.camera.ortho) {
+                camera.zoom = 1500./depth;
+                camera.updateProjectionMatrix();
+            }
+            // camera.zoom = depth0/depth;
+            // camera.updateProjectionMatrix();
+
 
             self.frontCamera = new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
             self.frontCamera.position.set (-1000,0,0);
@@ -1723,6 +1737,20 @@ if ( typeof Object.create !== 'function' ) {
 
                 self.guiController.slice.position = -$.fn.BEE.user_options.geom.halfx;
                 // self.roiTPC = 1;
+            }
+
+            if ($.fn.BEE.user_options.geom.name == "dl") {
+                self.tpcLoc = [
+                    // [0., 256., -115.51, 117.45, 0., 1036.96]
+                    // [13.77, 59.84, -14.39, 31.6, 129.32, 175.4]
+                    $.fn.BEE.user_options.geom.bounding_box
+                ];
+                $.fn.BEE.user_options.geom.halfx = (self.tpcLoc[0][1]-self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.halfy = (self.tpcLoc[0][3]-self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.halfz = (self.tpcLoc[0][5]-self.tpcLoc[0][4])/2;
+                $.fn.BEE.user_options.geom.center[0] = (self.tpcLoc[0][1]+self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.center[1] = (self.tpcLoc[0][3]+self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[0][5]+self.tpcLoc[0][4])/2;
             }
 
             // console.log($.fn.BEE.user_options.geom)
@@ -2185,7 +2213,6 @@ if ( typeof Object.create !== 'function' ) {
                     self.selected_sst = sst.name;
                     // console.log('here');
                     // sst.drawInsideThreeFrames();
-
 
 
                     // if (options && options['selected_sst'] && options['selected_sst'] == sst.name) {
@@ -2888,7 +2915,7 @@ if ( typeof Object.create !== 'function' ) {
                 var x = sst.geometry.attributes.position.array[index*3]; // local coordinates
                 var y = sst.geometry.attributes.position.array[index*3+1];
                 var z = sst.geometry.attributes.position.array[index*3+2];
-                console.log(index, x,y,z);
+                // console.log(index, x,y,z);
 
                 self.el_statusbar.html(
                     '(x, y, z) = ('
@@ -3219,7 +3246,8 @@ if ( typeof Object.create !== 'function' ) {
             halfz : 520.,
             center : [128, 0, 520],
             angleU : 60,
-            angleV : 60
+            angleV : 60,
+            bounding_box: []
         },
         camera   : {
             scale : 0.85,

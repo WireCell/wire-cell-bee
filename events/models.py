@@ -24,6 +24,12 @@ class EventSet(models.Model):
         else:
             return self.geometry
 
+    def bounding_box(self, eventNo=0):
+        if (self.pk==None):  # temporay, not saved to database
+            return self.summary()[eventNo]['bounding_box']
+        else:
+            return []
+
     def data_dir(self):
         d = None
         if (self.pk==None):  # temporay, not saved to database
@@ -127,6 +133,7 @@ class EventSet(models.Model):
                                     eventNo = content.get('eventNo', 0)
                                     geom = content.get('geom', 'uboone')
                                     trigger = content.get('trigger', 0)
+                                    bounding_box = content.get('bounding_box', [])
                                 except ValueError:
                                     pass
                             break
@@ -136,6 +143,7 @@ class EventSet(models.Model):
                         'eventNo': eventNo,
                         'geom': geom,
                         'trigger': trigger,
+                        'bounding_box': bounding_box,
                         'content_list': self.content_list(event_id),
                         'data': data_info
                     }

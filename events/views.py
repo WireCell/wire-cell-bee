@@ -147,6 +147,15 @@ def event(request, set_id, event_id):
         options['geom']['name'] = 'dune10kt_workspace'
         options['geom']['angleU'] = 35.7
         options['geom']['angleV'] = 35.7
+    elif (eventset.geom(event_id) == 'dl'):
+        options['camera'] = {
+            'depth': 200,
+        }
+        options['geom']['name'] = 'dl'
+        options['geom']['angleU'] = 60
+        options['geom']['angleV'] = 60    
+        options['geom']['bounding_box'] = eventset.bounding_box(event_id)
+
     # options.update(queryToOptions(request))
     options = update(options, queryToOptions(request))
     # print options
