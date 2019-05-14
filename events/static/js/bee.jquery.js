@@ -1048,6 +1048,17 @@ if ( typeof Object.create !== 'function' ) {
             var ymax = toLocalY($.fn.BEE.user_options.box.ymax);
             var zmin = toLocalZ($.fn.BEE.user_options.box.zmin);
             var zmax = toLocalZ($.fn.BEE.user_options.box.zmax);
+            var tpcNo = $.fn.BEE.user_options.box.tpcNo;
+
+            if (tpcNo >= 0) {
+                var r = $.fn.BEE.scene3D.tpcLoc[tpcNo];
+                xmin = toLocalX(r[0]);
+                xmax = toLocalX(r[1]);
+                ymin = toLocalY(r[2]);
+                ymax = toLocalY(r[3]);
+                zmin = toLocalZ(r[4]);
+                zmax = toLocalZ(r[5]);
+            }
 
             self.drawInsideBox(xmin, xmax, ymin, ymax, zmin, zmax);
 
@@ -1077,6 +1088,20 @@ if ( typeof Object.create !== 'function' ) {
 
         },
 
+        // drawROI: function() {
+        //     var self = this;
+        //     $.fn.BEE.scene3D.drawROI = true;
+        //     for (var i=0; i<$.fn.BEE.scene3D.tpcHelpers.length; i++) {
+        //         if (i!=$.fn.BEE.scene3D.roiTPC) {
+        //             $.fn.BEE.scene3D.tpcHelpers[i].visible = false;
+        //         }
+        //         else {
+        //             $.fn.BEE.scene3D.tpcHelpers[i].visible = true;
+        //         }
+        //     }
+        //     self.drawInsideTPC($.fn.BEE.scene3D.roiTPC);
+        // },
+
         toggleROI: function() {
             var self = this;
             $.fn.BEE.scene3D.drawROI = !$.fn.BEE.scene3D.drawROI
@@ -1084,6 +1109,9 @@ if ( typeof Object.create !== 'function' ) {
                 for (var i=0; i<$.fn.BEE.scene3D.tpcHelpers.length; i++) {
                     if (i!=$.fn.BEE.scene3D.roiTPC) {
                         $.fn.BEE.scene3D.tpcHelpers[i].visible = false;
+                    }
+                    else {
+                        $.fn.BEE.scene3D.tpcHelpers[i].visible = true;
                     }
                 }
                 self.drawInsideTPC($.fn.BEE.scene3D.roiTPC);
@@ -1353,6 +1381,19 @@ if ( typeof Object.create !== 'function' ) {
                 .name("z min");
             folder_box.add($.fn.BEE.user_options.box, "zmax")
                 .name("z max");
+            folder_box.add($.fn.BEE.user_options.box, "tpcNo", -1, 11)
+                .name("TPC No.").step(1)
+                .onChange(function(value) {
+                    // console.log(value);
+                    if (value >= 0) {
+                        $.fn.BEE.current_sst.drawInsideBoxHelper();
+                    }
+                    else {
+                        $.fn.BEE.current_sst.drawInsideThreeFrames();
+                    }
+                    // $.fn.BEE.scene3D.roiTPC = value;
+                    // $.fn.BEE.current_sst.drawROI();
+                });
             // console.log(self.gui.__folders.Recon)
             var options = {
                 'id' : $.fn.BEE.user_options.id,
@@ -3268,7 +3309,8 @@ if ( typeof Object.create !== 'function' ) {
             ymin: 0.,
             ymax: 0.,
             zmin: 0.,
-            zmax: 0.
+            zmax: 0.,
+            tpcNo: -1
         },
         live : {
             refresh: false,
