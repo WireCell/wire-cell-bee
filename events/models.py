@@ -117,6 +117,7 @@ class EventSet(models.Model):
                     eventNo = 0
                     trigger = 0
                     geom = 'uboone'
+                    bounding_box = []
                     data_info = self.data_info(event_id)
                     recon_list = self.recon_list(event_id)
                     # print recon_list
