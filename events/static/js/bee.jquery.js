@@ -1054,6 +1054,8 @@ if ( typeof Object.create !== 'function' ) {
                 var r = $.fn.BEE.scene3D.tpcLoc[tpcNo];
                 xmin = toLocalX(r[0]);
                 xmax = toLocalX(r[1]);
+                // xmin = toLocalX(r[0]-$.fn.BEE.scene3D.driftVelocity*$.fn.BEE.scene3D.daqTimeBeforeTrigger);
+                // xmax = toLocalX(r[0]+$.fn.BEE.scene3D.driftVelocity*$.fn.BEE.scene3D.daqTimeAfterTrigger);
                 ymin = toLocalY(r[2]);
                 ymax = toLocalY(r[3]);
                 zmin = toLocalZ(r[4]);
@@ -1682,6 +1684,10 @@ if ( typeof Object.create !== 'function' ) {
             self.tpcHelpers = [];
             self.roiTPC = 0;
             self.drawROI = false;
+            // default are for protodune
+            self.driftVelocity = 0.16; // cm/us
+            self.daqTimeBeforeTrigger = 500*0.5; //us
+            self.daqTimeAfterTrigger = 5500*0.5; //us
 
             // $.fn.BEE.user_options.geom.name = "dune35t";
 
@@ -1696,6 +1702,9 @@ if ( typeof Object.create !== 'function' ) {
                 $.fn.BEE.user_options.geom.center[0] = (self.tpcLoc[0][1]+self.tpcLoc[0][0])/2;
                 $.fn.BEE.user_options.geom.center[1] = (self.tpcLoc[0][3]+self.tpcLoc[0][2])/2;
                 $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[0][5]+self.tpcLoc[0][4])/2;
+                self.driftVelocity = 0.1101; // cm/us
+                self.daqTimeBeforeTrigger = (3200+10)*0.5; //us
+                self.daqTimeAfterTrigger = (6400-10)*0.5; //us
             }
 
             else if ($.fn.BEE.user_options.geom.name == "dune35t") {
