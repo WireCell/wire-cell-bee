@@ -1629,7 +1629,7 @@ if ( typeof Object.create !== 'function' ) {
             // console.log(self.options);
 
             self.camera = $.fn.BEE.user_options.camera.ortho
-                ? new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000)
+                ? new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 8000)
                 : new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 1, 8000);
             var camera = self.camera;
             camera.position.z = depth*Math.cos(Math.PI/4);
@@ -1826,6 +1826,8 @@ if ( typeof Object.create !== 'function' ) {
                 box = new THREE.BoxHelper(tpc);
                 // box.material.color.setHex(0x111111);
                 box.material.color.setHex(0x666666);
+                box.material.transparent = true;
+                box.material.opacity = 0.5;
                 helper.add(box);
                 helper.position.x = toLocalX((self.tpcLoc[i][1]+self.tpcLoc[i][0])/2);
                 helper.position.y = toLocalY((self.tpcLoc[i][3]+self.tpcLoc[i][2])/2);
@@ -2034,7 +2036,6 @@ if ( typeof Object.create !== 'function' ) {
                     }
                     self.listOfMCObjects = [];
 
-
                     var nSelected = data.selected.length;
                     var line, node, geometry, material;
                     for (var i=0; i<nSelected; i++) {
@@ -2054,18 +2055,33 @@ if ( typeof Object.create !== 'function' ) {
                             });
                         }
                         geometry = new THREE.Geometry();
-                        geometry.vertices.push(
-                            new THREE.Vector3(
-                                toLocalX(node.data.start[0]),
-                                toLocalY(node.data.start[1]),
-                                toLocalZ(node.data.start[2])
-                            ),
-                            new THREE.Vector3(
-                                toLocalX(node.data.end[0]),
-                                toLocalY(node.data.end[1]),
-                                toLocalZ(node.data.end[2])
-                            )
-                        );
+                        if (node.data.traj_x == undefined) {
+                            geometry.vertices.push(
+                                new THREE.Vector3(
+                                    toLocalX(node.data.start[0]),
+                                    toLocalY(node.data.start[1]),
+                                    toLocalZ(node.data.start[2])
+                                ),
+                                new THREE.Vector3(
+                                    toLocalX(node.data.end[0]),
+                                    toLocalY(node.data.end[1]),
+                                    toLocalZ(node.data.end[2])
+                                )
+                            );
+                        }
+                        else {
+                            var trajPoints = node.data.traj_x.length;
+                            for (var j=0; j<trajPoints; j++) {
+                                geometry.vertices.push(
+                                    new THREE.Vector3(
+                                        toLocalX(node.data.traj_x[j]),
+                                        toLocalY(node.data.traj_y[j]),
+                                        toLocalZ(node.data.traj_z[j])
+                                    )
+                                );
+                            }
+                        }
+
                         line = new THREE.Line( geometry, material );
 
                         self.listOfMCObjects.push(line);
