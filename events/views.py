@@ -31,6 +31,37 @@ def get_eventset(set_id):
         eventset.alias = set_id
     return eventset
 
+def collection(request, collection_id):
+    context = {
+        'collection_id': collection_id,
+        'sets': []
+    }
+
+    try:
+        collection_root = "%s/%s" % (settings.MEDIA_ROOT, collection_id)
+        subdirs = sorted(os.listdir(collection_root))
+        for subdir in subdirs:
+            sets = os.listdir(collection_root+'/'+subdir)
+            nEvents = 'unknown'
+            if 'data' in sets:
+                summary_file = collection_root+'/'+subdir + '/data/summary.json'
+                if os.path.exists(summary_file):
+                    # print summary_file, 'found'
+                    # print self.event_list()
+                    with open(summary_file) as json_file:
+                        info = json.load(json_file)
+                        nEvents = len(info.keys())
+                context['sets'].append({
+                    'name': subdir,
+                    'fullname': collection_id+'/'+subdir,
+                    'nEvents' : nEvents
+                })
+    except OSError:
+        return HttpResponse('Collection ' + collection_id + ' does not exist.')
+
+    # print context
+    return render(request, 'events/collection.html', context)
+
 
 def event_list(request, set_id):
     try:

@@ -9,6 +9,8 @@ urlpatterns = patterns('',
     url(r'^set/(?P<set_id>.+)/event/(?P<event_id>\d+)/evd-2d/$', views.evd_2D, name='evd_2D'),
     url(r'^set/(?P<set_id>.+)/event/(?P<event_id>\d+)/(?P<name>[\w\-]+)/$', views.data, name='data'),
 
+    url(r'^collection/(?P<collection_id>.+)/$', views.collection, name='collection'),
+
     url(r'^upload/$', views.upload, name='upload'),
 
 )

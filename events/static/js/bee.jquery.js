@@ -1301,6 +1301,11 @@ if ( typeof Object.create !== 'function' ) {
                         self.scene.remove(self.axises);
                     }
                 });
+            folder_helper.add($.fn.BEE.user_options.helper, "showMCNeutral")
+                .name("Show Neutral Particles (MC)")
+                .onChange(function(value) {
+                    $('#mc').jstree(true).refresh();
+                });
             folder_helper.add($.fn.BEE.user_options.helper, "showBeam")
                 .name("Show Beam")
                 .onChange(function(value) {
@@ -2043,15 +2048,21 @@ if ( typeof Object.create !== 'function' ) {
                         if (node.text.indexOf("nu_")>=0
                             || node.text.indexOf("neutron")>=0
                             || node.text.indexOf('gamma')>=0) {
-                            material = new THREE.LineBasicMaterial({
-                                color: 0x59656d,
-                                linewidth: 1,
-                            });
+                            if ($.fn.BEE.user_options.helper.showMCNeutral) {
+                                material = new THREE.LineBasicMaterial({
+                                    color: 0x59656d,
+                                    linewidth: 1,
+                                });
+                            }
+                            else {
+                                continue; // skip neutral particles
+                            }
+
                         }
                         else {
                             material = new THREE.LineBasicMaterial({
                                 color: 0xff000d,
-                                linewidth: 4,
+                                linewidth: 4, // webgl doesn't support line width for now
                             });
                         }
                         geometry = new THREE.Geometry();
@@ -2907,6 +2918,17 @@ if ( typeof Object.create !== 'function' ) {
                 $.fn.BEE.current_sst.drawInsideThreeFrames();
             }
         },
+        
+        nextTPC: function() {
+            var length = $.fn.BEE.scene3D.tpcLoc.length;
+            $.fn.BEE.current_sst.drawInsideBoxHelper();
+            if ($.fn.BEE.user_options.box.tpcNo < length-1) {
+                $.fn.BEE.user_options.box.tpcNo += 1;
+            }
+            else {
+                $.fn.BEE.user_options.box.tpcNo = 0;
+            }
+        },
 
         toggeleTPCs: function() {
             var self = this;
@@ -3169,6 +3191,7 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent('shift+f', self.play);
             self.addKeyEvent('shift+i', self.toggleROI);
             self.addKeyEvent('b', self.toggleBox);
+            self.addKeyEvent('shift+t', self.nextTPC);
 
             self.addKeyEvent('\\', self.toggleScan);
 
@@ -3294,6 +3317,7 @@ if ( typeof Object.create !== 'function' ) {
             showAxises : false,
             deadAreaOpacity : 0.0,
             showFlash: false,
+            showMCNeutral: false,
             showBeam: false
         },
         flash    : {
