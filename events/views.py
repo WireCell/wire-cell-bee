@@ -47,14 +47,19 @@ def collection(request, collection_id):
                 summary_file = collection_root+'/'+subdir + '/data/summary.json'
                 if os.path.exists(summary_file):
                     # print summary_file, 'found'
-                    # print self.event_list()
                     with open(summary_file) as json_file:
                         info = json.load(json_file)
                         nEvents = len(info.keys())
                 context['sets'].append({
                     'name': subdir,
-                    'fullname': collection_id+'/'+subdir,
-                    'nEvents' : nEvents
+                    'nEvents' : nEvents,
+                    'url' : 'set/'+collection_id+'/'+subdir+'/event/list/'
+                })
+            else:
+                context['sets'].append({
+                    'name': subdir,
+                    'nEvents' : '[folder]',
+                    'url' : 'collection/'+collection_id+'/'+subdir+'/'
                 })
     except OSError:
         return HttpResponse('Collection ' + collection_id + ' does not exist.')

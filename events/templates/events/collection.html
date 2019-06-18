@@ -26,7 +26,7 @@
           {% for set in sets %}
           <tr class='data-row'>
             <td>
-              <a href="{% url 'event_list' set.fullname %}">
+              <a href="{% url 'eventsets' %}{{set.url}}">
               {{set.name}}
               </a>
             </td>
