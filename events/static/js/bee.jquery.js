@@ -1633,9 +1633,10 @@ if ( typeof Object.create !== 'function' ) {
             var depth = self.options.camera.depth;
             // console.log(self.options);
 
+            // orthographic camera: frustum aspect ratio mush match viewport's aspect ratio
             self.camera = $.fn.BEE.user_options.camera.ortho
-                ? new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 8000)
-                : new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 1, 8000);
+                ? new THREE.OrthographicCamera(window.innerWidth/-2*self.options.camera.scale, window.innerWidth/2*self.options.camera.scale, window.innerHeight/2, window.innerHeight/-2, 1, 8000)
+                : new THREE.PerspectiveCamera(25, window.innerWidth*self.options.camera.scale / window.innerHeight, 1, 8000);
             var camera = self.camera;
             camera.position.z = depth*Math.cos(Math.PI/4);
             camera.position.x = -depth*Math.sin(Math.PI/4);
@@ -1652,15 +1653,15 @@ if ( typeof Object.create !== 'function' ) {
             // camera.updateProjectionMatrix();
 
 
-            self.frontCamera = new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
+            self.frontCamera = new THREE.OrthographicCamera(window.innerWidth/-2*self.options.camera.scale, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
             self.frontCamera.position.set (-1000,0,0);
             self.frontCamera.lookAt (new THREE.Vector3(0,0,0));
 
-            self.sideCamera = new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
+            self.sideCamera = new THREE.OrthographicCamera(window.innerWidth/-2*self.options.camera.scale, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
             self.sideCamera.position.set(0,0,1000);
             self.sideCamera.lookAt (new THREE.Vector3(0,0,0));
 
-            self.topCamera = new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
+            self.topCamera = new THREE.OrthographicCamera(window.innerWidth/-2*self.options.camera.scale, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
             self.topCamera.position.set(0,1000,0);
             self.topCamera.up.set(1,0,0);
             self.topCamera.lookAt(new THREE.Vector3(0,0,0));
@@ -2380,7 +2381,6 @@ if ( typeof Object.create !== 'function' ) {
             var self = this;
             self.renderer = new THREE.WebGLRenderer( { antialias: true } );
             var renderer = self.renderer;
-
             renderer.setPixelRatio( window.devicePixelRatio );
             renderer.setSize( window.innerWidth*self.options.camera.scale, window.innerHeight );
             renderer.gammaInput = true;
@@ -2389,7 +2389,6 @@ if ( typeof Object.create !== 'function' ) {
                 renderer.setClearColor(0xFFFFFF, 1);
                 // renderer.setClearColor(0xdddddd, 1);
             }
-
             // container = document.getElementById( 'container' );
             var container = self.$elem[0];
             container.appendChild(renderer.domElement);
@@ -3256,7 +3255,7 @@ if ( typeof Object.create !== 'function' ) {
 
                 if ($.fn.BEE.user_options.camera.multiview) {
                     // front camera
-                    left = -10; bottom = SCREEN_H-300; width = SCREEN_W*0.3; height = SCREEN_H*0.3;
+                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = -10; bottom = SCREEN_H-300; 
                     renderer.setViewport (left,bottom,width,height);
                     renderer.setScissor(left,bottom,width,height);
                     renderer.setScissorTest(true);
@@ -3340,7 +3339,7 @@ if ( typeof Object.create !== 'function' ) {
             bounding_box: []
         },
         camera   : {
-            scale : 0.85,
+            scale : 1.,
             depth : 2000,
             ortho : true,
             rotate: false,
