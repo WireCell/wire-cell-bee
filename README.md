@@ -1,4 +1,6 @@
-# BEE Display for Wire-Cell
+# BEE Display for Wire-Cell 
+
+![logo](events/static/css/wire-cell-bee-400x400.png) 
 
 ## Requirements
 
