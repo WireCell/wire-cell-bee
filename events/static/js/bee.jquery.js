@@ -1225,9 +1225,9 @@ if ( typeof Object.create !== 'function' ) {
             self.initOP();
             self.initCT();
             self.initDeadArea();
-            if ($.fn.BEE.user_options.helper.showSCB) {
-                self.drawSpaceChargeBoundary();
-            }
+            // if ($.fn.BEE.user_options.helper.showSCB) {
+            //     self.drawSpaceChargeBoundary();
+            // }
             self.initGuiSlice();
             self.initGuiCamera();
 
@@ -1325,13 +1325,25 @@ if ( typeof Object.create !== 'function' ) {
             .name("Show SCB")
             .onChange(function(value) {
                 if (value) {
-                    self.drawSpaceChargeBoundary();
+                    var op = $.fn.BEE.scene3D.op;
+                    if (op.t != undefined) {
+                        self.drawSpaceChargeBoundary(
+                            op.t[op.currentFlash]*op.driftV
+                        );
+                    }
+                    else {
+                        self.drawSpaceChargeBoundary();
+                    }
+
                 }
                 else {
-                    for (var i=0; i<self.listOfSCBObjects.length; i++){
-                        self.scene.remove(self.listOfSCBObjects[i]);
+                    if (self.listOfSCBObjects != undefined) {
+                        for (var i=0; i<self.listOfSCBObjects.length; i++){
+                            self.scene.remove(self.listOfSCBObjects[i]);
+                        }
+                        self.listOfSCBObjects= [];            
                     }
-                    self.listOfSCBObjects= [];                }
+                }
             });
             folder_helper.add($.fn.BEE.user_options.helper, "deadAreaOpacity", 0., 0.9)
                 .name("Inactivity")
@@ -2063,7 +2075,7 @@ if ( typeof Object.create !== 'function' ) {
             // console.log(detector, ': init scb');
 
             var material = new THREE.LineDashedMaterial({
-                color: 0x59656d,
+                color: 0xff796c,
                 linewidth: 1,
                 scale: 1,
                 dashSize: 3,
