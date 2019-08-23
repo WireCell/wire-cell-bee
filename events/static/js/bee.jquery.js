@@ -425,6 +425,9 @@ if ( typeof Object.create !== 'function' ) {
                 )
 
             }
+            if($.fn.BEE.user_options.helper.showSCB) {
+                $.fn.BEE.scene3D.drawSpaceChargeBoundary(self.driftV*t);
+            }
 
         }
     };
@@ -1223,7 +1226,7 @@ if ( typeof Object.create !== 'function' ) {
             self.initCT();
             self.initDeadArea();
             if ($.fn.BEE.user_options.helper.showSCB) {
-                self.initSpaceChargeBoundary();
+                self.drawSpaceChargeBoundary();
             }
             self.initGuiSlice();
             self.initGuiCamera();
@@ -1322,7 +1325,7 @@ if ( typeof Object.create !== 'function' ) {
             .name("Show SCB")
             .onChange(function(value) {
                 if (value) {
-                    self.initSpaceChargeBoundary();
+                    self.drawSpaceChargeBoundary();
                 }
                 else {
                     for (var i=0; i<self.listOfSCBObjects.length; i++){
@@ -2043,8 +2046,14 @@ if ( typeof Object.create !== 'function' ) {
             );
         },
 
-        initSpaceChargeBoundary: function() {
+        drawSpaceChargeBoundary: function(shiftx=0) {
+            // console.log(shiftx);
             var self = this;
+            if (self.listOfSCBObjects != undefined) {
+                for (var i=0; i<self.listOfSCBObjects.length; i++){
+                    self.scene.remove(self.listOfSCBObjects[i]);
+                }
+            }
             self.listOfSCBObjects = [];
 
             var detector = $.fn.BEE.user_options.geom.name;
@@ -2078,7 +2087,7 @@ if ( typeof Object.create !== 'function' ) {
                 for (var j=0; j<=1; j++) {
                     geometry.vertices.push(
                         new THREE.Vector3(
-                            toLocalX(all_vtx[i][j][0]),
+                            toLocalX(all_vtx[i][j][0]+shiftx),
                             toLocalY(all_vtx[i][j][1]),
                             toLocalZ(all_vtx[i][j][2])
                         )
