@@ -1222,7 +1222,9 @@ if ( typeof Object.create !== 'function' ) {
             self.initOP();
             self.initCT();
             self.initDeadArea();
-
+            if ($.fn.BEE.user_options.helper.showSCB) {
+                self.initSpaceChargeBoundary();
+            }
             self.initGuiSlice();
             self.initGuiCamera();
 
@@ -1316,6 +1318,18 @@ if ( typeof Object.create !== 'function' ) {
                         self.group_main.remove(self.arrowHelper);
                     }
                 });
+            folder_helper.add($.fn.BEE.user_options.helper, "showSCB")
+            .name("Show SCB")
+            .onChange(function(value) {
+                if (value) {
+                    self.initSpaceChargeBoundary();
+                }
+                else {
+                    for (var i=0; i<self.listOfSCBObjects.length; i++){
+                        self.scene.remove(self.listOfSCBObjects[i]);
+                    }
+                    self.listOfSCBObjects= [];                }
+            });
             folder_helper.add($.fn.BEE.user_options.helper, "deadAreaOpacity", 0., 0.9)
                 .name("Inactivity")
                 .step(0.1)
@@ -2027,6 +2041,55 @@ if ( typeof Object.create !== 'function' ) {
                 function() {
                 }
             );
+        },
+
+        initSpaceChargeBoundary: function() {
+            var self = this;
+            self.listOfSCBObjects = [];
+
+            var detector = $.fn.BEE.user_options.geom.name;
+            if ( detector != 'uboone') {
+                return; // only implemented in uboone
+            }
+            // console.log(detector, ': init scb');
+
+            var material = new THREE.LineDashedMaterial({
+                color: 0x59656d,
+                linewidth: 1,
+                scale: 1,
+                dashSize: 3,
+                gapSize: 1,
+            });
+            var z = self.tpcLoc[0][5];
+            var ymax = self.tpcLoc[0][3];
+            var ymin = self.tpcLoc[0][2];
+            var all_vtx = [
+                [[80, -116, 0], [256, -99, 0]],
+                [[80, -116, z], [256, -99, z]],
+                [[100, 116, 0], [256, 102, 0]],
+                [[100, 116, z], [256, 102, z]],
+                [[120, ymax, 0], [256, ymax, 11]],
+                [[120, ymax, 1037], [256, ymax, 1026]],
+                [[120, ymin, 0], [256, ymin, 11]],
+                [[120, ymin, 1037], [256, ymin, 1026]],
+            ]
+            for (var i=0; i<all_vtx.length; i++) {
+                var geometry = new THREE.Geometry();
+                for (var j=0; j<=1; j++) {
+                    geometry.vertices.push(
+                        new THREE.Vector3(
+                            toLocalX(all_vtx[i][j][0]),
+                            toLocalY(all_vtx[i][j][1]),
+                            toLocalZ(all_vtx[i][j][2])
+                        )
+                    )
+                }
+                geometry.computeLineDistances();
+                var line = new THREE.Line( geometry, material );
+                self.listOfSCBObjects.push(line);
+                self.scene.add(line);
+            }
+
         },
 
         initMC: function() {
@@ -3317,7 +3380,8 @@ if ( typeof Object.create !== 'function' ) {
             deadAreaOpacity : 0.0,
             showFlash: false,
             showMCNeutral: false,
-            showBeam: false
+            showBeam: false,
+            showSCB: true
         },
         flash    : {
             showFlash: false,
