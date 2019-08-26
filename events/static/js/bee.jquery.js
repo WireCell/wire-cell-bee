@@ -3339,8 +3339,8 @@ if ( typeof Object.create !== 'function' ) {
 
                 if ($.fn.BEE.user_options.camera.multiview) {
                     // front camera
-                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = -10; bottom = SCREEN_H-300; 
-                    renderer.setViewport (left,bottom,width,height);
+                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = 20; bottom = SCREEN_H-300; 
+                    renderer.setViewport(left,bottom,width,height);
                     renderer.setScissor(left,bottom,width,height);
                     renderer.setScissorTest(true);
                     // frontCamera.aspect = width/height;
@@ -3349,7 +3349,7 @@ if ( typeof Object.create !== 'function' ) {
 
                     // side camera
                     width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-650; bottom = -40;
-                    renderer.setViewport (left,bottom,width,height);
+                    renderer.setViewport(left,bottom,width,height);
                     renderer.setScissor(left,bottom,width,height);
                     renderer.setScissorTest(true);
                     self.sideCamera.updateProjectionMatrix();
@@ -3357,7 +3357,7 @@ if ( typeof Object.create !== 'function' ) {
 
                     // top camera
                     width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-400; bottom = -10;
-                    renderer.setViewport (left,bottom,width,height);
+                    renderer.setViewport(left,bottom,width,height);
                     renderer.setScissor(left,bottom,width,height);
                     renderer.setScissorTest(true);
                     self.topCamera.updateProjectionMatrix();
