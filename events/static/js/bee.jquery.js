@@ -1706,7 +1706,8 @@ if ( typeof Object.create !== 'function' ) {
             self.group_main = new THREE.Group();
             self.scene.add(self.group_main);
 
-            self.axises = new THREE.AxisHelper( 100 );
+            // self.axises = new THREE.AxisHelper( 100 );
+            self.axises = new THREE.AxesHelper( 100 );
             if ($.fn.BEE.user_options.helper.showAxises) {
                 self.scene.add(self.axises);
             }
@@ -2105,8 +2106,9 @@ if ( typeof Object.create !== 'function' ) {
                         )
                     )
                 }
-                geometry.computeLineDistances();
+                // geometry.computeLineDistances();
                 var line = new THREE.Line( geometry, material );
+                line.computeLineDistances();
                 self.listOfSCBObjects.push(line);
                 self.scene.add(line);
             }
@@ -3339,7 +3341,8 @@ if ( typeof Object.create !== 'function' ) {
 
                 if ($.fn.BEE.user_options.camera.multiview) {
                     // front camera
-                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = 20; bottom = SCREEN_H-300; 
+                    // width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = 20; bottom = SCREEN_H-300; 
+                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = 10; bottom = 50; 
                     renderer.setViewport(left,bottom,width,height);
                     renderer.setScissor(left,bottom,width,height);
                     renderer.setScissorTest(true);
@@ -3348,7 +3351,8 @@ if ( typeof Object.create !== 'function' ) {
                     renderer.render(self.scene, self.frontCamera);
 
                     // side camera
-                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-650; bottom = -40;
+                    // width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-650; bottom = -40;
+                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-650; bottom = SCREEN_H-200;
                     renderer.setViewport(left,bottom,width,height);
                     renderer.setScissor(left,bottom,width,height);
                     renderer.setScissorTest(true);
@@ -3356,7 +3360,8 @@ if ( typeof Object.create !== 'function' ) {
                     renderer.render(self.scene, self.sideCamera);
 
                     // top camera
-                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-400; bottom = -10;
+                    // width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-400; bottom = -10;
+                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-400; bottom = SCREEN_H-200;
                     renderer.setViewport(left,bottom,width,height);
                     renderer.setScissor(left,bottom,width,height);
                     renderer.setScissorTest(true);
