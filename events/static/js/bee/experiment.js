@@ -6,6 +6,7 @@ class Experiment {
             location: [ // array of TPC locations in cm: [xmin, xmax, ymin, ymax, zmin, zmax]
                 [0, 0, 0, 0, 0, 0.]
             ],
+            viewAngle: [-60, 60, 0], // angle in degrees w.r.t vertical 
             halfxyz: [0, 0, 0],
             center: [0, 0, 0],
             boxROI: [0, 0, 0, 0, 0, 0], // box of interest, e.g. near the beam
@@ -61,6 +62,7 @@ class MicroBooNE extends Experiment {
         this.updateTPCLocation([
             [0., 256., -115.51, 117.45, 0., 1036.96]
         ]);
+        this.tpc.viewAngle = [-60, 60, 0];
         this.tpc.driftVelocity = 0.1101; // cm/us
         this.daq.timeBeforeTrigger = (3200 + 10) * 0.5; //us
         this.daq.timeAfterTrigger = (6400 - 10) * 0.5; //us
@@ -87,6 +89,7 @@ class ProtoDUNE extends Experiment {
             [0.008, 359.884, 0.0, 607.499, 463.626, 695.286],
             [367.504, 380.434, 0.0, 607.499, 463.626, 695.286]
         ]);
+        this.tpc.viewAngle = [-35.7, 35.7, 0];
         this.tpc.boxROI = [-100, 0, 250, 500, 0, 400];
         this.tpc.driftVelocity = 0.16; // cm/us
         this.daq.timeBeforeTrigger = 500 * 0.5; //us
@@ -106,6 +109,7 @@ class ICARUS extends Experiment {
             [71.37, 219.57, -181.86, 134.96, -894.951, 894.951],
             [220.86, 369.06, -181.86, 134.96, -894.951, 894.951],
         ]);
+        this.tpc.viewAngle = [90, -60, 60];
         // this.tpc.driftVelocity = 0.16; // cm/us
         // this.daq.timeBeforeTrigger = 500*0.5; //us
         // this.daq.timeAfterTrigger = 5500*0.5; //us
@@ -128,6 +132,7 @@ class DUNE10ktWorkspace extends Experiment {
             [-363.376, -2.53305, 0, 607.829, 231.514, 463.904],
             [2.53305, 363.376, 0, 607.829, 231.514, 463.904]
         ]);
+        this.tpc.viewAngle = [-35.7, 35.7, 0];
     }
 
 }
@@ -147,6 +152,7 @@ class DUNE35t extends Experiment {
             [-34.4523, -7.27732, -84.4008, 115.087, 103.332, 156.779],
             [-0.747073, 221.728, -84.4008, 115.087, 103.332, 156.779]
         ]);
+        this.tpc.viewAngle = [-45, 45, 0];
     }
 
 }
