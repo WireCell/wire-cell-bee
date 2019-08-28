@@ -1,18 +1,25 @@
-import { Config } from './config.js'
+import { config } from './config.js'
+import { MicroBooNE, ProtoDUNE, ICARUS, DUNE10ktWorkspace, DUNE35t } from './experiment.js'
 
 
+console.log(new MicroBooNE());
+console.log(new ProtoDUNE());
+console.log(new ICARUS());
+console.log(new DUNE10ktWorkspace());
+console.log(new DUNE35t());
 
 let xhr = $.getJSON(window.location.href, function(data){
-    $.extend(true, Config, data);
-    console.log('server Config: ', Config);
-}); // server Config
+    $.extend(true, config, data);
+    console.log('server config: ', data);
+    console.log('user config: ', config);
+}); // server config
 
 xhr.then(function(){
-    // $.extend(true, Config, {
+    // $.extend(true, config, {
     //   material: {
     //     opacity: 0.2
     //   }
-    // }); // user Config
+    // }); // user config
     console.log('init everthing ...')
-    // let bee = $("#container").BEE(Config);
+    // let bee = $("#container").BEE(config);
 });
