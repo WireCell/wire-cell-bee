@@ -1,8 +1,18 @@
-let config = {
+// data store
+
+let store = {}
+
+store.event = {
     nEvents: 100,
     id: 0,
-    theme: 'light',
     hasMC: false,
+    reco: [ // list of reco algorithms
+        // "WireCell-charge", "truth", "WireCell-simple"
+    ],
+}
+
+store.scene = {
+    theme: 'light',
     helper: {
         showTPCs: true,
         showAxises: false,
@@ -20,24 +30,6 @@ let config = {
         showPred: true,
         showNonMatchingCluster: false,
         tpc_cluster_id: -1
-    },
-    geom: {
-        name: 'uboone',
-        halfx: 128.,
-        halfy: 116.,
-        halfz: 520.,
-        center: [128, 0, 520],
-        angleU: 60,
-        angleV: 60,
-        bounding_box: []
-    },
-    camera: {
-        scale: 1.,
-        depth: 2000,
-        ortho: true,
-        rotate: false,
-        multiview: false,
-        photo_booth: false
     },
     slice: {
         opacity: 0.0,
@@ -64,13 +56,19 @@ let config = {
         showCluster: false,
         overlay: true
     },
-    sst: [
-        // "WireCell-charge",
-        // "truth",
-        // "WireCell-simple",
-        // "WireCell-deblob"
-    ]
-};
+}
 
+store.camera = {
+    scale: 1.,
+    depth: 2000,
+    ortho: true,
+    rotate: false,
+    multiview: false,
+    photo_booth: false
+}
 
-export { config }
+store.experiment = {
+    tpc: {}
+}
+
+export { store }
