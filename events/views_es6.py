@@ -199,7 +199,7 @@ def event(request, set_id, event_id):
     if request.is_ajax():
         return HttpResponse(json.dumps(options))
     else:
-        return render(request, 'events/event.html', context)
+        return render(request, 'events/event_es6.html', context)
 
 
 

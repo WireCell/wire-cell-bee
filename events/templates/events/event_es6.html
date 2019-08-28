@@ -1,0 +1,328 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BEE [{{eventset.alias}}] : event {{event_id}}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel="icon" href="{% static 'css/bee.ico' %}" />
+    <link rel="stylesheet" href="{% static 'css/lib/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.4/themes/ui-darkness/jquery-ui.css">
+    <link rel="stylesheet" href="{% static 'css/lib/jquery-ui-slider-pips.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/event.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/lib/jstree/style.css' %}" />
+</head>
+<body>
+    <nav class="navbar navbar-inverse">
+      <div class="container-fluid" style="padding:0;">
+        <div>
+          <ul class="nav navbar-nav">
+            <li class="active">
+                <a class="not-active-link" href="{% url 'eventsets' %}"
+                   style="background-color:#5B8F09; padding-left: 8px; border-radius: 0px 0px 10px 0px;">
+                   <img src="{% static 'css/bee.png' %}" height="20" width="20" />
+                   &nbsp;Bee
+                </a>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+                 role="button" aria-haspopup="true" aria-expanded="false">
+                 Run <span id="runNo"></span> |
+                 <!-- <span id="subRunNo"></span> -->
+                 Event <span id="eventNo"></span>
+                 <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+              <li><a href="#" id="toggleMC">Show MC <span class="hotkey">m</span></a></li>
+              <li><a href="#" id="toggleCharge">Toggle Charge <span class="hotkey">q</span></a></li>
+<!--                 <li role="separator" class="divider"></li>
+                <li><a href="{% url 'event_list' set_id %}">
+                  Go to Event List ...
+                </a></li> -->
+              </ul>
+            </li>
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Camera <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#" id="centerToEvent">Center to Event <span class="hotkey">c</span></a></li>
+                <li><a href="#" id="xyView">X-Y View <span class="hotkey">x</span></a></li>
+                <li><a href="#" id="xzView">X-Z View <span class="hotkey">z</span></a></li>
+                <li><a href="#" id="xuView">X-U View <span class="hotkey">u</span></a></li>
+                <li><a href="#" id="xvView">X-V View <span class="hotkey">v</span></a></li>
+                <li><a href="#" id="resetCamera">Reset <span class="hotkey">r</span></a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#" id="play">Play (Fullscreen)</a></li>
+              </ul>
+            </li>
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#" id="nextEvent">Next Event <span class="hotkey">Shift+n</span></a></li>
+                <li><a href="#" id="prevEvent">Prev Event <span class="hotkey">Shift+p</span></a></li>
+<!--                 <li role="separator" class="divider"></li>
+                <li><a href="#" id="nextRecon">Next Recon <span class="hotkey">]</span></a></li>
+                <li><a href="#" id="prevRecon">Prev Recon <span class="hotkey">[</span></a></li> -->
+                <li role="separator" class="divider"></li>
+                <li><a href="#" id="nextSlice">Next Slice <span class="hotkey">k</span></a></li>
+                <li><a href="#" id="prevSlice">Prev Slice <span class="hotkey">j</span></a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#" id="toggleSidebar">Toggle Sidebar</a></li>
+                <li><a href="#" id="toggleCluster">Toggle Cluster Panel</a></li>
+                <li><a href="#" id="toggleScan">Toggle Scan Panel <span class="hotkey">\</span></a></li>
+                <li role="separator" class="divider"></li>
+                <!-- <li><a href="#" id="toggleScanResults">Show Scan Results</a></li> -->
+                <li><a href="" data-toggle="modal" data-target="#scanResultsModal" id="scanResultsModalLink">Show Scan Results</a></li>
+              </ul>
+            </li>
+
+<!--             <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Plots <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="{% static 'plots/' %}" id='diag-plots' target='_blank'>Diagnostic plots</a></li>
+              </ul>
+            </li> -->
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">System <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#" id="preset-default">Reset to Default Preference </a></li>
+                <li><a href="#" id="clear-scan">Clear Scan Results </a></li>
+                <li><a href="#" id="toggleStats">Show Performace Monitor <span class="hotkey">s</span></a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="" data-toggle="modal" data-target="#cmdModal">Hotkey List </a></li>
+              </ul>
+            </li>
+
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div id="cluster">
+      <button type="button" class="btn btn-primary" aria-label="Left Align" id="btn-cluster">
+        Do Cluster
+      </button>
+      <button type="button" class="btn btn-primary" aria-label="Left Align" id="btn-cleanUpCluster">
+        Clean Up
+      </button>
+      <!-- <input type="text" class="form-control" value="40" aria-describedby="basic-addon1"> -->
+      <div id="progressbar"></div>
+      <div id="cluster-message"></div>
+    </div>
+
+    <div id="scan">
+      <form >
+
+        Neutrino:
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult11" value="11"> nu_mu
+        </label>
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult12" value="12"> nu_e
+        </label>
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult13" value="13"> nu_nc
+        </label>
+        <br />
+
+        Background:
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult21" value="21"> wrong light
+        </label>
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult22" value="22"> through muon
+        </label>
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult23" value="23"> stop muon
+        </label>
+        <label class="radio ">
+          <input type="radio" name="scanResult" id="scanResult24" value="24"> others
+        </label>
+        <br />
+
+        <label class="checkbox">
+          <input type="checkbox" name="sureCheck" id="sureCheck" value=""> Not sure
+        </label>
+
+      </form>
+    </div>
+
+
+<!--     <div id="event-info" class='invert-color'>
+      <img id="event-logo" src="{% static 'css/dummy-logo.png' %}" alt="" style="width: 200px;" />
+    </div> -->
+
+    <div id="container">
+      <div id="fullscreeninfo" style="display: none;"></div>
+      <div id="event-info" class='invert-color'>
+        <img id="event-logo" src="{% static 'css/dummy-logo.png' %}" alt="" style="width: 200px;" />
+      </div>
+      <div id="event-text" class='invert-color'></div>
+
+    </div>
+
+    <div id="imgbar">
+       <img src="{% static 'css/bnl.jpg' %}" height="0" width="180" />
+    </div>
+    <div id="statusbar">
+<!--         slice #: <span id="slice_number">0</span> |
+        slice x: <span id="slice_x">0</span> -->
+    </div>
+    <div id="mc"></div>
+    <!-- <div id="sst">HAAdsfada</div> -->
+    <!-- <div id="accordion"></div> -->
+    <div id="sst-docker">
+      <h4 id="sst"></h4>
+      Size
+      <div id="sst-size" class="myslider"></div>
+      Opacity
+      <div id="sst-opacity" class="myslider"></div>
+      <form class="form-inline">
+        <div class="form-group">
+          <label for="sst-color" style="margin-top:4px">Plain Color</label>
+          <input type="color" style="width:60px; float:right" id="sst-color" value="#FFFFFF">
+        </div>
+      </form>
+
+    </div>
+
+    <div class="alert alert-info fade in" id="loadingbar">
+        <a href="#" class="close">&times;</a>
+        Working ...
+    </div>
+
+    <div id="statsbar"></div>
+
+    <div id="cmdModal" class="modal hide fade" role="dialog" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">List of Hotkeys</h4>
+          </div>
+          <div class="modal-body">
+            <table class='table'>
+                <thead>
+                  <tr>
+                    <th>Command</th><th>Hotkey</th>
+                    <th>Command</th><th>Hotkey</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Toggle MC</td><td>m</td>
+                    <td>Toggle Charge</td><td>q</td>
+                  </tr>
+                  <tr>
+                    <td>Toggle Box Mode</td><td>b</td>
+                    <td>Toggle Scan Mode</td><td>\</td>
+                  </tr>
+                  <tr>
+                    <td>Next Event</td><td>Shift+n</td>
+                    <td>Prev Event</td><td>Shift+p</td>
+                  </tr>
+<!--                   <tr>
+                    <td>Next Recon</td><td>]</td>
+                    <td>Prev Recon</td><td>[</td>
+                  </tr> -->
+                  <tr>
+                    <td>Next Slice</td><td>k</td>
+                    <td>Prev Slice</td><td>j</td>
+                  </tr>
+                  <tr>
+                    <td>Next Flash</td><td>></td>
+                    <td>Prev Flash</td><td><</td>
+                  </tr>
+                  <tr>
+                    <td>Next Match Falsh</td><td>.</td>
+                    <td>Prev Match Falsh</td><td>,</td>
+                  </tr>
+                  <tr>
+                    <td>Next Match Beam Falsh</td><td>/</td>
+                    <td>Next TPC</td><td>Shift+t</td>
+                  </tr>
+                  <tr>
+                    <td>Center to Event</td><td>c</td>
+                    <td>Reset Camera</td><td>r</td>
+                  </tr>
+                  <tr>
+                    <td>X-U view</td><td>u</td>
+                    <td>X-V view</td><td>v</td>
+                  </tr>
+                  <tr>
+                    <td>X-Z view</td><td>z</td>
+                    <td>X-Y view</td><td>x</td>
+                  </tr>
+                  <tr>
+                    <td>Zoom in</td><td>Shift+Up</td>
+                    <td>Zoom out</td><td>Shift+Down</td>
+                  </tr>
+                  <tr>
+                    <td>Select Recon</td><td>1 - 9</td>
+                    <td>Unselect All</td><td>Esc</td>
+                  </tr>
+                  <tr>
+                    <td>Increase Opacity</td><td>=</td>
+                    <td>Decrease Opacity</td><td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Increase Point Size</td><td>+</td>
+                    <td>Decrease Point Size</td><td>_</td>
+                  </tr>
+                  <tr>
+                    <td>Redraw All Points</td><td>o</td>
+                    <td>Show FPS</td><td>s</td>
+                  </tr>
+                </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="scanResultsModal" class="modal hide fade" role="dialog" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Scan Results</h4>
+          </div>
+          <div class="modal-body" id="scanResultsModelBody">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript" src="{% static 'js/lib/jquery-2.1.4.min.js' %}"></script>
+    <script src="https://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+    <script type="text/javascript" src="{% static 'js/lib/jquery-ui-slider-pips.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/mousetrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/mousetrap-global-bind.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/lockr.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.2/TweenMax.min.js"></script>
+
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="{% static 'js/lib/dat.gui.min.js' %}"></script>
+    <!-- <script type="text/javascript" src="{% static 'js/lib/three.min.js' %}"></script> -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/107/three.min.js"></script>
+
+    <script type="text/javascript" src="{% static 'js/lib/TypedArrayUtils.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/OrbitControls.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/stats.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/screenfull.min.js' %}"></script>
+    <!-- <script type="text/javascript" src="{% static 'js/lib/jstree.min.js' %}"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.8/jstree.min.js"></script>
+
+    <script type="text/javascript" src="{% static 'js/bee/dist/bee.js' %}"></script>
+
+
+</body>
+</html>

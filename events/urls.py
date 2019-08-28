@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, url
 
 from events import views
+from events import views_es6
 
 urlpatterns = patterns('',
     url(r'^$', views.eventsets, name='eventsets'),
@@ -12,5 +13,8 @@ urlpatterns = patterns('',
     url(r'^collection/(?P<collection_id>.+)/$', views.collection, name='collection'),
 
     url(r'^upload/$', views.upload, name='upload'),
+
+    # ES6 test
+    url(r'^es6/set/(?P<set_id>.+)/event/(?P<event_id>\d+)/$', views_es6.event, name='event_es6'),
 
 )
