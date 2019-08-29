@@ -16,7 +16,7 @@ store.config = {
     theme: 'light',
     helper: {
         showTPCs: true,
-        showAxises: false,
+        showAxises: true,
         deadAreaOpacity: 0.0,
         showFlash: false,
         showMCNeutral: false,
@@ -65,6 +65,10 @@ store.config = {
         multiview: false,
         photo_booth: false
     }
+}
+
+store.dom = {
+    canvas: document.getElementById('container'),
 }
 
 store.xhr = {} // store ajax request objects
