@@ -1,5 +1,6 @@
-import * as util from './util.js'
+// import * as util from './util.js'
 import { store } from './store.js'
+import { Scene3D } from './scene.js'
 
 // const exp = new MicroBooNE();
 // console.log(exp);
@@ -16,8 +17,7 @@ import { store } from './store.js'
 //     // let bee = $("#container").BEE(config);
 // });
 
+store.scene3d = new Scene3D();
 
-store.xhr.init.then(() => {
-    console.log('bee store: ', store);
-});
+console.log('bee store: ', store);
 

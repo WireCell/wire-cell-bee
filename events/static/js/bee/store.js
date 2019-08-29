@@ -12,7 +12,7 @@ store.event = {
     ],
 }
 
-store.scene = {
+store.config = {
     theme: 'light',
     helper: {
         showTPCs: true,
@@ -57,15 +57,14 @@ store.scene = {
         showCluster: false,
         overlay: true
     },
-}
-
-store.camera = {
-    scale: 1.,
-    depth: 2000,
-    ortho: true,
-    rotate: false,
-    multiview: false,
-    photo_booth: false
+    camera: {
+        scale: 1.,
+        depth: 2000,
+        ortho: true,
+        rotate: false,
+        multiview: false,
+        photo_booth: false
+    }
 }
 
 store.xhr = {} // store ajax request objects
