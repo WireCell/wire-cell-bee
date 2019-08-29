@@ -147,7 +147,7 @@ def event(request, set_id, event_id):
         # 'geom' : {},
         # 'camera' : {},
         'hasMC' : eventset.has_MC(int(event_id)),
-        'reco': sst_list
+        'sst': sst_list
     }
     # if (eventset.geom(event_id) == 'uboone'):
     #     options['camera'] = {

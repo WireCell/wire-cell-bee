@@ -8,7 +8,7 @@ store.event = {
     nEvents: 100,
     id: 0,
     hasMC: false,
-    reco: [ // list of reco algorithms
+    sst: [ // list of reco algorithms
         // "WireCell-charge", "truth", "WireCell-simple"
     ],
 }
@@ -111,6 +111,8 @@ store.ui = {
 store.dom = {
     canvas: document.getElementById('container'),
     el_statusbar: $('#statusbar'),
+    el_logo: $('#event-logo'),
+    el_statsbar: $('#statsbar'),
     panel_reco: {
         el_container: $('#sst-docker'),
         el_size: $('#sst-size'),
