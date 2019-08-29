@@ -1,9 +1,10 @@
 // import * as util from './util.js'
 import { store } from './store.js'
 import { Scene3D } from './scene.js'
+import { Helper } from './helper.js'
+import { Gui } from './gui.js'
 
-// const exp = new MicroBooNE();
-// console.log(exp);
+
 // console.log(new ProtoDUNE());
 // console.log(new ICARUS());
 // console.log(new DUNE10ktWorkspace());
@@ -11,13 +12,18 @@ import { Scene3D } from './scene.js'
 // console.log(exp.toLocalXYZ([0, 0, 0]));
 
 
+class Bee {
+    constructor() {
+        this.scene3d = new Scene3D();
+        store.xhr.scene3d.then(() => {
+            let scene = this.scene3d.scene.main;
+            this.helper = new Helper(scene, store);
+            this.gui = new Gui(store, this);
+        })
+    }
+}
 
-// // init scene
-// xhr.then(function () {
-//     // let bee = $("#container").BEE(config);
-// });
-
-store.scene3d = new Scene3D();
-
-console.log('bee store: ', store);
+let bee = new Bee();
+console.log('store: ', store);
+console.log('bee:', bee);
 

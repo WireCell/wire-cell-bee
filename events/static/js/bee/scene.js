@@ -2,7 +2,7 @@ import { store } from './store.js'
 
 class Scene3D {
     constructor() {
-        store.xhr.init.then(() => {
+        store.xhr.scene3d = store.xhr.init.then(() => {
             this.initCamera();
             this.initScene();
             this.initRenderer();
@@ -16,11 +16,6 @@ class Scene3D {
 
         this.scene.main = new THREE.Scene();
         this.scene.slice = new THREE.Scene();
-
-        this.axises = new THREE.AxesHelper(100);
-        if (store.config.helper.showAxises) {
-            this.scene.main.add(this.axises);
-        }
 
     }
 

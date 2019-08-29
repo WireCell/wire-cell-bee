@@ -16,7 +16,7 @@ store.config = {
     theme: 'light',
     helper: {
         showTPCs: true,
-        showAxises: true,
+        showAxises: false,
         deadAreaOpacity: 0.0,
         showFlash: false,
         showMCNeutral: false,
