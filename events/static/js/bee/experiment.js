@@ -157,4 +157,17 @@ class DUNE35t extends Experiment {
 
 }
 
-export { MicroBooNE, ProtoDUNE, ICARUS, DUNE10ktWorkspace, DUNE35t }
+// --------------------------------------------------------
+
+function createExperiment(name) {
+    let exp = null;
+    if (name == 'uboone') { exp = new MicroBooNE(); } 
+    else if (name == 'protodune') { exp = new ProtoDUNE(); }
+    else if (name == 'icarus') { exp = new ICARUS(); }
+    else if (name == 'dune10kt_workspace') { exp = new DUNE10ktWorkspace(); }
+    else if (name == 'dune35t') { exp = new DUNE35t(); }
+    else { exp = new MicroBooNE(); } // default
+    return exp;
+}
+
+export { createExperiment }

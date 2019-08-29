@@ -1,4 +1,5 @@
-// data store
+// global data store
+import { createExperiment } from './experiment.js'
 
 let store = {}
 
@@ -67,8 +68,13 @@ store.camera = {
     photo_booth: false
 }
 
-store.experiment = {
-    tpc: {}
-}
+store.xhr = {} // store ajax request objects
+
+store.xhr.init = $.getJSON(window.location.href, (data) => {
+    $.extend(true, store.event, data);
+    store.experiment = createExperiment(data.experiment);
+    // console.log('server data: ', data);
+}); // config from server
+
 
 export { store }

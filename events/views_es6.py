@@ -143,6 +143,7 @@ def event(request, set_id, event_id):
     options = {
         'nEvents' : eventset.event_count(),
         'id' : int(event_id),
+        'experiment': eventset.geom(event_id),
         # 'geom' : {},
         # 'camera' : {},
         'hasMC' : eventset.has_MC(int(event_id)),
