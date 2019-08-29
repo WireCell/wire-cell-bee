@@ -1,14 +1,13 @@
-import { store } from './store.js'
+// 3D scence objects
 
 class Scene3D {
-    constructor() {
-        store.xhr.scene3d = store.xhr.init.then(() => {
-            this.initCamera();
-            this.initScene();
-            this.initRenderer();
-            this.initController();
-            this.animate();
-        })
+    constructor(store) {
+        this.store = store;
+        this.initCamera();
+        this.initScene();
+        this.initRenderer();
+        this.initController();
+        this.animate();
     }
 
     initScene() {
@@ -16,15 +15,14 @@ class Scene3D {
 
         this.scene.main = new THREE.Scene();
         this.scene.slice = new THREE.Scene();
-
     }
 
     initCamera() {
         this.camera = {};
         let camera = null;
 
-        let scale = store.config.camera.scale;
-        let depth = store.config.camera.depth;
+        let scale = this.store.config.camera.scale;
+        let depth = this.store.config.camera.depth;
         let width = window.innerWidth;
         let height = window.innerHeight;
 
@@ -60,21 +58,21 @@ class Scene3D {
         camera.up.set(1, 0, 0);
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-        this.camera.active = store.config.camera.ortho ? this.camera.orthoCamera : this.camera.pspCamera;
+        this.camera.active = this.store.config.camera.ortho ? this.camera.orthoCamera : this.camera.pspCamera;
     }
 
     initRenderer() {
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         let renderer = this.renderer;
         renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(window.innerWidth * store.config.camera.scale, window.innerHeight);
+        renderer.setSize(window.innerWidth * this.store.config.camera.scale, window.innerHeight);
         renderer.gammaInput = true;
         renderer.gammaOutput = true;
-        if (store.config.theme == 'light') {
+        if (this.store.config.theme == 'light') {
             renderer.setClearColor(0xFFFFFF, 1);
         }
 
-        store.dom.canvas.appendChild(renderer.domElement);
+        this.store.dom.canvas.appendChild(renderer.domElement);
     }
 
     initController() {
@@ -86,8 +84,8 @@ class Scene3D {
 
     animate() {
         let self = this;
-        window.animate = function () {
-            if (store.config.camera.rotate) {
+        window.animate = () => {
+            if (this.store.config.camera.rotate) {
                 let newPos = Date.now() * 0.0001;
                 self.scene.main.rotation.y = newPos;
                 self.scene.slice.rotation.y = newPos;
@@ -99,7 +97,7 @@ class Scene3D {
             self.animationId = window.requestAnimationFrame(window.animate);
             self.renderer.autoClear = false;
 
-            let SCREEN_W = window.innerWidth * store.config.camera.scale;
+            let SCREEN_W = window.innerWidth * this.store.config.camera.scale;
             let SCREEN_H = window.innerHeight;
             let left, bottom, width, height;
             let renderer = self.renderer;
@@ -112,7 +110,7 @@ class Scene3D {
             renderer.clearDepth();
             renderer.render(self.scene.slice, self.camera.active);
 
-            if (store.config.camera.multiview) {
+            if (this.store.config.camera.multiview) {
                 // front camera
                 width = SCREEN_W * 0.3; height = SCREEN_H * 0.3; left = 10; bottom = 50;
                 renderer.setViewport(left, bottom, width, height);

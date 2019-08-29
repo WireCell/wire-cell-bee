@@ -2,6 +2,7 @@
 import { store } from './store.js'
 import { Scene3D } from './scene.js'
 import { Canvas } from './canvas.js'
+import { SST } from './sst.js'
 import { Helper } from './helper.js'
 import { Gui } from './gui.js'
 
@@ -15,13 +16,14 @@ import { Gui } from './gui.js'
 
 class Bee {
     constructor() {
-        this.scene3d = new Scene3D();
-        this.canvas = new Canvas();
-        store.xhr.scene3d.then(() => {
+        store.xhr.init.then(() => {
+            this.scene3d = new Scene3D(store);
+            this.canvas = new Canvas();
+
             let scene = this.scene3d.scene.main;
             this.helper = new Helper(scene, store);
             this.gui = new Gui(store, this);
-        })
+        });
     }
 }
 
