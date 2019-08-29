@@ -11,10 +11,14 @@ class Experiment {
             center: [0, 0, 0],
             boxROI: [0, 0, 0, 0, 0, 0], // box of interest, e.g. near the beam
             driftVelocity: 0.16, // cm/us
-        }
+        };
         this.daq = {
             timeBeforeTrigger: 500 * 0.5, // us
             timeAfterTrigger: 5500 * 0.5, // us        
+        };
+        this.beam = {
+            dir: null,
+            center: null,
         }
     }
 
@@ -94,6 +98,8 @@ class ProtoDUNE extends Experiment {
         this.tpc.driftVelocity = 0.16; // cm/us
         this.daq.timeBeforeTrigger = 500 * 0.5; //us
         this.daq.timeAfterTrigger = 5500 * 0.5; //us
+        this.beam.dir = [-0.178177, -0.196387, 0.959408];
+        this.beam.center = [-27.173, 421.445, 0];
     }
 
 }

@@ -10,11 +10,23 @@ class Gui {
     }
 
     initGuiHelper() {
+        let exp = this.store.experiment;
         let folder = this.gui.addFolder("Helper");
 
-        folder.add(this.store.config.helper, "showAxises")
+        folder.add(this.store.config.helper, "showAxes")
             .name("Show Axes")
-            .onChange(() => { this.bee.helper.toggleAxes() });
+            .onChange(() => { this.bee.helper.showAxes() });
+
+        folder.add(this.store.config.helper, "showTPC")
+            .name("Show TPC")
+            .onChange(() => { this.bee.helper.showTPC() });
+
+        if (exp.beam.dir != null && exp.beam.center != null) {
+            folder.add(this.store.config.helper, "showBeam")
+            .name("Show Beam")
+            .onChange(() => { this.bee.helper.showBeam() });
+        }
+
     }
 
 

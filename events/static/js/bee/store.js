@@ -15,8 +15,8 @@ store.event = {
 store.config = {
     theme: 'light',
     helper: {
-        showTPCs: true,
-        showAxises: false,
+        showTPC: true,
+        showAxes: false,
         deadAreaOpacity: 0.0,
         showFlash: false,
         showMCNeutral: false,
