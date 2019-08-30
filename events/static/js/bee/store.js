@@ -55,6 +55,7 @@ store.config = {
     material: {
         colorScale: 1.0,
         opacity: 0.2,
+        size: 2,
         showCharge: true,
         showCluster: false,
         overlay: true
@@ -113,7 +114,7 @@ store.dom = {
     el_statusbar: $('#statusbar'),
     el_logo: $('#event-logo'),
     el_statsbar: $('#statsbar'),
-    panel_reco: {
+    panel_sst: {
         el_container: $('#sst-docker'),
         el_size: $('#sst-size'),
         el_opacity: $("#sst-opacity"),
@@ -123,6 +124,7 @@ store.dom = {
         el_radio: $('input[name=scanResult]:checked'),
         el_sure: $('input[name=sureCheck]:checked'),
     },
+    gui_sst: {}
 }
 
 //--------------------------------------------------

@@ -2,8 +2,8 @@
 
 class Helper {
 
-    constructor(scene, store) {
-        this.scene = scene;
+    constructor(store, bee) {
+        this.scene = bee.scene3d.scene.main;
         this.store = store;
         this.showAxes();
         this.showTPC();
