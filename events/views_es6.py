@@ -147,7 +147,8 @@ def event(request, set_id, event_id):
         # 'geom' : {},
         # 'camera' : {},
         'hasMC' : eventset.has_MC(int(event_id)),
-        'sst': sst_list
+        'sst': sst_list,
+        'config': {},
     }
     # if (eventset.geom(event_id) == 'uboone'):
     #     options['camera'] = {
@@ -194,7 +195,8 @@ def event(request, set_id, event_id):
     #     options['geom']['bounding_box'] = eventset.bounding_box(event_id)
 
     # options.update(queryToOptions(request))
-    options = update(options, queryToOptions(request))
+    # options = update(options, queryToOptions(request))
+    options['config'] = queryToOptions(request)
     # print options
 
     if request.is_ajax():

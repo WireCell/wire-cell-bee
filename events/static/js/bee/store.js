@@ -149,8 +149,9 @@ store.url.simple_url = store.url.base_url.substring(store.url.base_url.indexOf('
 store.process = {} // store ajax request objects
 store.process.init = $.getJSON(window.location.href, (data) => {
     $.extend(true, store.event, data);
+    $.extend(true, store.config, data.config);
     store.experiment = createExperiment(data.experiment);
-    // console.log('server data: ', data);
+    console.log('server data: ', data);
 }); // config from server
 
 

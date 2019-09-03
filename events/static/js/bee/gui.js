@@ -25,20 +25,41 @@ class Gui {
         this.folder.box = this.gui.addFolder("Box");
         this.folder.camera = this.gui.addFolder("Camera");
 
+        this.folder.general.open();
         this.folder.sst.open();
     }
 
     initGuiGeneral() {
         let folder = this.folder.general;
-        let tmp = { id: this.store.event.id }
-        folder.add(tmp, 'id', 0, this.store.event.nEvents-1)
-        .name("Event").step(1)
-        .onFinishChange((value) => {
-            if (value == this.store.event.id) { return; }
-            window.location.assign(this.store.url.event_url + value + '/' + this.store.url.base_query);
-        });
 
-        folder.open();
+        let tmp = { id: this.store.event.id }
+        folder.add(tmp, 'id', 0, this.store.event.nEvents - 1)
+            .name("Event").step(1)
+            .onFinishChange((value) => {
+                if (value == this.store.event.id) { return; }
+                window.location.assign(this.store.url.event_url + value + '/' + this.store.url.base_query);
+            });
+
+        folder.add(this.store.config, 'theme', ['light', 'dark'])
+            .name("Theme")
+            .onChange((value) => {
+                // clearLocalStorage();
+                $(window).unbind('beforeunload');
+                let base_query = this.store.url.base_query;
+                let new_query;
+                if (base_query.indexOf('theme=light') > 0) {
+                    new_query = base_query.replace('theme=light', 'theme=' + value);
+                }
+                else if (base_query.indexOf('theme=dark') > 0) {
+                    new_query = base_query.replace('theme=dark', 'theme=' + value);
+                }
+                else {
+                    let c = base_query == '' ? '?' : '&';
+                    new_query = `${base_query}${c}theme=${value}`;
+                }
+                window.location.assign(this.store.url.base_url + new_query);
+            });
+
     }
 
     initGuiHelper() {
@@ -76,7 +97,7 @@ class Gui {
         let panel = this.store.dom.panel_sst;
         let bee = this.bee;
         let store = this.store;
-        
+
         panel.el_size.slider({
             min: 1, max: 8, step: 0.5, value: 0,
             slide: function (event, ui) {
@@ -93,7 +114,7 @@ class Gui {
                 bee.current_sst.setGuiColor();
             }
         }).slider("pips").slider("float");
-        
+
         panel.el_color.on('change', function () {
             bee.current_sst.material.chargeColor = new THREE.Color($(this).val());
             bee.current_sst.drawInsideThreeFrames(false, store.config.box.box_mode);
@@ -125,7 +146,7 @@ class Gui {
             store.dom.el_statsbar.append(this.stats.dom);
         }
 
-        var el = $('#toggleStats');
+        let el = $('#toggleStats');
         if (el.html().indexOf("Show") >= 0) {
             store.dom.el_statsbar.show();
             el.html(el.html().replace("Show", "Hide"));
