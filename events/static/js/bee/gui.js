@@ -7,6 +7,7 @@ class Gui {
         this.gui = new dat.GUI();
 
         this.initFolders();
+        this.initGuiGeneral();
         this.initGuiHelper();
 
         this.initDOM();
@@ -25,6 +26,19 @@ class Gui {
         this.folder.camera = this.gui.addFolder("Camera");
 
         this.folder.sst.open();
+    }
+
+    initGuiGeneral() {
+        let folder = this.folder.general;
+        let tmp = { id: this.store.event.id }
+        folder.add(tmp, 'id', 0, this.store.event.nEvents-1)
+        .name("Event").step(1)
+        .onFinishChange((value) => {
+            if (value == this.store.event.id) { return; }
+            window.location.assign(this.store.url.event_url + value + '/' + this.store.url.base_query);
+        });
+
+        folder.open();
     }
 
     initGuiHelper() {
