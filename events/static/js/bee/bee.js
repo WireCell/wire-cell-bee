@@ -1,7 +1,5 @@
-// import * as util from './util.js'
 import { store } from './store.js'
 import { Scene3D } from './scene.js'
-// import { Canvas } from './canvas.js'
 import { SST } from './sst.js'
 import { Helper } from './helper.js'
 import { Gui } from './gui.js'
@@ -16,7 +14,7 @@ import { Gui } from './gui.js'
 
 class Bee {
     constructor() {
-        store.xhr.init.then(() => {
+        store.process.init.then(() => {
             this.scene3d = new Scene3D(store);
             // this.canvas = new Canvas(store, this);
             this.helper = new Helper(store, this);
@@ -29,15 +27,13 @@ class Bee {
     initSST() {
         // self.nRequestedSSTDone = 0;
         // self.nLoadedSST = 0;
-        // let theme = store.config.theme;
-        // let color_index;
         this.sst = {}
         this.sst.list = {}
+        this.sst.loaded = []
         this.current_sst = null;
         for (let i = 0; i < store.event.sst.length; i++) {
             let sst = new SST(store.event.sst[i], store, this)
             this.sst.list[sst.name] = sst;
-            sst.initGui();
             if (i == 0) {
                 sst.selected();
                 // sst.setup();

@@ -40,11 +40,11 @@ class Helper {
 
                 let one = new THREE.Object3D;
                 one.add(box);
-                let [x, y, z] = exp.toLocalXYZ([
+                let [x, y, z] = exp.toLocalXYZ(
                     (loc[i][1] + loc[i][0]) / 2,
                     (loc[i][3] + loc[i][2]) / 2,
                     (loc[i][5] + loc[i][4]) / 2
-                ]);
+                );
                 one.position.set(x, y, z);
                 this.tpc.add(one);
             }
@@ -69,7 +69,7 @@ class Helper {
                 opacity: 0.2,
                 side: THREE.DoubleSide
             }));
-            beamWindow.position.set(...exp.toLocalXYZ(exp.beam.center))
+            beamWindow.position.set(...exp.toLocalXYZ(...exp.beam.center))
             this.beam.add(beamWindow);
 
             let dir = new THREE.Vector3(...exp.beam.dir);

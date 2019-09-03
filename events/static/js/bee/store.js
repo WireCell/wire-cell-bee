@@ -56,7 +56,7 @@ store.config = {
         colorScale: 1.0,
         opacity: 0.2,
         size: 2,
-        showCharge: true,
+        showCharge: false,
         showCluster: false,
         overlay: true
     },
@@ -142,10 +142,11 @@ if (index_of_query_postion > 0) {
 }
 store.url.event_url = store.url.base_url.substring(0, store.url.base_url.indexOf('event')) + 'event/';
 store.url.root_url = store.url.base_url.substring(0, store.url.base_url.indexOf('set'));
+store.url.simple_url = store.url.base_url.substring(store.url.base_url.indexOf('set')-1);
 
 //--------------------------------------------------
-store.xhr = {} // store ajax request objects
-store.xhr.init = $.getJSON(window.location.href, (data) => {
+store.process = {} // store ajax request objects
+store.process.init = $.getJSON(window.location.href, (data) => {
     $.extend(true, store.event, data);
     store.experiment = createExperiment(data.experiment);
     // console.log('server data: ', data);

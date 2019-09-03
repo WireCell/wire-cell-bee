@@ -39,19 +39,19 @@ class Experiment {
         this.tpc.center[2] = (this.tpc.location[last][5] + this.tpc.location[first][4]) / 2;
     }
 
-    toLocalXYZ(xyz) { // global (larsoft) coordinate to local (bee) coordinate
+    toLocalXYZ(x, y, z) { // global (larsoft) coordinate to local (bee) coordinate
         return [
-            xyz[0] - this.tpc.center[0],
-            xyz[1] - this.tpc.center[1],
-            xyz[2] - this.tpc.center[2],
+            x - this.tpc.center[0],
+            y - this.tpc.center[1],
+            z - this.tpc.center[2],
         ];
     }
 
-    toGlobalXYZ(xyz) { // local (bee) coordinate to global (larsoft) coordinate
+    toGlobalXYZ(x, y, z) { // local (bee) coordinate to global (larsoft) coordinate
         return [
-            xyz[0] + this.tpc.center[0],
-            xyz[1] + this.tpc.center[1],
-            xyz[2] + this.tpc.center[2],
+            x + this.tpc.center[0],
+            y + this.tpc.center[1],
+            z + this.tpc.center[2],
         ];
     }
 

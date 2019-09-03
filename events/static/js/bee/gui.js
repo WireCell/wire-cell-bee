@@ -65,16 +65,15 @@ class Gui {
         panel.el_size.slider({
             min: 1, max: 8, step: 0.5, value: 0,
             slide: function (event, ui) {
-                bee.current_sst.material.size = ui.value;
+                bee.current_sst.pointCloud.material.size = ui.value;
             }
         }).slider("pips").slider("float");
 
         panel.el_opacity.slider({
             min: 0, max: 1, step: 0.05, value: 0,
             slide: function (event, ui) {
-                bee.current_sst.material.opacity = ui.value;
+                bee.current_sst.pointCloud.material.opacity = ui.value;
                 bee.current_sst.setGuiColor();
-                // console.log(bee.current_sst);
             }
         }).slider("pips").slider("float");
         
