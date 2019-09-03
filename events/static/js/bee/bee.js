@@ -25,8 +25,6 @@ class Bee {
     }
 
     initSST() {
-        // self.nRequestedSSTDone = 0;
-        // self.nLoadedSST = 0;
         this.sst = {}
         this.sst.list = {}
         this.sst.loaded = []
@@ -40,6 +38,19 @@ class Bee {
                 // self.registerSST(sst);
             }
         }
+    }
+
+    redrawAllSST() {
+        this.sst.loaded.forEach((name) => {
+            // console.log(name)
+            let sst = this.sst.list[name];
+            if(store.config.slice.enabled) {
+                // sst.drawInsideSlice(ctrl.slice.position-ctrl.slice.width/2, ctrl.slice.width);
+            }
+            else {
+                sst.drawInsideThreeFrames();
+            }
+        });
     }
 
 }

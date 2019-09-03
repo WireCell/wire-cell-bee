@@ -25,10 +25,10 @@ class SST {
 
             this.setEventInfo();
         })
-            .fail(() => { 
+            .fail(() => {
                 // console.log("load " + this.url + " failed");
                 let el = this.store.dom.el_loadingbar;
-                el.html(el.html()+"<br /><strong class='warning'>Warning!</strong> loading " + this.name + " ... failed. ")
+                el.html(el.html() + "<br /><strong class='warning'>Warning!</strong> loading " + this.name + " ... failed. ")
             })
             .always(() => {
                 this.process = null; // force garbage collection (a very large JSON object)
@@ -277,6 +277,18 @@ class SST {
         el.show();
         if (!this.loaded) { this.load() }
 
+        if (!this.store.config.overlay) {
+            this.bee.sst.loaded.forEach((name) => {
+                this.bee.sst.list[name].material.opacity = 0;
+                this.bee.sst.list[name].pointCloud.material.opacity = 0;
+            });
+
+            this.material.opacity = this.store.config.material.opacity;
+            if (this.pointCloud != null) {
+                this.pointCloud.material.opacity = this.store.config.material.opacity;
+            }
+        }
+
         this.setGuiColor();
         this.setPanelProp()
         // console.log(`${this.name} selected`);
@@ -295,12 +307,6 @@ class SST {
     }
 
     setPanelProp() {
-        // if (!this.store.config.overlay) {
-        //     for (let name in this.bee.sst.list) {
-        //         this.bee.sst.list[name].material.opacity = 0;
-        //     }
-        //     this.material.opacity = this.store.config.material.opacity;
-        // }
         let panel = this.store.dom.panel_sst;
         let material = this.material;
         panel.el_size.slider("value", material.size);
@@ -310,14 +316,14 @@ class SST {
 
     setEventInfo() {
         let el = this.store.dom.el_loadingbar;
-        el.html(el.html()+"<br /><strong class='success'>Loading </strong>" + this.name + " ... ");
+        el.html(el.html() + "<br /><strong class='success'>Loading </strong>" + this.name + " ... ");
         el.show();
 
         if (this.data.runNo) {
             $('#runNo').html(this.data.runNo);
             // $('#subRunNo').html(this.data.subRunNo + ' - ');
             $('#eventNo').html(this.data.eventNo);
-            let thousands = Math.floor(this.data.runNo/1000) * 1000;
+            let thousands = Math.floor(this.data.runNo / 1000) * 1000;
             thousands = "000000".substr(0, 6 - thousands.toString().length) + thousands;
             let plotUrl = `https://www.phy.bnl.gov/twister/static/plots/${this.name}/${thousands}/${this.data.runNo}/${this.data.subRunNo}/${this.data.eventNo}/`;
             $('#diag-plots').attr('href', plotUrl);
@@ -346,7 +352,7 @@ class SST {
                 text += ' [momentum = ' + momentum + ']';
             }
 
-            let timeStr =  this.data.eventTime;
+            let timeStr = this.data.eventTime;
             text += "<br />" + timeStr;
 
             $("#event-text").html(text);

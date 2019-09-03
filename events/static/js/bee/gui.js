@@ -31,6 +31,7 @@ class Gui {
 
     initGuiGeneral() {
         let folder = this.folder.general;
+        let config = this.store.config
 
         let tmp = { id: this.store.event.id }
         folder.add(tmp, 'id', 0, this.store.event.nEvents - 1)
@@ -40,7 +41,7 @@ class Gui {
                 window.location.assign(this.store.url.event_url + value + '/' + this.store.url.base_query);
             });
 
-        folder.add(this.store.config, 'theme', ['light', 'dark'])
+        folder.add(config, 'theme', ['light', 'dark'])
             .name("Theme")
             .onChange((value) => {
                 // clearLocalStorage();
@@ -59,7 +60,28 @@ class Gui {
                 }
                 window.location.assign(this.store.url.base_url + new_query);
             });
-
+        
+        folder.add(config.material, "showCharge")
+            .name("Show Charge")
+            .onChange(() => {
+                this.bee.redrawAllSST();
+            });
+        folder.add(config.material, "colorScale", 0., 1.9)
+            .name("Color-scale").step(0.01)
+            .onChange(() => {
+                if (!config.material.showCharge) { return; }
+                this.bee.redrawAllSST();
+            });
+        folder.add(config.material, "showCluster")
+            .name("Show Cluster")
+            .onChange(() => {
+                this.bee.redrawAllSST();
+            });
+        folder.add(config.material, "overlay")
+            .name("Overlay Reco")
+            .onChange(() => {
+                this.bee.redrawAllSST()
+            });
     }
 
     initGuiHelper() {

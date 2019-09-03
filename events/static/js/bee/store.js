@@ -35,8 +35,11 @@ store.config = {
         tpc_cluster_id: -1
     },
     slice: {
+        enabled: false,
         opacity: 0.0,
-        width: 0.32
+        width: 0.32,
+        position: 0,
+        color: 0x00FFFF
     },
     box: {
         box_mode: false,
@@ -151,7 +154,7 @@ store.process.init = $.getJSON(window.location.href, (data) => {
     $.extend(true, store.event, data);
     $.extend(true, store.config, data.config);
     store.experiment = createExperiment(data.experiment);
-    console.log('server data: ', data);
+    // console.log('server data: ', data);
 }); // config from server
 
 
