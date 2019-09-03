@@ -22,8 +22,14 @@ class SST {
             this.initPointCloud();
             this.loaded = true;
             this.bee.sst.loaded.push(this.name);
+
+            this.setEventInfo();
         })
-            .fail(() => { console.log("load " + this.url + " failed") })
+            .fail(() => { 
+                // console.log("load " + this.url + " failed");
+                let el = this.store.dom.el_loadingbar;
+                el.html(el.html()+"<br /><strong class='warning'>Warning!</strong> loading " + this.name + " ... failed. ")
+            })
             .always(() => {
                 this.process = null; // force garbage collection (a very large JSON object)
             });
@@ -110,10 +116,6 @@ class SST {
         // if(this.boxhelper != null) {
         //     this.scene.remove(this.boxhelper);
         // }
-
-        if (this.pointCloud != null) {
-            this.scene.remove(this.pointCloud);
-        }
 
         let config = this.store.config;
         let theme = config.theme;
@@ -220,6 +222,7 @@ class SST {
             sizeAttenuation: false
         });
 
+        if (this.pointCloud != null) { this.scene.remove(this.pointCloud) }
         this.pointCloud = new THREE.Points(geometry, material);
         this.scene.add(this.pointCloud);
 
@@ -258,7 +261,6 @@ class SST {
     initGui() {
         let name = this.name;
         let folder = this.gui.folder.sst;
-        // let opacity = sst.name == "WireCell-charge" ? this.options.material.opacity : 0;
 
         folder.add(this, "selected").name(name);
         let el = $(`.dg .property-name:contains(${name})`);
@@ -275,23 +277,8 @@ class SST {
         el.show();
         if (!this.loaded) { this.load() }
 
-        // if (this.material == null) { // load sst on demand
-        //     this.setup();
-        //     this.scene3D.registerSST(this);
-        //     this.process.then(function(){
-        //         this.setProp();
-        //     }, function(){});
-        // }
-        // else {
-        //     this.setProp();
-        // }
-        // for (let name in this.store.dom.gui_sst) {
-        //     this.store.dom.gui_sst[name].css('color', 'white');
-        // }
-        // this.store.dom.gui_sst[this.name].css('color', '#f97306');
-
         this.setGuiColor();
-        this.setProp()
+        this.setPanelProp()
         // console.log(`${this.name} selected`);
     }
 
@@ -300,9 +287,14 @@ class SST {
         let color = this.material.chargeColor;
         let rgb_string = `rgb(${color.r * 255}, ${color.g * 255}, ${color.b * 255}, ${this.material.opacity})`;
         $el.css('background-color', rgb_string);
+
+        for (let name in this.store.dom.gui_sst) {
+            this.store.dom.gui_sst[name].css('color', 'white');
+        }
+        this.store.dom.gui_sst[this.name].css('color', '#f97306');
     }
 
-    setProp() {
+    setPanelProp() {
         // if (!this.store.config.overlay) {
         //     for (let name in this.bee.sst.list) {
         //         this.bee.sst.list[name].material.opacity = 0;
@@ -310,9 +302,55 @@ class SST {
         //     this.material.opacity = this.store.config.material.opacity;
         // }
         let panel = this.store.dom.panel_sst;
-        panel.el_size.slider("value", this.material.size);
-        panel.el_opacity.slider("value", this.material.opacity);
-        panel.el_color.val('#' + this.material.chargeColor.getHexString());
+        let material = this.material;
+        panel.el_size.slider("value", material.size);
+        panel.el_opacity.slider("value", material.opacity);
+        panel.el_color.val('#' + material.chargeColor.getHexString());
+    }
+
+    setEventInfo() {
+        let el = this.store.dom.el_loadingbar;
+        el.html(el.html()+"<br /><strong class='success'>Loading </strong>" + this.name + " ... ");
+        el.show();
+
+        if (this.data.runNo) {
+            $('#runNo').html(this.data.runNo);
+            // $('#subRunNo').html(this.data.subRunNo + ' - ');
+            $('#eventNo').html(this.data.eventNo);
+            let thousands = Math.floor(this.data.runNo/1000) * 1000;
+            thousands = "000000".substr(0, 6 - thousands.toString().length) + thousands;
+            let plotUrl = `https://www.phy.bnl.gov/twister/static/plots/${this.name}/${thousands}/${this.data.runNo}/${this.data.subRunNo}/${this.data.eventNo}/`;
+            $('#diag-plots').attr('href', plotUrl);
+        }
+        window.setTimeout(() => {
+            el.html('');
+            el.hide();
+        }, 1000);
+
+        if (this.store.experiment.name == "protodune") { // protodune beam info
+            let text = '';
+            let eventStr = `Event: ${this.data.runNo} - ${this.data.subRunNo} - ${this.data.eventNo}`;
+            text += eventStr;
+
+            let triggerStr = this.store.experiment.daq.triggerMap[this.data.trigger];
+            if (triggerStr) {
+                triggerStr = this.data.trigger + ' [' + triggerStr + ']';
+            }
+            else {
+                triggerStr = 'N/A';
+            }
+            text += '<br /> Trigger: ' + triggerStr;
+
+            let momentum = this.store.experiment.daq.momentumMap[this.data.runNo];
+            if (momentum) {
+                text += ' [momentum = ' + momentum + ']';
+            }
+
+            let timeStr =  this.data.eventTime;
+            text += "<br />" + timeStr;
+
+            $("#event-text").html(text);
+        }
     }
 }
 

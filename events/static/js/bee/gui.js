@@ -61,11 +61,13 @@ class Gui {
     initSSTPanel() {
         let panel = this.store.dom.panel_sst;
         let bee = this.bee;
+        let store = this.store;
         
         panel.el_size.slider({
             min: 1, max: 8, step: 0.5, value: 0,
             slide: function (event, ui) {
                 bee.current_sst.pointCloud.material.size = ui.value;
+                bee.current_sst.material.size = ui.value;
             }
         }).slider("pips").slider("float");
 
@@ -73,15 +75,15 @@ class Gui {
             min: 0, max: 1, step: 0.05, value: 0,
             slide: function (event, ui) {
                 bee.current_sst.pointCloud.material.opacity = ui.value;
+                bee.current_sst.material.opacity = ui.value;
                 bee.current_sst.setGuiColor();
             }
         }).slider("pips").slider("float");
         
         panel.el_color.on('change', function () {
             bee.current_sst.material.chargeColor = new THREE.Color($(this).val());
-            // if (!($.fn.BEE.user_options.material.showCharge)) {
-            //     $.fn.BEE.scene3D.redrawAllSST();
-            // }
+            bee.current_sst.drawInsideThreeFrames(false, store.config.box.box_mode);
+            bee.current_sst.setGuiColor();
         });
     }
 

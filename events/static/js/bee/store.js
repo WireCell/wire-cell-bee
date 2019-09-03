@@ -114,6 +114,7 @@ store.dom = {
     el_statusbar: $('#statusbar'),
     el_logo: $('#event-logo'),
     el_statsbar: $('#statsbar'),
+    el_loadingbar:  $('#loadingbar'),
     panel_sst: {
         el_container: $('#sst-docker'),
         el_size: $('#sst-size'),

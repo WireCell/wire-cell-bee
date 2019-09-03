@@ -100,6 +100,22 @@ class ProtoDUNE extends Experiment {
         this.daq.timeAfterTrigger = 5500 * 0.5; //us
         this.beam.dir = [-0.178177, -0.196387, 0.959408];
         this.beam.center = [-27.173, 421.445, 0];
+
+        this.daq.triggerMap = {
+            '12': 'Beam',
+            '13': 'CRT',
+            '8': 'Random'
+        };
+        this.daq.momentumMap = {
+            '5762' : '2 GeV',
+            '5145' : '7 GeV',
+            '5387' : '1 GeV',
+            '5432' : '2 GeV',
+            '5770' : '6 GeV',
+            '5786' : '3 GeV',
+            '5826' : '0.5 GeV',
+            '5834' : '0.3 GeV'
+          };
     }
 
 }
