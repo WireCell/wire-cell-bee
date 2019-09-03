@@ -66,6 +66,7 @@ store.config = {
     camera: {
         scale: 1.,
         depth: 2000,
+        active: 'orthographic',
         ortho: true,
         rotate: false,
         multiview: false,
@@ -117,7 +118,7 @@ store.dom = {
     el_statusbar: $('#statusbar'),
     el_logo: $('#event-logo'),
     el_statsbar: $('#statsbar'),
-    el_loadingbar:  $('#loadingbar'),
+    el_loadingbar: $('#loadingbar'),
     panel_sst: {
         el_container: $('#sst-docker'),
         el_size: $('#sst-size'),
@@ -146,7 +147,7 @@ if (index_of_query_postion > 0) {
 }
 store.url.event_url = store.url.base_url.substring(0, store.url.base_url.indexOf('event')) + 'event/';
 store.url.root_url = store.url.base_url.substring(0, store.url.base_url.indexOf('set'));
-store.url.simple_url = store.url.base_url.substring(store.url.base_url.indexOf('set')-1);
+store.url.simple_url = store.url.base_url.substring(store.url.base_url.indexOf('set') - 1);
 
 //--------------------------------------------------
 store.process = {} // store ajax request objects

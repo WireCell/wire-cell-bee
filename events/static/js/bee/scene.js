@@ -109,6 +109,7 @@ class Scene3D {
             renderer.render(self.scene.main, self.camera.active);
             renderer.clearDepth();
             renderer.render(self.scene.slice, self.camera.active);
+            // console.log(self.camera.active)
 
             if (this.store.config.camera.multiview) {
                 // front camera

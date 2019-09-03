@@ -9,6 +9,7 @@ class Gui {
         this.initFolders();
         this.initGuiGeneral();
         this.initGuiHelper();
+        this.initGuiCamera();
 
         this.initDOM();
         this.initSSTPanel();
@@ -27,6 +28,7 @@ class Gui {
 
         this.folder.general.open();
         this.folder.sst.open();
+        this.folder.camera.open();
     }
 
     initGuiGeneral() {
@@ -60,7 +62,7 @@ class Gui {
                 }
                 window.location.assign(this.store.url.base_url + new_query);
             });
-        
+
         folder.add(config.material, "showCharge")
             .name("Show Charge")
             .onChange(() => {
@@ -100,6 +102,22 @@ class Gui {
                 .name("Show Beam")
                 .onChange(() => { this.bee.helper.showBeam() });
         }
+    }
+
+    initGuiCamera() {
+        let folder = this.folder.camera;
+        let config = this.store.config;
+        let camera = this.bee.scene3d.camera;
+
+        config.camera.active = config.camera.ortho ? 'orthographic' : 'perspective';
+        folder.add(config.camera, 'active', ['orthographic', 'perspective'])
+        .name("Type")
+        .onChange((value) => {
+            // clearLocalStorage();
+            camera.active = value == 'orthographic' ? camera.orthoCamera : camera.pspCamera;
+            this.bee.scene3d.controller.orbitController.object = camera.active;
+            this.bee.scene3d.controller.orbitController.update();
+        });
     }
 
     initDOM() {
