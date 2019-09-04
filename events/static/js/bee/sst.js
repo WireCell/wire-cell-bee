@@ -357,6 +357,20 @@ class SST {
             $("#event-text").html(text);
         }
     }
+
+    changeOpacity(value) {
+        if (this.material.opacity > 1) {
+            this.material.opacity = 1;
+        }
+        else if (this.material.opacity < 0) { 
+            this.material.opacity = 0; 
+        }
+        else { 
+            this.material.opacity += value;
+         }
+        this.pointCloud.material.opacity = this.material.opacity;
+        this.setPanelProp();
+    }
 }
 
 export { SST }

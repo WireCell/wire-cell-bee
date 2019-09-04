@@ -36,6 +36,9 @@ class Dispatcher {
         Mousetrap.bind('shift+up', () => { camera.zoom += 0.1; camera.updateProjectionMatrix() });
         Mousetrap.bind('shift+down', () => { camera.zoom -= 0.1; camera.updateProjectionMatrix() });
 
+        Mousetrap.bind('=', () => { this.bee.current_sst.changeOpacity(0.05) });
+        Mousetrap.bind('-', () => { this.bee.current_sst.changeOpacity(-0.05) });
+
         // this.addKeyEvent('m', self.toggleMC);
         // this.addKeyEvent('a', self.toggleShowAutoVtx);
         // this.addKeyEvent('s', self.toggleStats);
@@ -44,9 +47,6 @@ class Dispatcher {
         // this.addKeyEvent('shift+p', self.prevEvent);
         // this.addKeyEvent('k', self.nextSlice);
         // this.addKeyEvent('j', self.prevSlice);
-        // this.addKeyEvent('c', self.centerToEvent);
-        // this.addKeyEvent('=', self.increaseOpacity);
-        // this.addKeyEvent('-', self.decreaseOpacity);
         // this.addKeyEvent('+', self.increaseSize);
         // this.addKeyEvent('_', self.decreaseSize);
         // this.addKeyEvent('{', self.minimizeOpacity);
@@ -77,11 +77,11 @@ class Dispatcher {
     initClickEvents() {
         let scene3d = this.bee.scene3d;
 
-        // this.addClickEvent($('#resetCamera'), scene3d.resetCamera, scene3d);
-        // this.addClickEvent($('#xyView'), scene3d.xyView, scene3d);
-        // this.addClickEvent($('#xzView'), scene3d.xzView, scene3d);
-        // this.addClickEvent($('#xuView'), scene3d.xuView, scene3d);
-        // this.addClickEvent($('#xvView'), scene3d.xvView, scene3d);
+        this.addClickEvent($('#resetCamera'), scene3d.resetCamera, scene3d);
+        this.addClickEvent($('#xyView'), scene3d.xyView, scene3d);
+        this.addClickEvent($('#xzView'), scene3d.xzView, scene3d);
+        this.addClickEvent($('#xuView'), scene3d.xuView, scene3d);
+        this.addClickEvent($('#xvView'), scene3d.xvView, scene3d);
 
     }
 }
