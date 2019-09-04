@@ -36,8 +36,12 @@ class Dispatcher {
         Mousetrap.bind('shift+up', () => { camera.zoom += 0.1; camera.updateProjectionMatrix() });
         Mousetrap.bind('shift+down', () => { camera.zoom -= 0.1; camera.updateProjectionMatrix() });
 
-        Mousetrap.bind('=', () => { this.bee.current_sst.changeOpacity(0.05) });
-        Mousetrap.bind('-', () => { this.bee.current_sst.changeOpacity(-0.05) });
+        Mousetrap.bind('=', () => { this.bee.current_sst.increaseOpacity(0.05) });
+        Mousetrap.bind('-', () => { this.bee.current_sst.increaseOpacity(-0.05) });
+        Mousetrap.bind('{', () => { this.bee.current_sst.increaseOpacity(-1) }); // fully transparent 
+        Mousetrap.bind('}', () => { this.bee.current_sst.increaseOpacity(1) }); // fully opaque
+        Mousetrap.bind('+', () => { this.bee.current_sst.increaseSize(0.5) });
+        Mousetrap.bind('_', () => { this.bee.current_sst.increaseSize(-0.5) });
 
         // this.addKeyEvent('m', self.toggleMC);
         // this.addKeyEvent('a', self.toggleShowAutoVtx);
@@ -47,10 +51,6 @@ class Dispatcher {
         // this.addKeyEvent('shift+p', self.prevEvent);
         // this.addKeyEvent('k', self.nextSlice);
         // this.addKeyEvent('j', self.prevSlice);
-        // this.addKeyEvent('+', self.increaseSize);
-        // this.addKeyEvent('_', self.decreaseSize);
-        // this.addKeyEvent('{', self.minimizeOpacity);
-        // this.addKeyEvent('}', self.maximizeOpacity);
         // this.addKeyEvent('<', self.prevOp);
         // this.addKeyEvent('>', self.nextOp);
         // this.addKeyEvent('.', self.nextMatchingOp);

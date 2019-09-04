@@ -358,19 +358,22 @@ class SST {
         }
     }
 
-    changeOpacity(value) {
-        if (this.material.opacity > 1) {
-            this.material.opacity = 1;
-        }
-        else if (this.material.opacity < 0) { 
-            this.material.opacity = 0; 
-        }
-        else { 
-            this.material.opacity += value;
-         }
+    increaseOpacity(value) {
+        if (this.material.opacity > 1) { this.material.opacity = 1 }
+        else if (this.material.opacity < 0) { this.material.opacity = 0 }
+        else { this.material.opacity += value }
         this.pointCloud.material.opacity = this.material.opacity;
         this.setPanelProp();
     }
+
+    increaseSize(value) {
+        if (this.material.size > 8) { this.material.size = 8 }
+        else if (this.material.size < 1) { this.material.size = 1 }
+        else { this.material.size += value }
+        this.pointCloud.material.size = this.material.size;
+        this.setPanelProp();
+    }
+
 }
 
 export { SST }
