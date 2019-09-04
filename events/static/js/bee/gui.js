@@ -107,6 +107,7 @@ class Gui {
     initGuiCamera() {
         let folder = this.folder.camera;
         let config = this.store.config;
+        let scene3d = this.bee.scene3d;
         let camera = this.bee.scene3d.camera;
 
         config.camera.active = config.camera.ortho ? 'orthographic' : 'perspective';
@@ -122,6 +123,17 @@ class Gui {
         folder.add(config.camera, "multiview")
             .name("Multi-view")
             .onChange(() => {
+            });
+        
+        let tmp = { 'view': ['-'] };
+        folder.add(tmp, 'view', [ 'Front (YZ)', 'Side (XY)', ' Top (XZ)', 'U (XU)', 'V (XV)', 'W (XW)'])
+            .name("2D View ")
+            .onChange((value) => {
+                if (value.indexOf('YZ') > 0) { scene3d.yzView(); }
+                else if (value.indexOf('XY') > 0) { scene3d.xyView(); }
+                // else if (value.indexOf('XZ') > 0) { scene3d.xzView(); }
+                // else if (value.indexOf('XU') > 0) { scene3d.xuView(); }
+                // else if (value.indexOf('XV') > 0) { scene3d.xvView(); }
             });
         
     }

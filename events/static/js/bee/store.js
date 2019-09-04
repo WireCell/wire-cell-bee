@@ -68,6 +68,7 @@ store.config = {
         depth: 2000,
         active: 'orthographic',
         ortho: true,
+        tween_duration: 0.4,
         rotate: false,
         multiview: false,
         photo_booth: false

@@ -141,6 +141,24 @@ class Scene3D {
         window.animate();
     }
 
+    yzView() {
+        TweenLite.to(this.camera.active.position, this.store.config.camera.tween_duration, {
+            x: -this.store.config.camera.depth,
+            y: this.controller.active.target.y,
+            z: this.controller.active.target.z,
+            onUpdate: () => { this.controller.active.update() }
+        });
+    }
+
+    xyView() {
+        TweenLite.to(this.camera.active.position, this.store.config.camera.tween_duration, {
+            x: this.controller.active.target.x,
+            y: this.controller.active.target.y,
+            z: this.store.config.camera.depth,
+            onUpdate: () => { this.controller.active.update() }
+        });
+    }
+
 }
 
 export { Scene3D }
