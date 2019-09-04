@@ -131,11 +131,13 @@ class Gui {
             .onChange((value) => {
                 if (value.indexOf('YZ') > 0) { scene3d.yzView(); }
                 else if (value.indexOf('XY') > 0) { scene3d.xyView(); }
-                // else if (value.indexOf('XZ') > 0) { scene3d.xzView(); }
+                else if (value.indexOf('XZ') > 0) { scene3d.xzView(); }
                 // else if (value.indexOf('XU') > 0) { scene3d.xuView(); }
                 // else if (value.indexOf('XV') > 0) { scene3d.xvView(); }
             });
         
+        folder.add(scene3d, 'resetCamera').name('Reset Camera');
+
     }
 
     initDOM() {

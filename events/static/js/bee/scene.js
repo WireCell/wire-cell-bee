@@ -142,6 +142,7 @@ class Scene3D {
     }
 
     yzView() {
+        this.camera.active.up.set(0, 1, 0);
         TweenLite.to(this.camera.active.position, this.store.config.camera.tween_duration, {
             x: -this.store.config.camera.depth,
             y: this.controller.active.target.y,
@@ -151,12 +152,28 @@ class Scene3D {
     }
 
     xyView() {
+        this.camera.active.up.set(0, 1, 0);
         TweenLite.to(this.camera.active.position, this.store.config.camera.tween_duration, {
             x: this.controller.active.target.x,
             y: this.controller.active.target.y,
             z: this.store.config.camera.depth,
             onUpdate: () => { this.controller.active.update() }
         });
+    }
+
+    xzView() {
+        this.camera.active.up.set(1, 0, 0);
+        TweenLite.to(this.camera.active.position, this.store.config.camera.tween_duration, {
+            x: this.controller.active.target.x,
+            y: this.store.config.camera.depth,
+            z: this.controller.active.target.z,
+            onUpdate: () => { this.controller.active.update() }
+        });
+    }
+
+    resetCamera() {
+        this.camera.active.up.set(0, 1, 0);
+        this.controller.active.reset();
     }
 
 }
