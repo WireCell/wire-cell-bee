@@ -111,13 +111,19 @@ class Gui {
 
         config.camera.active = config.camera.ortho ? 'orthographic' : 'perspective';
         folder.add(config.camera, 'active', ['orthographic', 'perspective'])
-        .name("Type")
-        .onChange((value) => {
-            // clearLocalStorage();
-            camera.active = value == 'orthographic' ? camera.orthoCamera : camera.pspCamera;
-            this.bee.scene3d.controller.orbitController.object = camera.active;
-            this.bee.scene3d.controller.orbitController.update();
-        });
+            .name("Type")
+            .onChange((value) => {
+                // clearLocalStorage();
+                camera.active = value == 'orthographic' ? camera.orthoCamera : camera.pspCamera;
+                this.bee.scene3d.controller.orbitController.object = camera.active;
+                this.bee.scene3d.controller.orbitController.update();
+            });
+
+        folder.add(config.camera, "multiview")
+            .name("Multi-view")
+            .onChange(() => {
+            });
+        
     }
 
     initDOM() {
