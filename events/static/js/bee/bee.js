@@ -3,6 +3,7 @@ import { Scene3D } from './scene.js'
 import { SST } from './sst.js'
 import { Helper } from './helper.js'
 import { Gui } from './gui.js'
+import { Dispatcher } from './dispatcher.js';
 
 
 // console.log(new ProtoDUNE());
@@ -19,7 +20,7 @@ class Bee {
             this.helper = new Helper(store, this);
             this.gui = new Gui(store, this);
             this.initSST();
-
+            this.dispatcher = new Dispatcher(store, this);
         });
     }
 

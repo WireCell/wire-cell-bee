@@ -277,7 +277,7 @@ class SST {
         el.show();
         if (!this.loaded) { this.load() }
 
-        if (!this.store.config.overlay) {
+        if (!this.store.config.material.overlay) {
             this.bee.sst.loaded.forEach((name) => {
                 this.bee.sst.list[name].material.opacity = 0;
                 this.bee.sst.list[name].pointCloud.material.opacity = 0;
@@ -290,8 +290,7 @@ class SST {
         }
 
         this.setGuiColor();
-        this.setPanelProp()
-        // console.log(`${this.name} selected`);
+        this.setPanelProp();
     }
 
     setGuiColor() {
