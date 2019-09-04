@@ -142,6 +142,7 @@ class Scene3D {
     }
 
     yzView() {
+        this.resetScence();
         this.camera.active.up.set(0, 1, 0);
         TweenLite.to(this.camera.active.position, this.store.config.camera.tween_duration, {
             x: -this.store.config.camera.depth,
@@ -152,6 +153,7 @@ class Scene3D {
     }
 
     xyView() {
+        this.resetScence();
         this.camera.active.up.set(0, 1, 0);
         TweenLite.to(this.camera.active.position, this.store.config.camera.tween_duration, {
             x: this.controller.active.target.x,
@@ -162,6 +164,26 @@ class Scene3D {
     }
 
     xzView() {
+        this.resetScence();
+        this.camera.active.up.set(1, 0, 0);
+        TweenLite.to(this.camera.active.position, this.store.config.camera.tween_duration, {
+            x: this.controller.active.target.x,
+            y: this.store.config.camera.depth,
+            z: this.controller.active.target.z,
+            onUpdate: () => { this.controller.active.update() }
+        });
+    }
+
+    xuView() { this.tpcView(0) }
+
+    xvView() { this.tpcView(1) }
+
+    xwView() { this.tpcView(2) }
+
+    tpcView(index) {
+        let rot = Math.PI / 180 * this.store.experiment.tpc.viewAngle[index];
+        this.scene.main.rotation.x = rot;
+        this.scene.slice.rotation.x = rot;
         this.camera.active.up.set(1, 0, 0);
         TweenLite.to(this.camera.active.position, this.store.config.camera.tween_duration, {
             x: this.controller.active.target.x,
@@ -172,8 +194,14 @@ class Scene3D {
     }
 
     resetCamera() {
+        this.resetScence();
         this.camera.active.up.set(0, 1, 0);
         this.controller.active.reset();
+    }
+
+    resetScence() {
+        this.scene.main.rotation.x = 0;
+        this.scene.slice.rotation.x = 0;
     }
 
 }

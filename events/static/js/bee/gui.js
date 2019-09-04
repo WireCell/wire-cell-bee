@@ -125,15 +125,16 @@ class Gui {
             .onChange(() => {
             });
         
-        let tmp = { 'view': ['-'] };
-        folder.add(tmp, 'view', [ 'Front (YZ)', 'Side (XY)', ' Top (XZ)', 'U (XU)', 'V (XV)', 'W (XW)'])
+        let optionView = { 'view': ['-'] };
+        folder.add(optionView, 'view', [ 'Front (YZ)', 'Side (XY)', ' Top (XZ)', 'U (XU)', 'V (XV)', 'W (XW)'])
             .name("2D View ")
             .onChange((value) => {
                 if (value.indexOf('YZ') > 0) { scene3d.yzView(); }
                 else if (value.indexOf('XY') > 0) { scene3d.xyView(); }
                 else if (value.indexOf('XZ') > 0) { scene3d.xzView(); }
-                // else if (value.indexOf('XU') > 0) { scene3d.xuView(); }
-                // else if (value.indexOf('XV') > 0) { scene3d.xvView(); }
+                else if (value.indexOf('XU') > 0) { scene3d.xuView(); }
+                else if (value.indexOf('XV') > 0) { scene3d.xvView(); }
+                else if (value.indexOf('XW') > 0) { scene3d.xwView(); }
             });
         
         folder.add(scene3d, 'resetCamera').name('Reset Camera');
