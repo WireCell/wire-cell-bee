@@ -4,6 +4,7 @@ class Scene3D {
     constructor(store, bee) {
         this.store = store;
         this.bee = bee;
+        
         this.raycaster = new THREE.Raycaster();
         this.initCamera();
         this.initScene();

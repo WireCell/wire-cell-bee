@@ -7,10 +7,11 @@ class Dispatcher {
 
         this.initKeyEvents();
         this.initClickEvents();
+        this.initOtherEvents();
     }
 
     addClickEvent(jqObj, f, obj, eventName) {
-        let name = eventName == null? 'click' : eventName;
+        let name = eventName == null ? 'click' : eventName;
         jqObj.on(name, (e) => {
             e.preventDefault();
             f.call(obj, e);
@@ -45,7 +46,7 @@ class Dispatcher {
 
         Mousetrap.bind('shift+n', () => { this.bee.gui.increaseEvent(1) });
         Mousetrap.bind('shift+p', () => { this.bee.gui.increaseEvent(-1) });
-    
+
 
         // this.addKeyEvent('m', self.toggleMC);
         // this.addKeyEvent('a', self.toggleShowAutoVtx);
@@ -93,7 +94,17 @@ class Dispatcher {
 
     }
 
-    
+    initOtherEvents() {
+        window.addEventListener('resize', () => {
+            let scale = this.store.config.camera.scale;
+            this.bee.scene3d.camera.active.aspect = window.innerWidth * scale / window.innerHeight;
+            this.bee.scene3d.camera.active.updateProjectionMatrix();
+            this.bee.scene3d.renderer.setSize(window.innerWidth * scale, window.innerHeight);
+        }, false);
+
+    }
+
+
 }
 
 export { Dispatcher }
