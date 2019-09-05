@@ -4,7 +4,7 @@ class Scene3D {
     constructor(store, bee) {
         this.store = store;
         this.bee = bee;
-        
+
         this.raycaster = new THREE.Raycaster();
         this.initCamera();
         this.initScene();
@@ -205,6 +205,82 @@ class Scene3D {
     resetScence() {
         this.scene.main.rotation.x = 0;
         this.scene.slice.rotation.x = 0;
+    }
+
+    play() {
+        window.cancelAnimationFrame(this.animationId);
+        this.store.config.camera.rotate = true;
+        this.animate();
+        this.bee.gui.gui.close();
+
+        // if ($.fn.BEE.user_options.geom.name == "protodune" && $.fn.BEE.user_options.camera.photo_booth) {
+        //     // self.playInterval = setInterval(function(){
+        //     //     self.toggleBox();
+        //     //     self.toggeleTPCs();
+        //     // }, 3000);
+        //     self.tl = new TimelineLite({
+        //         onComplete:function() {this.restart();}
+        //     });
+        //     var x0 = $.fn.BEE.scene3D.camera.position.x;
+        //     var y0 = $.fn.BEE.scene3D.camera.position.y;
+        //     var z0 = $.fn.BEE.scene3D.camera.position.z;
+        //     var zoomIn = 0.5;
+        //     var dummy = {};
+        //     var xBox = toLocalX(($.fn.BEE.user_options.box.xmin+$.fn.BEE.user_options.box.xmax)/2);
+        //     var yBox = toLocalY(($.fn.BEE.user_options.box.ymin+$.fn.BEE.user_options.box.ymax)/2);
+        //     var zBox = toLocalZ(($.fn.BEE.user_options.box.zmin+$.fn.BEE.user_options.box.zmax)/2);
+        //     console.log(xBox, yBox, zBox);
+        //     self.tl
+        //     .to($.fn.BEE.scene3D.camera.position, 5, {
+        //         onComplete: function(){self.toggleBox();}
+        //     }) // rotate 5 seconds, then turn on box
+        //     .to(dummy, 5, {}) // rotate 5 seconds
+        //     .to($.fn.BEE.scene3D.camera.position, 5, {
+        //         x: x0 * zoomIn, y: y0 * zoomIn, z: z0 * zoomIn,
+        //     }) // zoom in for 5 sec
+        //     // .to($.fn.BEE.scene3D.orbitController.target, 5, {
+        //     //     x: xBox, y: yBox, z: zBox,
+        //     //     onUpdate: function(){self.orbitController.update();},
+        //     // }) // change rotation to around box for 5 sec
+        //     .to($.fn.BEE.scene3D.camera.position, 5, {
+        //         onComplete: function(){self.toggeleTPCs();}
+        //     }) // rotate 5 sec, then turn off tpc
+        //     .to($.fn.BEE.scene3D.camera.position, 5, {
+        //         x: x0 * zoomIn * 0.75, y: y0 * zoomIn * 0.75, z: z0 * zoomIn * 0.75,
+        //     }) // zoom in another 50% for 5 sec
+        //     .to($.fn.BEE.scene3D.camera.position, 10, {
+        //         onComplete: function(){self.toggeleTPCs();}
+        //     }) // rotate 10 sec, then turn on tpc
+        //     .to($.fn.BEE.scene3D.camera.position, 5, {
+        //         onComplete: function(){self.toggleBox();}
+        //     }) // rotate 5 sec, then turn off box
+        //     // .to($.fn.BEE.scene3D.orbitController.target, 5, {
+        //     //     x: 0, y: 0, z: 0,
+        //     //     onUpdate: function(){self.orbitController.update();},
+        //     // }) // change rotation to center for 5 sec
+        //     .to(dummy, 5, {}) // rotate 5 seconds
+        //     .to($.fn.BEE.scene3D.camera.position, 5, {
+        //         x: x0, y: y0, z: z0,
+        //     }) // zoom out for 5 sec
+
+        // }
+        if (screenfull.enabled) {
+            $("#fullscreeninfo").show();
+            screenfull.request(document.getElementById('container'));
+        }
+
+    }
+
+    stop() {
+        window.cancelAnimationFrame(this.animationId);
+        this.store.config.camera.rotate = false;
+        this.animate();
+        this.bee.gui.gui.open();
+
+        $("#fullscreeninfo").hide();
+        if (this.playInterval) { clearInterval(this.playInterval) }
+        if (this.tl) { this.tl.kill() }
+
     }
 
     getIntersect(e) {

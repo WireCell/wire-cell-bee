@@ -8,6 +8,10 @@ body {
     overflow: hidden;
 }
 
+.navbar {
+    margin-bottom: 0;
+}
+
 .not-active-link {
    pointer-events: none;
    cursor: default;
@@ -104,9 +108,7 @@ body {
     top: 0px;
     display: none;
 }
-#container {
-    /* this size is set by renderer.setSize()*/
-}
+
 #mc {
     color: #999;
     position: absolute;
@@ -132,7 +134,7 @@ body {
     top: 80px;
     width: 200px;
     color: #999;
-1}
+}
 
 .myslider.ui-slider {
     margin-top: 5px;
