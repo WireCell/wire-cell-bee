@@ -43,11 +43,14 @@ class Dispatcher {
         Mousetrap.bind('+', () => { this.bee.current_sst.increaseSize(0.5) });
         Mousetrap.bind('_', () => { this.bee.current_sst.increaseSize(-0.5) });
 
+        Mousetrap.bind('shift+n', () => { this.bee.gui.increaseEvent(1) });
+        Mousetrap.bind('shift+p', () => { this.bee.gui.increaseEvent(-1) });
+    
+
         // this.addKeyEvent('m', self.toggleMC);
         // this.addKeyEvent('a', self.toggleShowAutoVtx);
         // this.addKeyEvent('q', self.toggleCharge);
-        // this.addKeyEvent('shift+n', self.nextEvent);
-        // this.addKeyEvent('shift+p', self.prevEvent);
+
         // this.addKeyEvent('k', self.nextSlice);
         // this.addKeyEvent('j', self.prevSlice);
         // this.addKeyEvent('<', self.prevOp);

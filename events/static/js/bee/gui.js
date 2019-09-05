@@ -110,12 +110,10 @@ class Gui {
         let scene3d = this.bee.scene3d;
         let camera = this.bee.scene3d.camera;
 
-        config.camera.active = config.camera.ortho ? 'orthographic' : 'perspective';
-        folder.add(config.camera, 'active', ['orthographic', 'perspective'])
-            .name("Type")
+        folder.add(config.camera, 'ortho')
+            .name("Ortho Camera")
             .onChange((value) => {
-                // clearLocalStorage();
-                camera.active = value == 'orthographic' ? camera.orthoCamera : camera.pspCamera;
+                camera.active = value ? camera.orthoCamera : camera.pspCamera;
                 this.bee.scene3d.controller.orbitController.object = camera.active;
                 this.bee.scene3d.controller.orbitController.update();
             });
@@ -197,6 +195,17 @@ class Gui {
             store.dom.el_logo.hide();
         }
     }
+
+    increaseEvent(value) {
+        let event = this.store.event
+        let id = event.id;
+        let maxId = event.nEvents -1;
+        let newId = id + value;
+        if (newId > maxId) { newId = newId - maxId - 1 }
+        else if (newId < 0) { newId = maxId - newId - 1 }
+        window.location.assign(this.store.url.event_url + newId + '/' + this.store.url.base_query);
+    }
+
 }
 
 export { Gui }

@@ -66,7 +66,6 @@ store.config = {
     camera: {
         scale: 1.,
         depth: 2000,
-        active: 'orthographic',
         ortho: true,
         tween_duration: 0.4,
         rotate: false,
@@ -207,6 +206,5 @@ store.process.init = $.getJSON(window.location.href, (data) => {
     $.extend(true, store.event, data);
     $.extend(true, store.config, Lockr.get('store_config'), data.config); // priority: server > lockr > store
 });
-
 
 export { store, LocalStore }
