@@ -96,18 +96,6 @@ class SST {
     }
 
     initPointCloud() {
-        this.pclBounds = {
-            xmax: util.getMaxOfArray(this.data.x),
-            xmin: util.getMinOfArray(this.data.x),
-            ymax: util.getMaxOfArray(this.data.y),
-            ymin: util.getMinOfArray(this.data.y),
-            zmax: util.getMaxOfArray(this.data.z),
-            zmin: util.getMinOfArray(this.data.z),
-            xmean: util.getMeanOfArray(this.data.x),
-            ymean: util.getMeanOfArray(this.data.y),
-            zmean: util.getMeanOfArray(this.data.z)
-        }
-
         this.drawInsideThreeFrames(false, this.store.config.box.box_mode);
     }
 
@@ -256,6 +244,15 @@ class SST {
         this.material.chargeColor = new THREE.Color(USER_COLORS[theme][color_index]);
         this.material.opacity = this.store.config.material.opacity;
         this.material.size = this.store.config.material.size;
+
+        let sst_config = Lockr.get('sst_config');
+        if (sst_config == null) return;
+        let config = sst_config[this.name];
+        if (config) {
+            // this.material.chargeColor = new THREE.Color(parseInt(config.chargeColor, 16));
+            this.material.opacity = config.opacity;
+            this.material.size = config.size;
+        }
     }
 
     initGui() {

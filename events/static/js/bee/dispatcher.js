@@ -83,6 +83,8 @@ class Dispatcher {
         this.addClickEvent($('#xuView'), scene3d.xuView, scene3d);
         this.addClickEvent($('#xvView'), scene3d.xvView, scene3d);
 
+        this.addClickEvent($('#preset-default'), this.bee.localstore.clearAndReload, this.bee.localstore);
+
     }
 }
 

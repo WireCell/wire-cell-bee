@@ -1,4 +1,4 @@
-import { store } from './store.js'
+import { store, LocalStore } from './store.js'
 import { Scene3D } from './scene.js'
 import { SST } from './sst.js'
 import { Helper } from './helper.js'
@@ -20,6 +20,7 @@ class Bee {
             this.helper = new Helper(store, this);
             this.gui = new Gui(store, this);
             this.initSST();
+            this.localstore = new LocalStore(store, this);
             this.dispatcher = new Dispatcher(store, this);
         });
     }

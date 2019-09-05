@@ -150,14 +150,63 @@ store.url.event_url = store.url.base_url.substring(0, store.url.base_url.indexOf
 store.url.root_url = store.url.base_url.substring(0, store.url.base_url.indexOf('set'));
 store.url.simple_url = store.url.base_url.substring(store.url.base_url.indexOf('set') - 1);
 
+// ----- html5 local storage ------------------------------
+class LocalStore {
+
+    constructor(store, bee) {
+        this.store = store;
+        this.bee = bee;
+
+        window.setInterval(() => { this.save() }, 30000);
+        $(window).bind('beforeunload', () => { this.save() });
+    }
+
+    save() {
+        Lockr.set('store_config', store.config);
+
+        let sst_config = {};
+        for (let name in this.bee.sst.list) {
+            let sst = this.bee.sst.list[name];
+            sst_config[name] = {
+                'size': sst.material.size,
+                'opacity': sst.material.opacity,
+                // 'chargeColor': sst.material.chargeColor.getHexString()
+            }
+        }
+        Lockr.set('sst_config', sst_config);
+
+
+        let scan_results = Lockr.get('scan_results');
+        if (scan_results == null) scan_results = {};
+        let sst = this.bee.current_sst;
+        let scan_id = sst.runNo + '-' + sst.subRunNo + '-' + sst.eventNo;
+        let event_type = $('input[name=scanResult]:checked').val();
+        if (event_type) {
+            scan_results[scan_id] = {
+                'url': base_url,
+                'event_type': event_type,
+                'unsure': $('input[name=sureCheck]').is(':checked')
+            };
+            Lockr.set('scan_results', scan_results);
+        }
+    }
+
+    clear() { Lockr.flush() }
+
+    clearAndReload() {
+        $(window).unbind('beforeunload');
+        Lockr.flush();
+        window.location.reload();
+    }
+}
+
 //--------------------------------------------------
 store.process = {} // store ajax request objects
 store.process.init = $.getJSON(window.location.href, (data) => {
-    $.extend(true, store.event, data);
-    $.extend(true, store.config, data.config);
     store.experiment = createExperiment(data.experiment);
-    // console.log('server data: ', data);
-}); // config from server
+    $.extend(true, store.event, data);
+    $.extend(true, store.config, Lockr.get('store_config'), data.config); // priority: server > lockr > store
+});
 
 
-export { store }
+export { store, LocalStore }
