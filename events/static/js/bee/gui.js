@@ -197,15 +197,15 @@ class Gui {
     }
 
     increaseEvent(value) {
-        let event = this.store.event
-        let id = event.id;
-        let maxId = event.nEvents -1;
+        let id = this.store.event.id;
+        let maxId = this.store.event.nEvents -1;
         let newId = id + value;
         if (newId > maxId) { newId = newId - maxId - 1 }
         else if (newId < 0) { newId = maxId - newId - 1 }
         window.location.assign(this.store.url.event_url + newId + '/' + this.store.url.base_query);
     }
 
+    toggleSidebar() { this.store.dom.panel_sst.el_container.toggle("slide") }
 }
 
 export { Gui }

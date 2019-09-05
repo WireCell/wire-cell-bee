@@ -16,7 +16,7 @@ import { Dispatcher } from './dispatcher.js';
 class Bee {
     constructor() {
         store.process.init.then(() => {
-            this.scene3d = new Scene3D(store);
+            this.scene3d = new Scene3D(store, this);
             this.helper = new Helper(store, this);
             this.gui = new Gui(store, this);
             this.initSST();

@@ -1,8 +1,10 @@
 // 3D scence objects
 
 class Scene3D {
-    constructor(store) {
+    constructor(store, bee) {
         this.store = store;
+        this.bee = bee;
+        this.raycaster = new THREE.Raycaster();
         this.initCamera();
         this.initScene();
         this.initRenderer();
@@ -196,11 +198,66 @@ class Scene3D {
         this.resetScence();
         this.camera.active.up.set(0, 1, 0);
         this.controller.active.reset();
+        this.controller.active.target.set(0, 0, 0);
     }
 
     resetScence() {
         this.scene.main.rotation.x = 0;
         this.scene.slice.rotation.x = 0;
+    }
+
+    getIntersect(e) {
+        let mouse = { x: 1, y: 1 };
+        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+        let raycaster = this.raycaster;
+        raycaster.params.Points.threshold = 5;
+        raycaster.setFromCamera(mouse, this.camera.active);
+
+        let pcl = this.bee.current_sst.pointCloud;
+        let intersects = raycaster.intersectObject(pcl);
+
+        if (intersects.length > 0) {
+            let index = intersects[0].index;
+            let x = pcl.geometry.attributes.position.array[index * 3]; // local coordinates
+            let y = pcl.geometry.attributes.position.array[index * 3 + 1];
+            let z = pcl.geometry.attributes.position.array[index * 3 + 2];
+            return [x, y, z]
+        }
+        else { return null }
+    }
+
+    showIntersect(e) {
+        let loc = this.getIntersect(e);
+        if (null == loc) return;
+        let [x, y, z] = this.store.experiment.toGlobalXYZ(...loc);
+        this.store.dom.el_statusbar.html(`(x, y, z) = (${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)})`);
+    }
+
+    setTargetSphere(e) {
+        let loc = this.getIntersect(e);
+        if (null == loc) {
+            this.store.dom.el_statusbar.html('none detected');
+            return;
+        }
+        else {
+            if (this.targetSphere != null) { this.scene.main.remove(this.targetSphere) }
+            let geometry = new THREE.SphereGeometry(2, 32, 32);
+            let material = new THREE.MeshNormalMaterial({
+                blending: THREE.NormalBlending,
+                opacity: 0.4,
+                transparent: true,
+                depthWrite: false
+            });
+            this.targetSphere = new THREE.Mesh(geometry, material);
+            this.targetSphere.overdraw = true;
+            this.targetSphere.position.x = loc[0];
+            this.targetSphere.position.y = loc[1];
+            this.targetSphere.position.z = loc[2];
+            this.scene.main.add(this.targetSphere);
+            this.controller.active.target.set(...loc);
+        }
     }
 
 }

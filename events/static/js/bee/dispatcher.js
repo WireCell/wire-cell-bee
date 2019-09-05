@@ -13,7 +13,7 @@ class Dispatcher {
         let name = eventName == null? 'click' : eventName;
         jqObj.on(name, (e) => {
             e.preventDefault();
-            f.call(obj);
+            f.call(obj, e);
         });
     }
 
@@ -84,10 +84,16 @@ class Dispatcher {
         this.addClickEvent($('#xzView'), scene3d.xzView, scene3d);
         this.addClickEvent($('#xuView'), scene3d.xuView, scene3d);
         this.addClickEvent($('#xvView'), scene3d.xvView, scene3d);
+        this.addClickEvent($('#container'), scene3d.showIntersect, scene3d);
+        this.addClickEvent($('#container'), scene3d.setTargetSphere, scene3d, 'dblclick');
+
+        this.addClickEvent($('#toggleSidebar'), this.bee.gui.toggleSidebar, this.bee.gui);
 
         this.addClickEvent($('#preset-default'), this.bee.localstore.clearAndReload, this.bee.localstore);
 
     }
+
+    
 }
 
 export { Dispatcher }
