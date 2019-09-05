@@ -136,7 +136,6 @@ class Scene3D {
                 self.camera.topCamera.updateProjectionMatrix();
                 renderer.render(self.scene.main, self.camera.topCamera);
             }
-            // stats.update();
         }
         window.animate();
     }

@@ -45,7 +45,6 @@ class Dispatcher {
 
         // this.addKeyEvent('m', self.toggleMC);
         // this.addKeyEvent('a', self.toggleShowAutoVtx);
-        // this.addKeyEvent('s', self.toggleStats);
         // this.addKeyEvent('q', self.toggleCharge);
         // this.addKeyEvent('shift+n', self.nextEvent);
         // this.addKeyEvent('shift+p', self.prevEvent);
