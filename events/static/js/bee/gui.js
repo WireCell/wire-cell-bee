@@ -25,8 +25,11 @@ class Gui {
             this.folder.mc = this.gui.addFolder("Monte Carlo");
             this.initGuiMC();
         }
-        this.folder.flash = this.gui.addFolder("Flash");
-        this.folder.sst = this.gui.addFolder("Recon");
+        if (this.store.event.hasOP) { 
+            this.folder.op = this.gui.addFolder("Optical Flash");
+            this.initGuiOP();
+        }
+        this.folder.sst = this.gui.addFolder("Reconstruction");
         this.folder.box = this.gui.addFolder("Box");
         this.folder.camera = this.gui.addFolder("Camera");
 
@@ -127,6 +130,11 @@ class Gui {
         folder.add(this.store.config.mc, "showNeutrino")
             .name("Show Neutrino")
             .onChange(() => { this.store.dom.el_mc.jstree(true).refresh() });
+    }
+
+    initGuiOP() {
+        let folder = this.folder.op;
+
     }
 
     initGuiCamera() {

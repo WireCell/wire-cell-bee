@@ -2,17 +2,10 @@ import { store, LocalStore } from './store.js'
 import { Scene3D } from './scene.js'
 import { SST } from './sst.js'
 import { MC } from './mc.js'
+import { OP } from './op.js'
 import { Helper } from './helper.js'
 import { Gui } from './gui.js'
 import { Dispatcher } from './dispatcher.js';
-
-
-// console.log(new ProtoDUNE());
-// console.log(new ICARUS());
-// console.log(new DUNE10ktWorkspace());
-// console.log(new DUNE35t());
-// console.log(exp.toLocalXYZ([0, 0, 0]));
-
 
 class Bee {
     constructor() {
@@ -22,6 +15,7 @@ class Bee {
             this.gui = new Gui(store, this);
             this.initSST();
             if (store.event.hasMC) { this.mc = new MC(store, this) }
+            if (store.event.hasOP) { this.op = new OP(store, this) }
             this.localstore = new LocalStore(store, this);
             this.dispatcher = new Dispatcher(store, this);
         });

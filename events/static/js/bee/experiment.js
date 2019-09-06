@@ -19,7 +19,10 @@ class Experiment {
         this.beam = {
             dir: null,
             center: null,
-        }
+        };
+        this.op = {
+            location: {} // optical detector location {id: [x, y, z]}
+        };
     }
 
     nTPC() { return this.tpc.location.length; }
@@ -37,6 +40,10 @@ class Experiment {
         this.tpc.center[0] = (this.tpc.location[last][1] + this.tpc.location[first][0]) / 2;
         this.tpc.center[1] = (this.tpc.location[last][3] + this.tpc.location[first][2]) / 2;
         this.tpc.center[2] = (this.tpc.location[last][5] + this.tpc.location[first][4]) / 2;
+    }
+
+    updateOPLocation(loc) {
+        this.op.location = loc;
     }
 
     toLocalXYZ(x, y, z) { // global (larsoft) coordinate to local (bee) coordinate
@@ -70,6 +77,40 @@ class MicroBooNE extends Experiment {
         this.tpc.driftVelocity = 0.1101; // cm/us
         this.daq.timeBeforeTrigger = (3200 + 10) * 0.5; //us
         this.daq.timeAfterTrigger = (6400 - 10) * 0.5; //us
+        this.updateOPLocation({
+            4 : [2.645, -28.625, 990.356],
+            2 : [2.682, 27.607 , 989.712],
+            5 : [2.324, -56.514, 951.865],
+            0 : [2.458, 55.313 , 951.861],
+            6 : [2.041, -56.309, 911.939],
+            1 : [2.265, 55.822 , 911.066],
+            3 : [1.923, -0.722 , 865.598],
+            9 : [1.795, -0.502 , 796.208],
+            11: [1.495, -56.284, 751.905],
+            7 : [1.559, 55.625 , 751.884],
+            12: [1.487, -56.408, 711.274],
+            8 : [1.438, 55.8   , 711.073],
+            10: [1.475, -0.051 , 664.203],
+            15: [1.448, -0.549 , 585.284],
+            13: [1.226, 55.822 , 540.929],
+            17: [1.479, -56.205, 540.616],
+            18: [1.505, -56.323, 500.221],
+            14: [1.116, 55.771 , 500.134],
+            16: [1.481, -0.875 , 453.096],
+            21: [1.014, -0.706 , 373.839],
+            23: [1.451, -57.022, 328.341],
+            19: [0.913, 54.693 , 328.212],
+            20: [0.682, 54.646 , 287.976],
+            24: [1.092, -56.261, 287.639],
+            22: [0.949, -0.829 , 242.014],
+            28: [0.658, -0.303 , 173.743],
+            25: [0.703, 55.249 , 128.355],
+            30: [0.821, -56.203, 128.179],
+            31: [0.862, -56.615, 87.8695],
+            26: [0.558, 55.249 , 87.7605],
+            27: [0.665, 27.431 , 51.1015],
+            29: [0.947, -28.576, 50.4745]
+        });
     }
 
 }

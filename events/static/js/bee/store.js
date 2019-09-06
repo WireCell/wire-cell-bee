@@ -8,6 +8,7 @@ store.event = {
     nEvents: 100,
     id: 0,
     hasMC: false,
+    hasOP: false,
     sst: [ // list of reco algorithms
         // "WireCell-charge", "truth", "WireCell-simple"
     ],

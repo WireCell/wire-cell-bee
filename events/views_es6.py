@@ -147,6 +147,7 @@ def event(request, set_id, event_id):
         # 'geom' : {},
         # 'camera' : {},
         'hasMC' : eventset.has_MC(int(event_id)),
+        'hasOP' : eventset.has_OP(int(event_id)),
         'sst': sst_list,
         'config': {},
     }
