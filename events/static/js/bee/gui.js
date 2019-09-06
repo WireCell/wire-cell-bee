@@ -135,6 +135,52 @@ class Gui {
     initGuiOP() {
         let folder = this.folder.op;
 
+        let tmp = {'flash_id': 0};
+        folder.add(tmp, 'flash_id', 0, 200)
+            .name("Flash ID").step(1)
+            .onFinishChange((value) => {
+                // var nFlash = self.op.t.length;
+                // if (value<nFlash) {
+                //     self.op.currentFlash = value;
+                //     self.drawOp();
+                // }
+            });
+        
+        folder.add(this.store.config.op, "showFlash")
+            .name("Show Flash")
+            .onChange(() => { this.bee.op.toggle() });
+
+        folder.add(this.store.config.op, "showPMTClone")
+            .name("Show PMT Clone")
+            .onChange(() => { this.bee.op.draw() });
+
+        folder.add(this.store.config.op, "showMatchingCluster")
+            .name("Matching Cluster")
+            .onChange(() => { this.bee.op.draw() });
+
+        folder.add(this.store.config.op, "matchTiming")
+            .name("Matching Box")
+            .onChange(() => { this.bee.op.draw() });
+
+        folder.add(this.store.config.op, "showPred")
+            .name("Prediction")
+            .onChange(() => { this.bee.op.draw() });
+
+        folder.add(this.store.config.op, "showNonMatchingCluster")
+            .name("Non-matching")
+            .onChange((value) => {
+                this.bee.op.draw();
+                if (value) {
+                    this.store.dom.el_statusbar.html(
+                        'non-matching: ' + this.bee.op.op_nomatching_cluster_ids
+                    );
+                }
+            });
+
+        folder.add(this.store.config.op, 'tpc_cluster_id', -1, 200)
+            .name("Cluster ID").step(1)
+            .onChange(() => { this.bee.op.draw() });
+
     }
 
     initGuiCamera() {

@@ -22,6 +22,23 @@ class OP {
             });
     }
 
+    enableDrawFlash() {
+        this.bee.gui.folder.op.__controllers[1].setValue(true);
+    }
+
+    enableMachingCluster() {
+        this.enableDrawFlash();
+        this.bee.gui.folder.op.__controllers[3].setValue(true);
+    }
+
+    toggle() {
+
+    }
+
+    draw() {
+        
+    }
+
 }
 
 export { OP }

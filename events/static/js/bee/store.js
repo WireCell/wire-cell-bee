@@ -32,7 +32,7 @@ store.config = {
         showGamma: false,
         showNeutrino: false
     },
-    flash: {
+    op: {
         showFlash: false,
         showPMTClone: false,
         matchTiming: false,
