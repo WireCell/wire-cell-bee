@@ -21,11 +21,11 @@ class Gui {
         this.folder = {};
         this.folder.general = this.gui.addFolder("General");
         this.folder.helper = this.gui.addFolder("Helper");
-        if (this.store.event.hasMC) { 
+        if (this.store.event.hasMC) {
             this.folder.mc = this.gui.addFolder("Monte Carlo");
             this.initGuiMC();
         }
-        if (this.store.event.hasOP) { 
+        if (this.store.event.hasOP) {
             this.folder.op = this.gui.addFolder("Optical Flash");
             this.initGuiOP();
         }
@@ -135,20 +135,19 @@ class Gui {
     initGuiOP() {
         let folder = this.folder.op;
 
-        let tmp = {'flash_id': 0};
+        let tmp = { 'flash_id': 0 };
         folder.add(tmp, 'flash_id', 0, 200)
             .name("Flash ID").step(1)
             .onFinishChange((value) => {
-                // var nFlash = self.op.t.length;
-                // if (value<nFlash) {
-                //     self.op.currentFlash = value;
-                //     self.drawOp();
-                // }
+                if (value < this.bee.op.data.op_t.length) {
+                    this.bee.op.currentFlash = value;
+                    this.bee.op.draw();
+                }
             });
-        
+
         folder.add(this.store.config.op, "showFlash")
             .name("Show Flash")
-            .onChange(() => { this.bee.op.toggle() });
+            .onChange(() => { this.bee.op.draw() });
 
         folder.add(this.store.config.op, "showPMTClone")
             .name("Show PMT Clone")
@@ -179,7 +178,7 @@ class Gui {
 
         folder.add(this.store.config.op, 'tpc_cluster_id', -1, 200)
             .name("Cluster ID").step(1)
-            .onChange(() => { this.bee.op.draw() });
+            .onFinishChange(() => { this.bee.op.draw() });
 
     }
 

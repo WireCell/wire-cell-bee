@@ -49,15 +49,19 @@ class Dispatcher {
         Mousetrap.bind('shift+p', () => { this.bee.gui.increaseEvent(-1) });
         Mousetrap.bind('m', () => { this.bee.gui.toggleMC() });
 
+        if (null != this.bee.op) {
+            Mousetrap.bind('<', () => { this.bee.op.prev() });
+            Mousetrap.bind('>', () => { this.bee.op.next() });
+            Mousetrap.bind(',', () => { this.bee.op.prevMatching() });
+            Mousetrap.bind('.', () => { this.bee.op.nextMatching() });
+            Mousetrap.bind('/', () => { this.bee.op.nextMatchingBeam() });
+        }
+
         // this.addKeyEvent('q', self.toggleCharge);
 
         // this.addKeyEvent('k', self.nextSlice);
         // this.addKeyEvent('j', self.prevSlice);
-        // this.addKeyEvent('<', self.prevOp);
-        // this.addKeyEvent('>', self.nextOp);
-        // this.addKeyEvent('.', self.nextMatchingOp);
-        // this.addKeyEvent(',', self.prevMatchingOp);
-        // this.addKeyEvent('/', self.nextMatchingBeamOp);
+
         // this.addKeyEvent('o', self.redrawAllSSTRandom);
         // this.addKeyEvent('shift+i', self.toggleROI);
         // this.addKeyEvent('b', self.toggleBox);

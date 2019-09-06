@@ -21,7 +21,9 @@ class Experiment {
             center: null,
         };
         this.op = {
-            location: {} // optical detector location {id: [x, y, z]}
+            location: {}, // optical detector location {id: [x, y, z]}
+            beamTimeMin: 2,  // time window for beam flash, (us) 
+            beamTimeMax: 6,
         };
     }
 
