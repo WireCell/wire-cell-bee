@@ -16,5 +16,6 @@ urlpatterns = patterns('',
 
     # ES6 test
     url(r'^es6/set/(?P<set_id>.+)/event/(?P<event_id>\d+)/$', views_es6.event, name='event_es6'),
+    url(r'^es6/set/(?P<set_id>.+)/event/(?P<event_id>\d+)/(?P<name>[\w\-]+)/$', views.data, name='data'),
 
 )

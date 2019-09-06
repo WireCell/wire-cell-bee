@@ -21,6 +21,10 @@ class Gui {
         this.folder = {};
         this.folder.general = this.gui.addFolder("General");
         this.folder.helper = this.gui.addFolder("Helper");
+        if (this.store.event.hasMC) { 
+            this.folder.mc = this.gui.addFolder("Monte Carlo");
+            this.initGuiMC();
+        }
         this.folder.flash = this.gui.addFolder("Flash");
         this.folder.sst = this.gui.addFolder("Recon");
         this.folder.box = this.gui.addFolder("Box");
@@ -102,6 +106,27 @@ class Gui {
                 .name("Show Beam")
                 .onChange(() => { this.bee.helper.showBeam() });
         }
+
+
+    }
+
+    initGuiMC() {
+        let folder = this.folder.mc;
+        folder.add(this.store.config.mc, "showMC")
+            .name("Always Show")
+            .onChange(() => { this.toggleMC() });
+
+        folder.add(this.store.config.mc, "showNeutron")
+            .name("Show Neutron")
+            .onChange(() => { this.store.dom.el_mc.jstree(true).refresh() });
+
+        folder.add(this.store.config.mc, "showGamma")
+            .name("Show Gamma")
+            .onChange(() => { this.store.dom.el_mc.jstree(true).refresh() });
+
+        folder.add(this.store.config.mc, "showNeutrino")
+            .name("Show Neutrino")
+            .onChange(() => { this.store.dom.el_mc.jstree(true).refresh() });
     }
 
     initGuiCamera() {
@@ -122,9 +147,9 @@ class Gui {
             .name("Multi-view")
             .onChange(() => {
             });
-        
+
         let optionView = { 'view': ['-'] };
-        folder.add(optionView, 'view', [ 'Front (YZ)', 'Side (XY)', ' Top (XZ)', 'U (XU)', 'V (XV)', 'W (XW)'])
+        folder.add(optionView, 'view', ['Front (YZ)', 'Side (XY)', ' Top (XZ)', 'U (XU)', 'V (XV)', 'W (XW)'])
             .name("2D View ")
             .onChange((value) => {
                 if (value.indexOf('YZ') > 0) { scene3d.yzView(); }
@@ -134,7 +159,7 @@ class Gui {
                 else if (value.indexOf('XV') > 0) { scene3d.xvView(); }
                 else if (value.indexOf('XW') > 0) { scene3d.xwView(); }
             });
-        
+
         folder.add(scene3d, 'resetCamera').name('Reset Camera');
 
     }
@@ -198,14 +223,17 @@ class Gui {
 
     increaseEvent(value) {
         let id = this.store.event.id;
-        let maxId = this.store.event.nEvents -1;
+        let maxId = this.store.event.nEvents - 1;
         let newId = id + value;
         if (newId > maxId) { newId = newId - maxId - 1 }
         else if (newId < 0) { newId = maxId - newId - 1 }
         window.location.assign(this.store.url.event_url + newId + '/' + this.store.url.base_query);
     }
 
-    toggleSidebar() { this.store.dom.panel_sst.el_container.toggle("slide") }
+    toggleSidebar() { this.store.dom.panel_sst.el_container.toggle('slide') }
+
+    toggleMC() { this.store.dom.el_mc.toggle('slide') }
+
 }
 
 export { Gui }

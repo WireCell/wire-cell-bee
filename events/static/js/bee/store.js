@@ -25,6 +25,12 @@ store.config = {
         showBeam: false,
         showSCB: true
     },
+    mc: {
+        showMC: false,
+        showNeutron: false,
+        showGamma: false,
+        showNeutrino: false
+    },
     flash: {
         showFlash: false,
         showPMTClone: false,
@@ -119,6 +125,7 @@ store.dom = {
     el_logo: $('#event-logo'),
     el_statsbar: $('#statsbar'),
     el_loadingbar: $('#loadingbar'),
+    el_mc: $('#mc'),
     panel_sst: {
         el_container: $('#sst-docker'),
         el_size: $('#sst-size'),

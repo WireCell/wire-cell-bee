@@ -1,6 +1,7 @@
 import { store, LocalStore } from './store.js'
 import { Scene3D } from './scene.js'
 import { SST } from './sst.js'
+import { MC } from './mc.js'
 import { Helper } from './helper.js'
 import { Gui } from './gui.js'
 import { Dispatcher } from './dispatcher.js';
@@ -20,6 +21,7 @@ class Bee {
             this.helper = new Helper(store, this);
             this.gui = new Gui(store, this);
             this.initSST();
+            if (store.event.hasMC) { this.mc = new MC(store, this) }
             this.localstore = new LocalStore(store, this);
             this.dispatcher = new Dispatcher(store, this);
         });

@@ -47,8 +47,8 @@ class Dispatcher {
 
         Mousetrap.bind('shift+n', () => { this.bee.gui.increaseEvent(1) });
         Mousetrap.bind('shift+p', () => { this.bee.gui.increaseEvent(-1) });
+        Mousetrap.bind('m', () => { this.bee.gui.toggleMC() });
 
-        // this.addKeyEvent('m', self.toggleMC);
         // this.addKeyEvent('q', self.toggleCharge);
 
         // this.addKeyEvent('k', self.nextSlice);
@@ -94,7 +94,6 @@ class Dispatcher {
         
         // self.addClickEvent($('#toggleCluster') , self.toggleCluster);
         // self.addClickEvent($('#toggleScan')    , self.toggleScan);
-        // self.addClickEvent($('#toggleMC')      , self.toggleMC);
         // self.addClickEvent($('#nextSlice')     , self.nextSlice);
         // self.addClickEvent($('#prevSlice')     , self.prevSlice);
         // self.addClickEvent($('#btn-cluster')   , self.doCluster);
