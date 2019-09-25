@@ -127,15 +127,15 @@ class SST {
         let size_actual = 0;
         for (let i = 0; i < size_show; i++) {
             let ind = indices[i];
-            if (config.flash.tpc_cluster_id != -1) {
-                if (this.data.cluster_id[ind] != this.store.flash.tpc_cluster_id) {
+            if (config.op.tpc_cluster_id != -1) {
+                if (this.data.cluster_id[ind] != config.op.tpc_cluster_id) {
                     continue;
                 }
             }
-            if (config.flash.showNonMatchingCluster) {
+            if (config.op.showNonMatchingCluster) {
                 try {
-                    let op = bee.op;
-                    if (!op.nomatching_cluster_ids.includes(this.data.cluster_id[ind])) {
+                    let op = this.bee.op;
+                    if (!op.data.op_nomatching_cluster_ids.includes(this.data.cluster_id[ind])) {
                         continue;
                     }
                     else {
@@ -146,10 +146,10 @@ class SST {
                     // console.log(err);
                 }
             }
-            else if (config.flash.showMatchingCluster) {
+            else if (config.op.showMatchingCluster) {
                 try {
-                    let op = bee.op;
-                    let op_cluster_ids = op.cluster_ids[op.currentFlash];
+                    let op = this.bee.op;
+                    let op_cluster_ids = op.data.op_cluster_ids[op.currentFlash];
                     if (!op_cluster_ids.includes(this.data.cluster_id[ind])) {
                         continue;
                     }

@@ -22,6 +22,7 @@ class Experiment {
         };
         this.op = {
             location: {}, // optical detector location {id: [x, y, z]}
+            nDet: 0,
             beamTimeMin: 2,  // time window for beam flash, (us) 
             beamTimeMax: 6,
         };
@@ -44,8 +45,9 @@ class Experiment {
         this.tpc.center[2] = (this.tpc.location[last][5] + this.tpc.location[first][4]) / 2;
     }
 
-    updateOPLocation(loc) {
+    updateOPLocation(loc, size) {
         this.op.location = loc;
+        this.op.nDet = size;
     }
 
     toLocalXYZ(x, y, z) { // global (larsoft) coordinate to local (bee) coordinate
@@ -112,7 +114,7 @@ class MicroBooNE extends Experiment {
             26: [0.558, 55.249 , 87.7605],
             27: [0.665, 27.431 , 51.1015],
             29: [0.947, -28.576, 50.4745]
-        });
+        }, 32);
     }
 
 }

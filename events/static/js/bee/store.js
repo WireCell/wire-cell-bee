@@ -169,7 +169,16 @@ class LocalStore {
     }
 
     save() {
-        Lockr.set('store_config', store.config);
+        let store_config = {
+            'material' : store.config.material,
+            'box' : store.config.box,
+            'slice' : store.config.slice,
+            'theme' : store.config.theme,
+            'helper': store.config.helper,
+            'camera': store.config.camera,
+            'mc': store.config.mc
+        };
+        Lockr.set('store_config', store_config);
 
         let sst_config = {};
         for (let name in this.bee.sst.list) {
