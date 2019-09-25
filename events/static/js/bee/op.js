@@ -131,6 +131,10 @@ class OP {
 
         this.bee.scene3d.scene.main.add(this.group_op);
 
+        if(this.store.config.helper.showSCB) {
+            this.bee.scene3d.drawSpaceChargeBoundary(driftV*t);
+        }
+
         // add status bar text
         this.store.dom.el_statusbar.html(`#${this.currentFlash}: (${t} us, ${peTotal} pe)`);
         if (this.data.op_l1_t) {
@@ -215,7 +219,7 @@ class OP {
     toggle() {
         if (this.group_op == null) { this.draw() }
         else {
-            this.bee.scene3d.scence.main.remove(this.group_op);
+            this.bee.scene3d.scene.main.remove(this.group_op);
             this.group_op = null;
         }
     }

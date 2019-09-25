@@ -221,14 +221,14 @@ class Scene3D {
         //     self.tl = new TimelineLite({
         //         onComplete:function() {this.restart();}
         //     });
-        //     var x0 = $.fn.BEE.scene3D.camera.position.x;
-        //     var y0 = $.fn.BEE.scene3D.camera.position.y;
-        //     var z0 = $.fn.BEE.scene3D.camera.position.z;
-        //     var zoomIn = 0.5;
-        //     var dummy = {};
-        //     var xBox = toLocalX(($.fn.BEE.user_options.box.xmin+$.fn.BEE.user_options.box.xmax)/2);
-        //     var yBox = toLocalY(($.fn.BEE.user_options.box.ymin+$.fn.BEE.user_options.box.ymax)/2);
-        //     var zBox = toLocalZ(($.fn.BEE.user_options.box.zmin+$.fn.BEE.user_options.box.zmax)/2);
+        //     let x0 = $.fn.BEE.scene3D.camera.position.x;
+        //     let y0 = $.fn.BEE.scene3D.camera.position.y;
+        //     let z0 = $.fn.BEE.scene3D.camera.position.z;
+        //     let zoomIn = 0.5;
+        //     let dummy = {};
+        //     let xBox = toLocalX(($.fn.BEE.user_options.box.xmin+$.fn.BEE.user_options.box.xmax)/2);
+        //     let yBox = toLocalY(($.fn.BEE.user_options.box.ymin+$.fn.BEE.user_options.box.ymax)/2);
+        //     let zBox = toLocalZ(($.fn.BEE.user_options.box.zmin+$.fn.BEE.user_options.box.zmax)/2);
         //     console.log(xBox, yBox, zBox);
         //     self.tl
         //     .to($.fn.BEE.scene3D.camera.position, 5, {
@@ -335,6 +335,55 @@ class Scene3D {
             this.scene.main.add(this.targetSphere);
             this.controller.active.target.set(...loc);
         }
+    }
+
+    drawSpaceChargeBoundary(shiftx=0) {
+        if (this.listOfSCBObjects != null) {
+            for (let i=0; i<this.listOfSCBObjects.length; i++){
+                this.scene.main.remove(this.listOfSCBObjects[i]);
+            }
+        }
+        this.listOfSCBObjects = [];
+
+        let exp = this.store.experiment;
+        if ( exp.name != 'uboone') {
+            return; // only implemented in uboone
+        }
+        // console.log(detector, ': init scb');
+
+        let material = new THREE.LineDashedMaterial({
+            color: 0xff796c,
+            linewidth: 1,
+            scale: 1,
+            dashSize: 3,
+            gapSize: 1,
+        });
+        let z = exp.tpc.location[0][5];
+        let ymax = exp.tpc.location[0][3];
+        let ymin = exp.tpc.location[0][2];
+        let all_vtx = [
+            [[80, -116, 0], [256, -99, 0]],
+            [[80, -116, z], [256, -99, z]],
+            [[100, 116, 0], [256, 102, 0]],
+            [[100, 116, z], [256, 102, z]],
+            [[120, ymax, 0], [256, ymax, 11]],
+            [[120, ymax, 1037], [256, ymax, 1026]],
+            [[120, ymin, 0], [256, ymin, 11]],
+            [[120, ymin, 1037], [256, ymin, 1026]],
+        ]
+        for (let i=0; i<all_vtx.length; i++) {
+            let geometry = new THREE.Geometry();
+            for (let j=0; j<=1; j++) {
+                geometry.vertices.push(
+                    new THREE.Vector3(...exp.toLocalXYZ(all_vtx[i][j][0]+shiftx, all_vtx[i][j][1], all_vtx[i][j][2]))
+                )
+            }
+            let line = new THREE.Line( geometry, material );
+            line.computeLineDistances();
+            this.listOfSCBObjects.push(line);
+            this.scene.main.add(line);
+        }
+
     }
 
 }

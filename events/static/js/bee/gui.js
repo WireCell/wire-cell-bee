@@ -110,6 +110,33 @@ class Gui {
                 .onChange(() => { this.bee.helper.showBeam() });
         }
 
+        let scene3d = this.bee.scene3d;
+        if (exp.name == 'uboone') {
+            folder.add(this.store.config.helper, "showSCB")
+            .name("Show SCB")
+            .onChange((value) => {
+                if (value) {
+                    let op = this.bee.op;
+                    if (op.data.op_t != undefined) {
+                        scene3d.drawSpaceChargeBoundary( op.data.op_t[op.currentFlash]*exp.tpc.driftVelocity );
+                    }
+                    else {
+                        scene3d.drawSpaceChargeBoundary();
+                    }
+                }
+                else {
+                    if (scene3d.listOfSCBObjects != undefined) {
+                        for (let i=0; i<scene3d.listOfSCBObjects.length; i++){
+                            scene3d.scene.main.remove(scene3d.listOfSCBObjects[i]);
+                        }
+                        scene3d.listOfSCBObjects= [];            
+                    }
+                }
+            });
+        }
+
+
+
 
     }
 
