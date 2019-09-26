@@ -10,6 +10,7 @@ class Gui {
         this.initGuiGeneral();
         this.initGuiHelper();
         this.initGuiCamera();
+        this.initGuiBox();
 
         this.initDOM();
         this.initSSTPanel();
@@ -30,7 +31,7 @@ class Gui {
             this.initGuiOP();
         }
         this.folder.sst = this.gui.addFolder("Reconstruction");
-        this.folder.box = this.gui.addFolder("Box");
+        this.folder.box = this.gui.addFolder("Box of Interest");
         this.folder.camera = this.gui.addFolder("Camera");
 
         this.folder.general.open();
@@ -135,9 +136,6 @@ class Gui {
             });
         }
 
-
-
-
     }
 
     initGuiMC() {
@@ -241,6 +239,51 @@ class Gui {
             });
 
         folder.add(scene3d, 'resetCamera').name('Reset Camera');
+
+    }
+
+    loadDefaultBoxROI() {
+        let config = this.store.config;
+        let exp = this.store.experiment;
+        config.box.xmin = exp.tpc.boxROI[0];
+        config.box.xmax = exp.tpc.boxROI[1];
+        config.box.ymin = exp.tpc.boxROI[2];
+        config.box.ymax = exp.tpc.boxROI[3];
+        config.box.zmin = exp.tpc.boxROI[4];
+        config.box.zmax = exp.tpc.boxROI[5];
+
+        this.folder.box.__controllers[0].setValue(true);
+        for (let i=1; i<=6; i++) {
+            this.folder.box.__controllers[i].updateDisplay();
+        }
+        this.folder.box.__controllers[7].setValue(-1);
+        this.bee.current_sst.drawInsideBoxHelper();
+    }
+
+    initGuiBox() {
+        let folder = this.folder.box;
+        let config = this.store.config;
+
+        folder.add(config.box, "box_mode")
+            .name("Box Mode")
+            .onChange((value) => {
+                if(value) { this.bee.current_sst.drawInsideBoxHelper() }
+                else { this.bee.current_sst.drawInsideThreeFrames() }
+            });
+        
+        folder.add(config.box, "xmin").name("x min");
+        folder.add(config.box, "xmax").name("x max");
+        folder.add(config.box, "ymin").name("y min");
+        folder.add(config.box, "ymax").name("y max");
+        folder.add(config.box, "zmin").name("z min");
+        folder.add(config.box, "zmax").name("z max");
+        folder.add(config.box, "tpcNo", -1, 11)
+            .name("TPC No.").step(1)
+            .onChange((value) => {
+                if (value >= 0) { this.bee.current_sst.drawInsideBoxHelper() }
+                else { this.bee.current_sst.drawInsideThreeFrames() }
+            });
+        folder.add(this, 'loadDefaultBoxROI').name('Load Default Box');
 
     }
 

@@ -36,6 +36,10 @@ class Experiment {
         this.updateDimensions(0, this.nTPC() - 1);
     }
 
+    updateBoxROI(loc) {
+        this.tpc.boxROI = loc;
+    }
+
     updateDimensions(first, last) {
         this.tpc.halfxyz[0] = (this.tpc.location[last][1] - this.tpc.location[first][0]) / 2;
         this.tpc.halfxyz[1] = (this.tpc.location[last][3] - this.tpc.location[first][2]) / 2;
@@ -139,7 +143,7 @@ class ProtoDUNE extends Experiment {
             [367.504, 380.434, 0.0, 607.499, 463.626, 695.286]
         ]);
         this.tpc.viewAngle = [-35.7, 35.7, 0];
-        this.tpc.boxROI = [-100, 0, 250, 500, 0, 400];
+        this.updateBoxROI([-200, 0, 250, 500, 0, 500]);
         this.tpc.driftVelocity = 0.16; // cm/us
         this.daq.timeBeforeTrigger = 500 * 0.5; //us
         this.daq.timeAfterTrigger = 5500 * 0.5; //us

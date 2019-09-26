@@ -220,6 +220,12 @@ class LocalStore {
 store.process = {} // store ajax request objects
 store.process.init = $.getJSON(window.location.href, (data) => {
     store.experiment = createExperiment(data.experiment);
+    store.config.box.xmin = store.experiment.tpc.boxROI[0];
+    store.config.box.xmax = store.experiment.tpc.boxROI[1];
+    store.config.box.ymin = store.experiment.tpc.boxROI[2];
+    store.config.box.ymax = store.experiment.tpc.boxROI[3];
+    store.config.box.zmin = store.experiment.tpc.boxROI[4];
+    store.config.box.zmax = store.experiment.tpc.boxROI[5];
     $.extend(true, store.event, data);
     $.extend(true, store.config, Lockr.get('store_config'), data.config); // priority: server > lockr > store
 });

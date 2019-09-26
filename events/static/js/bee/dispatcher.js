@@ -44,6 +44,8 @@ class Dispatcher {
         Mousetrap.bind('}', () => { this.bee.current_sst.increaseOpacity(1) }); // fully opaque
         Mousetrap.bind('+', () => { this.bee.current_sst.increaseSize(0.5) });
         Mousetrap.bind('_', () => { this.bee.current_sst.increaseSize(-0.5) });
+        Mousetrap.bind('b', () => { this.bee.current_sst.toggleBox() });
+        Mousetrap.bind('shift+t', () => { this.bee.current_sst.nextTPC() });
 
         Mousetrap.bind('shift+n', () => { this.bee.gui.increaseEvent(1) });
         Mousetrap.bind('shift+p', () => { this.bee.gui.increaseEvent(-1) });
@@ -63,9 +65,6 @@ class Dispatcher {
         // this.addKeyEvent('j', self.prevSlice);
 
         // this.addKeyEvent('o', self.redrawAllSSTRandom);
-        // this.addKeyEvent('shift+i', self.toggleROI);
-        // this.addKeyEvent('b', self.toggleBox);
-        // this.addKeyEvent('shift+t', self.nextTPC);
         // this.addKeyEvent('\\', self.toggleScan);
 
         for (let i = 1; i <= 9; i++) {
