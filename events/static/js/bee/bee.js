@@ -37,14 +37,14 @@ class Bee {
         }
     }
 
-    redrawAllSST() {
+    redrawAllSST(randomClusterColor = false) {
         this.sst.loaded.forEach((name) => {
             let sst = this.sst.list[name];
-            if(store.config.slice.enabled) {
+            if (store.config.slice.enabled) {
                 // sst.drawInsideSlice(ctrl.slice.position-ctrl.slice.width/2, ctrl.slice.width);
             }
             else {
-                sst.drawInsideThreeFrames();
+                sst.drawInsideThreeFrames(randomClusterColor);
             }
         });
     }

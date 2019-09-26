@@ -227,7 +227,7 @@ class SST {
     }
 
     drawInsideSlice(start, width, randomClusterColor = false) {
-        if(this.boxhelper != null) { this.bee.scene3d.scene.main.remove(this.boxhelper) }
+        if (this.boxhelper != null) { this.bee.scene3d.scene.main.remove(this.boxhelper) }
         this.drawInsideBox(start, start + width, -1e9, 1e9, -1e9, 1e9, randomClusterColor);
     }
 
@@ -247,21 +247,21 @@ class SST {
 
         this.drawInsideBox(xmin, xmax, ymin, ymax, zmin, zmax);
 
-        if(this.boxhelper != null) { this.bee.scene3d.scene.main.remove(this.boxhelper) }
+        if (this.boxhelper != null) { this.bee.scene3d.scene.main.remove(this.boxhelper) }
         this.boxhelper = new THREE.Object3D;
         let aBox = new THREE.Mesh(
-            new THREE.BoxGeometry(xmax-xmin, ymax-ymin, zmax-zmin ),
-            new THREE.MeshBasicMaterial( {
+            new THREE.BoxGeometry(xmax - xmin, ymax - ymin, zmax - zmin),
+            new THREE.MeshBasicMaterial({
                 color: 0x96f97b,
                 transparent: true,
                 depthWrite: true,
                 opacity: 0.5,
-        }));
+            }));
         let box = new THREE.BoxHelper(aBox);
         box.material.color.setHex(0xff0000);
         this.boxhelper.add(box);
-        this.boxhelper.position.set((xmax+xmin)/2, (ymax+ymin)/2,(zmax+zmin)/2);
-        this.bee.scene3d.scene.main.add( this.boxhelper );
+        this.boxhelper.position.set((xmax + xmin) / 2, (ymax + ymin) / 2, (zmax + zmin) / 2);
+        this.bee.scene3d.scene.main.add(this.boxhelper);
     }
 
     toggleBox() {
@@ -274,7 +274,7 @@ class SST {
     nextTPC() {
         let nTPC = this.store.experiment.nTPC();
         this.bee.current_sst.drawInsideBoxHelper();
-        if (this.store.config.box.tpcNo < nTPC-1) { this.store.config.box.tpcNo += 1 }
+        if (this.store.config.box.tpcNo < nTPC - 1) { this.store.config.box.tpcNo += 1 }
         else { this.store.config.box.tpcNo = 0 }
         this.bee.gui.folder.box.__controllers[7].updateDisplay();
         this.bee.gui.folder.box.__controllers[0].setValue(true);

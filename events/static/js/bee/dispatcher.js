@@ -47,6 +47,7 @@ class Dispatcher {
         Mousetrap.bind('b', () => { this.bee.current_sst.toggleBox() });
         Mousetrap.bind('shift+t', () => { this.bee.current_sst.nextTPC() });
         Mousetrap.bind('q', () => { this.bee.toggleCharge() });
+        Mousetrap.bind('o', () => { this.bee.redrawAllSST(true) });
 
         Mousetrap.bind('shift+n', () => { this.bee.gui.increaseEvent(1) });
         Mousetrap.bind('shift+p', () => { this.bee.gui.increaseEvent(-1) });
@@ -63,7 +64,6 @@ class Dispatcher {
         // this.addKeyEvent('k', self.nextSlice);
         // this.addKeyEvent('j', self.prevSlice);
 
-        // this.addKeyEvent('o', self.redrawAllSSTRandom);
         // this.addKeyEvent('\\', self.toggleScan);
 
         for (let i = 1; i <= 9; i++) {
@@ -93,7 +93,7 @@ class Dispatcher {
         this.addClickEvent($('#preset-default'), this.bee.localstore.clearAndReload, this.bee.localstore);
 
 
-        
+
         // self.addClickEvent($('#toggleCluster') , self.toggleCluster);
         // self.addClickEvent($('#toggleScan')    , self.toggleScan);
         // self.addClickEvent($('#nextSlice')     , self.nextSlice);
@@ -105,7 +105,7 @@ class Dispatcher {
 
     initOtherEvents() {
         let scene3d = this.bee.scene3d;
- 
+
         window.addEventListener('resize', () => {
             let scale = this.store.config.camera.scale;
             this.bee.scene3d.camera.active.aspect = window.innerWidth * scale / window.innerHeight;
@@ -113,7 +113,7 @@ class Dispatcher {
             this.bee.scene3d.renderer.setSize(window.innerWidth * scale, window.innerHeight);
         }, false);
 
-        $('#play').on('click', function(e) {
+        $('#play').on('click', function (e) {
             e.preventDefault();
             let el = $(this);
             if (el.html() == 'Play (Fullscreen)') { scene3d.play() }
