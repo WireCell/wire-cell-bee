@@ -46,6 +46,7 @@ class Dispatcher {
         Mousetrap.bind('_', () => { this.bee.current_sst.increaseSize(-0.5) });
         Mousetrap.bind('b', () => { this.bee.current_sst.toggleBox() });
         Mousetrap.bind('shift+t', () => { this.bee.current_sst.nextTPC() });
+        Mousetrap.bind('q', () => { this.bee.toggleCharge() });
 
         Mousetrap.bind('shift+n', () => { this.bee.gui.increaseEvent(1) });
         Mousetrap.bind('shift+p', () => { this.bee.gui.increaseEvent(-1) });
@@ -58,8 +59,6 @@ class Dispatcher {
             Mousetrap.bind('.', () => { this.bee.op.nextMatching() });
             Mousetrap.bind('/', () => { this.bee.op.nextMatchingBeam() });
         }
-
-        // this.addKeyEvent('q', self.toggleCharge);
 
         // this.addKeyEvent('k', self.nextSlice);
         // this.addKeyEvent('j', self.prevSlice);

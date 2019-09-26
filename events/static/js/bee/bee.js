@@ -39,7 +39,6 @@ class Bee {
 
     redrawAllSST() {
         this.sst.loaded.forEach((name) => {
-            // console.log(name)
             let sst = this.sst.list[name];
             if(store.config.slice.enabled) {
                 // sst.drawInsideSlice(ctrl.slice.position-ctrl.slice.width/2, ctrl.slice.width);
@@ -48,6 +47,12 @@ class Bee {
                 sst.drawInsideThreeFrames();
             }
         });
+    }
+
+    toggleCharge() {
+        store.config.material.showCharge = !(store.config.material.showCharge);
+        this.redrawAllSST();
+        this.gui.folder.general.__controllers[2].updateDisplay();
     }
 
 }
