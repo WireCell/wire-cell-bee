@@ -3,11 +3,13 @@
 class Helper {
 
     constructor(store, bee) {
+        this.bee = bee;
         this.scene = bee.scene3d.scene.main;
         this.store = store;
         this.showAxes();
         this.showTPC();
         this.showBeam();
+        this.showSlice();
     }
 
     show(condition, obj) {
@@ -89,7 +91,37 @@ class Helper {
         this.show(this.store.config.helper.showBeam, this.beam);
     }
 
+    showSlice() {
+        if (null == this.slice) { // init if not exist
+            let config = this.store.config;
+            let exp = this.store.experiment;
+            let [halfx, halfy, halfz] = exp.tpc.halfxyz;
+            let [centerx, centery, centerz] = exp.toLocalXYZ(...exp.tpc.center)
+    
+            if (config.theme=='light') { config.slice.color = 0xFF0000 }
 
+            this.slice = new THREE.Mesh(
+                new THREE.BoxGeometry(config.slice.width, halfy*2, halfz*2 ),
+                new THREE.MeshBasicMaterial( {
+                    color: config.slice.color,
+                    transparent: true,
+                    opacity: config.slice.opacity
+                }));
+            this.slice.position.set(config.slice.position, centery, centerz);
+            this.bee.scene3d.scene.slice.add(this.slice);  // slice has its own scene
+        }
+        if (this.store.config.slice.enabled) { this.bee.scene3d.scene.slice.add(this.slice) }
+        else { this.bee.scene3d.scene.slice.remove(this.slice) }
+    }
+
+    updateSliceStatus() {
+        let config = this.store.config;
+        let [halfx, halfy, halfz] = this.store.experiment.tpc.halfxyz;
+        this.store.dom.el_statusbar.html(
+            'slice #: ' + ((config.slice.position+halfx)/config.slice.width).toFixed(0)
+            + ' | slice x: ' + (config.slice.position+halfx).toFixed(1)
+        )
+    }
 }
 
 export { Helper }

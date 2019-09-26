@@ -11,6 +11,7 @@ class Gui {
         this.initGuiHelper();
         this.initGuiCamera();
         this.initGuiBox();
+        this.initGuiSlice();
 
         this.initDOM();
         this.initSSTPanel();
@@ -32,6 +33,7 @@ class Gui {
         }
         this.folder.sst = this.gui.addFolder("Reconstruction");
         this.folder.box = this.gui.addFolder("Box of Interest");
+        this.folder.slice = this.gui.addFolder("Slice");
         this.folder.camera = this.gui.addFolder("Camera");
 
         this.folder.general.open();
@@ -114,26 +116,26 @@ class Gui {
         let scene3d = this.bee.scene3d;
         if (exp.name == 'uboone') {
             folder.add(this.store.config.helper, "showSCB")
-            .name("Show SCB")
-            .onChange((value) => {
-                if (value) {
-                    let op = this.bee.op;
-                    if (op.data.op_t != undefined) {
-                        scene3d.drawSpaceChargeBoundary( op.data.op_t[op.currentFlash]*exp.tpc.driftVelocity );
+                .name("Show SCB")
+                .onChange((value) => {
+                    if (value) {
+                        let op = this.bee.op;
+                        if (op.data.op_t != undefined) {
+                            scene3d.drawSpaceChargeBoundary(op.data.op_t[op.currentFlash] * exp.tpc.driftVelocity);
+                        }
+                        else {
+                            scene3d.drawSpaceChargeBoundary();
+                        }
                     }
                     else {
-                        scene3d.drawSpaceChargeBoundary();
-                    }
-                }
-                else {
-                    if (scene3d.listOfSCBObjects != undefined) {
-                        for (let i=0; i<scene3d.listOfSCBObjects.length; i++){
-                            scene3d.scene.main.remove(scene3d.listOfSCBObjects[i]);
+                        if (scene3d.listOfSCBObjects != undefined) {
+                            for (let i = 0; i < scene3d.listOfSCBObjects.length; i++) {
+                                scene3d.scene.main.remove(scene3d.listOfSCBObjects[i]);
+                            }
+                            scene3d.listOfSCBObjects = [];
                         }
-                        scene3d.listOfSCBObjects= [];            
                     }
-                }
-            });
+                });
         }
 
     }
@@ -253,7 +255,7 @@ class Gui {
         config.box.zmax = exp.tpc.boxROI[5];
 
         this.folder.box.__controllers[0].setValue(true);
-        for (let i=1; i<=6; i++) {
+        for (let i = 1; i <= 6; i++) {
             this.folder.box.__controllers[i].updateDisplay();
         }
         this.folder.box.__controllers[7].setValue(-1);
@@ -267,10 +269,10 @@ class Gui {
         folder.add(config.box, "box_mode")
             .name("Box Mode")
             .onChange((value) => {
-                if(value) { this.bee.current_sst.drawInsideBoxHelper() }
+                if (value) { this.bee.current_sst.drawInsideBoxHelper() }
                 else { this.bee.current_sst.drawInsideThreeFrames() }
             });
-        
+
         folder.add(config.box, "xmin").name("x min");
         folder.add(config.box, "xmax").name("x max");
         folder.add(config.box, "ymin").name("y min");
@@ -285,6 +287,49 @@ class Gui {
             });
         folder.add(this, 'loadDefaultBoxROI').name('Load Default Box');
 
+    }
+
+    initGuiSlice() {
+        let config = this.store.config;
+        let folder = this.folder.slice;
+        let bee = this.bee;
+        let w = config.slice.width;
+        let halfx = this.store.experiment.tpc.halfxyz[0];
+        let step = 0.32;
+
+        folder.add(config.slice, "enabled")
+            .name("sliced mode")
+            .onChange((value) => {
+                bee.helper.showSlice();
+                bee.sst.loaded.forEach((name) => {
+                    let sst = bee.sst.list[name];
+                    if (value) {
+                        sst.drawInsideSlice(config.slice.position - config.slice.width / 2, config.slice.width);
+                    }
+                    else { sst.drawInsideThreeFrames() }
+                });
+            });
+        
+        folder.add(config.slice, "opacity", 0, 1)
+            .onChange((value) => {
+                bee.helper.slice.material.opacity = value;
+            });
+        
+        folder.add(config.slice, "width", step, halfx * 2).step(step)
+            .onChange((value) => {
+                bee.helper.slice.scale.x = value/w; // SCALE
+            });
+        
+        folder.add(config.slice, "position", -3 * halfx + w / 2, 3 * halfx - w / 2)
+            .onChange((value) => {
+                bee.helper.slice.position.x = value;
+                bee.helper.updateSliceStatus();
+                if (config.slice.enabled) {
+                    bee.sst.loaded.forEach((name) => {
+                        bee.sst.list[name].drawInsideSlice(config.slice.position - config.slice.width / 2, config.slice.width);
+                    });
+                }
+            });
     }
 
     initDOM() {
