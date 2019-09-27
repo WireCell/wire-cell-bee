@@ -309,27 +309,42 @@ class Gui {
                     else { sst.drawInsideThreeFrames() }
                 });
             });
-        
-        folder.add(config.slice, "opacity", 0, 1)
+
+        folder.add(config.slice, "opacity", 0., 1.0)
             .onChange((value) => {
                 bee.helper.slice.material.opacity = value;
             });
-        
+
         folder.add(config.slice, "width", step, halfx * 2).step(step)
             .onChange((value) => {
-                bee.helper.slice.scale.x = value/w; // SCALE
+                bee.helper.slice.scale.x = value / w; // SCALE
             });
-        
+
         folder.add(config.slice, "position", -3 * halfx + w / 2, 3 * halfx - w / 2)
-            .onChange((value) => {
-                bee.helper.slice.position.x = value;
-                bee.helper.updateSliceStatus();
-                if (config.slice.enabled) {
-                    bee.sst.loaded.forEach((name) => {
-                        bee.sst.list[name].drawInsideSlice(config.slice.position - config.slice.width / 2, config.slice.width);
-                    });
-                }
+            .onChange(() => {
+                this.updateSlice();
             });
+    }
+
+    updateSlice() {
+        let config = this.store.config;
+        this.bee.helper.slice.position.x = config.slice.position;
+        if (config.slice.enabled) {
+            this.bee.sst.loaded.forEach((name) => {
+                this.bee.sst.list[name].drawInsideSlice(config.slice.position - config.slice.width / 2, config.slice.width);
+            });
+            let [halfx, halfy, halfz] = this.store.experiment.tpc.halfxyz;
+            this.store.dom.el_statusbar.html(
+                'slice #: ' + ((config.slice.position + halfx) / config.slice.width).toFixed(0)
+                + ' | slice x: ' + (config.slice.position + halfx).toFixed(1)
+            )
+        }
+    }
+
+    nextSlice(value = 1) {
+        let config = this.store.config;
+        config.slice.position = config.slice.position + value * config.slice.width;
+        this.updateSlice();
     }
 
     initDOM() {
@@ -396,6 +411,12 @@ class Gui {
         if (newId > maxId) { newId = newId - maxId - 1 }
         else if (newId < 0) { newId = maxId - newId - 1 }
         window.location.assign(this.store.url.event_url + newId + '/' + this.store.url.base_query);
+    }
+
+    toggleCharge() {
+        this.store.config.material.showCharge = !(this.store.config.material.showCharge);
+        this.bee.redrawAllSST();
+        this.folder.general.__controllers[2].updateDisplay();
     }
 
     toggleSidebar() { this.store.dom.panel_sst.el_container.toggle('slide') }

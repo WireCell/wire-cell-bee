@@ -46,12 +46,14 @@ class Dispatcher {
         Mousetrap.bind('_', () => { this.bee.current_sst.increaseSize(-0.5) });
         Mousetrap.bind('b', () => { this.bee.current_sst.toggleBox() });
         Mousetrap.bind('shift+t', () => { this.bee.current_sst.nextTPC() });
-        Mousetrap.bind('q', () => { this.bee.toggleCharge() });
         Mousetrap.bind('o', () => { this.bee.redrawAllSST(true) });
 
         Mousetrap.bind('shift+n', () => { this.bee.gui.increaseEvent(1) });
         Mousetrap.bind('shift+p', () => { this.bee.gui.increaseEvent(-1) });
+        Mousetrap.bind('q', () => { this.bee.gui.toggleCharge() });
         Mousetrap.bind('m', () => { this.bee.gui.toggleMC() });
+        Mousetrap.bind('k', () => { this.bee.gui.nextSlice() });
+        Mousetrap.bind('j', () => { this.bee.gui.nextSlice(-1) });
 
         if (null != this.bee.op) {
             Mousetrap.bind('<', () => { this.bee.op.prev() });
@@ -60,9 +62,6 @@ class Dispatcher {
             Mousetrap.bind('.', () => { this.bee.op.nextMatching() });
             Mousetrap.bind('/', () => { this.bee.op.nextMatchingBeam() });
         }
-
-        // this.addKeyEvent('k', self.nextSlice);
-        // this.addKeyEvent('j', self.prevSlice);
 
         // this.addKeyEvent('\\', self.toggleScan);
 

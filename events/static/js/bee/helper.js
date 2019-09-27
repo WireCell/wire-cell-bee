@@ -114,14 +114,6 @@ class Helper {
         else { this.bee.scene3d.scene.slice.remove(this.slice) }
     }
 
-    updateSliceStatus() {
-        let config = this.store.config;
-        let [halfx, halfy, halfz] = this.store.experiment.tpc.halfxyz;
-        this.store.dom.el_statusbar.html(
-            'slice #: ' + ((config.slice.position+halfx)/config.slice.width).toFixed(0)
-            + ' | slice x: ' + (config.slice.position+halfx).toFixed(1)
-        )
-    }
 }
 
 export { Helper }

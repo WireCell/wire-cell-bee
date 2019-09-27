@@ -41,18 +41,12 @@ class Bee {
         this.sst.loaded.forEach((name) => {
             let sst = this.sst.list[name];
             if (store.config.slice.enabled) {
-                // sst.drawInsideSlice(ctrl.slice.position-ctrl.slice.width/2, ctrl.slice.width);
+                sst.drawInsideSlice(store.config.slice.position - store.config.slice.width / 2, store.config.slice.width);
             }
             else {
                 sst.drawInsideThreeFrames(randomClusterColor);
             }
         });
-    }
-
-    toggleCharge() {
-        store.config.material.showCharge = !(store.config.material.showCharge);
-        this.redrawAllSST();
-        this.gui.folder.general.__controllers[2].updateDisplay();
     }
 
 }
