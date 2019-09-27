@@ -9,7 +9,6 @@ class Experiment {
             viewAngle: [-60, 60, 0], // angle in degrees w.r.t vertical 
             halfxyz: [0, 0, 0],
             center: [0, 0, 0],
-            anodeX: 0,
             boxROI: [0, 0, 0, 0, 0, 0], // box of interest, e.g. near the beam
             driftVelocity: 0.16, // cm/us
         };
@@ -48,7 +47,6 @@ class Experiment {
         this.tpc.center[0] = (this.tpc.location[last][1] + this.tpc.location[first][0]) / 2;
         this.tpc.center[1] = (this.tpc.location[last][3] + this.tpc.location[first][2]) / 2;
         this.tpc.center[2] = (this.tpc.location[last][5] + this.tpc.location[first][4]) / 2;
-        this.tpc.anodeX = -this.tpc.halfxyz[0];
     }
 
     updateOPLocation(loc, size) {
