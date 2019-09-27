@@ -241,6 +241,17 @@ class Gui {
             });
 
         folder.add(scene3d, 'resetCamera').name('Reset Camera');
+        folder.add(scene3d, 'play').name('Fullscreen');
+
+        if (this.store.experiment.name == "protodune") {
+            folder.add(config.camera, "photo_booth")
+                .name("Photo Booth")
+                .onChange(function(value) {
+                    if(value && config.camera.ortho) {
+                        alert("Photo booth mode is designed to work under Perspective Camera!");
+                    }
+                });
+        }
 
     }
 
@@ -417,6 +428,12 @@ class Gui {
         this.store.config.material.showCharge = !(this.store.config.material.showCharge);
         this.bee.redrawAllSST();
         this.folder.general.__controllers[2].updateDisplay();
+    }
+
+    toggleTPC() {
+        this.store.config.helper.showTPC = !(this.store.config.helper.showTPC);
+        this.bee.helper.showTPC();
+        this.folder.helper.__controllers[1].updateDisplay();
     }
 
     toggleSidebar() { this.store.dom.panel_sst.el_container.toggle('slide') }

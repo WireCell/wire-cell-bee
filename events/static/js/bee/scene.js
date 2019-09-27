@@ -213,57 +213,46 @@ class Scene3D {
         this.animate();
         this.bee.gui.gui.close();
 
-        // if ($.fn.BEE.user_options.geom.name == "protodune" && $.fn.BEE.user_options.camera.photo_booth) {
-        //     // self.playInterval = setInterval(function(){
-        //     //     self.toggleBox();
-        //     //     self.toggeleTPCs();
-        //     // }, 3000);
-        //     self.tl = new TimelineLite({
-        //         onComplete:function() {this.restart();}
-        //     });
-        //     let x0 = $.fn.BEE.scene3D.camera.position.x;
-        //     let y0 = $.fn.BEE.scene3D.camera.position.y;
-        //     let z0 = $.fn.BEE.scene3D.camera.position.z;
-        //     let zoomIn = 0.5;
-        //     let dummy = {};
-        //     let xBox = toLocalX(($.fn.BEE.user_options.box.xmin+$.fn.BEE.user_options.box.xmax)/2);
-        //     let yBox = toLocalY(($.fn.BEE.user_options.box.ymin+$.fn.BEE.user_options.box.ymax)/2);
-        //     let zBox = toLocalZ(($.fn.BEE.user_options.box.zmin+$.fn.BEE.user_options.box.zmax)/2);
-        //     console.log(xBox, yBox, zBox);
-        //     self.tl
-        //     .to($.fn.BEE.scene3D.camera.position, 5, {
-        //         onComplete: function(){self.toggleBox();}
-        //     }) // rotate 5 seconds, then turn on box
-        //     .to(dummy, 5, {}) // rotate 5 seconds
-        //     .to($.fn.BEE.scene3D.camera.position, 5, {
-        //         x: x0 * zoomIn, y: y0 * zoomIn, z: z0 * zoomIn,
-        //     }) // zoom in for 5 sec
-        //     // .to($.fn.BEE.scene3D.orbitController.target, 5, {
-        //     //     x: xBox, y: yBox, z: zBox,
-        //     //     onUpdate: function(){self.orbitController.update();},
-        //     // }) // change rotation to around box for 5 sec
-        //     .to($.fn.BEE.scene3D.camera.position, 5, {
-        //         onComplete: function(){self.toggeleTPCs();}
-        //     }) // rotate 5 sec, then turn off tpc
-        //     .to($.fn.BEE.scene3D.camera.position, 5, {
-        //         x: x0 * zoomIn * 0.75, y: y0 * zoomIn * 0.75, z: z0 * zoomIn * 0.75,
-        //     }) // zoom in another 50% for 5 sec
-        //     .to($.fn.BEE.scene3D.camera.position, 10, {
-        //         onComplete: function(){self.toggeleTPCs();}
-        //     }) // rotate 10 sec, then turn on tpc
-        //     .to($.fn.BEE.scene3D.camera.position, 5, {
-        //         onComplete: function(){self.toggleBox();}
-        //     }) // rotate 5 sec, then turn off box
-        //     // .to($.fn.BEE.scene3D.orbitController.target, 5, {
-        //     //     x: 0, y: 0, z: 0,
-        //     //     onUpdate: function(){self.orbitController.update();},
-        //     // }) // change rotation to center for 5 sec
-        //     .to(dummy, 5, {}) // rotate 5 seconds
-        //     .to($.fn.BEE.scene3D.camera.position, 5, {
-        //         x: x0, y: y0, z: z0,
-        //     }) // zoom out for 5 sec
+        if (this.store.experiment.name == "protodune" && this.store.config.camera.photo_booth) {
+            this.tl = new TimelineLite({
+                onComplete: () => { this.restart() }
+            });
+            let x0 = this.camera.active.position.x;
+            let y0 = this.camera.active.position.y;
+            let z0 = this.camera.active.position.z;
+            let zoomIn = 0.5;
+            let dummy = {};
+            let [xBox, yBox, zBox] = this.store.experiment.toLocalXYZ(
+                (this.store.config.box.xmin + this.store.config.box.xmax) / 2,
+                (this.store.config.box.ymin + this.store.config.box.ymax) / 2,
+                (this.store.config.box.zmin + this.store.config.box.zmax) / 2
+            )
+            this.tl
+                .to(this.camera.active.position, 5, {
+                    onComplete: () => { this.bee.current_sst.toggleBox() }
+                }) // rotate 5 seconds, then turn on box
+                .to(dummy, 5, {}) // rotate 5 seconds
+                .to(this.camera.active.position, 5, {
+                    x: x0 * zoomIn, y: y0 * zoomIn, z: z0 * zoomIn,
+                }) // zoom in for 5 sec
+                .to(this.camera.active.position, 5, {
+                    onComplete: () => { this.bee.gui.toggleTPC() }
+                }) // rotate 5 sec, then turn off tpc
+                .to(this.camera.active.position, 5, {
+                    x: x0 * zoomIn * 0.75, y: y0 * zoomIn * 0.75, z: z0 * zoomIn * 0.75,
+                }) // zoom in another 50% for 5 sec
+                .to(this.camera.active.position, 10, {
+                    onComplete: () => { this.bee.gui.toggleTPC() }
+                }) // rotate 10 sec, then turn on tpc
+                .to(this.camera.active.position, 5, {
+                    onComplete: () => { this.bee.current_sst.toggleBox() }
+                }) // rotate 5 sec, then turn off box
+                .to(dummy, 5, {}) // rotate 5 seconds
+                .to(this.camera.active.position, 5, {
+                    x: x0, y: y0, z: z0,
+                }) // zoom out for 5 sec
+        }
 
-        // }
         if (screenfull.enabled) {
             $("#fullscreeninfo").show();
             screenfull.request(document.getElementById('container'));

@@ -79,11 +79,6 @@ class Dispatcher {
     initClickEvents() {
         let scene3d = this.bee.scene3d;
 
-        this.addClickEvent($('#resetCamera'), scene3d.resetCamera, scene3d);
-        this.addClickEvent($('#xyView'), scene3d.xyView, scene3d);
-        this.addClickEvent($('#xzView'), scene3d.xzView, scene3d);
-        this.addClickEvent($('#xuView'), scene3d.xuView, scene3d);
-        this.addClickEvent($('#xvView'), scene3d.xvView, scene3d);
         this.addClickEvent($('#container'), scene3d.showIntersect, scene3d);
         this.addClickEvent($('#container'), scene3d.setTargetSphere, scene3d, 'dblclick');
 
@@ -91,12 +86,8 @@ class Dispatcher {
 
         this.addClickEvent($('#preset-default'), this.bee.localstore.clearAndReload, this.bee.localstore);
 
-
-
         // self.addClickEvent($('#toggleCluster') , self.toggleCluster);
         // self.addClickEvent($('#toggleScan')    , self.toggleScan);
-        // self.addClickEvent($('#nextSlice')     , self.nextSlice);
-        // self.addClickEvent($('#prevSlice')     , self.prevSlice);
         // self.addClickEvent($('#btn-cluster')   , self.doCluster);
         // self.addClickEvent($('#btn-cleanUpCluster') , self.cleanUpCluster);
 
@@ -111,13 +102,6 @@ class Dispatcher {
             this.bee.scene3d.camera.active.updateProjectionMatrix();
             this.bee.scene3d.renderer.setSize(window.innerWidth * scale, window.innerHeight);
         }, false);
-
-        $('#play').on('click', function (e) {
-            e.preventDefault();
-            let el = $(this);
-            if (el.html() == 'Play (Fullscreen)') { scene3d.play() }
-            else { scene3d.stop() }
-        });
 
         if (screenfull.enabled) {
             window.addEventListener(screenfull.raw.fullscreenchange, () => {
