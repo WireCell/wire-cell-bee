@@ -31,9 +31,9 @@ class Gui {
             this.folder.op = this.gui.addFolder("Optical Flash");
             this.initGuiOP();
         }
-        this.folder.sst = this.gui.addFolder("Reconstruction");
+        this.folder.sst = this.gui.addFolder("3-D Imaging");
         this.folder.box = this.gui.addFolder("Box of Interest");
-        this.folder.slice = this.gui.addFolder("Slice");
+        this.folder.slice = this.gui.addFolder("Time Slice");
         this.folder.camera = this.gui.addFolder("Camera");
 
         this.folder.general.open();
@@ -434,6 +434,22 @@ class Gui {
         this.store.config.helper.showTPC = !(this.store.config.helper.showTPC);
         this.bee.helper.showTPC();
         this.folder.helper.__controllers[1].updateDisplay();
+    }
+
+    toggleBox() {
+        this.store.config.box.box_mode = !(this.store.config.box.box_mode);
+        if (this.store.config.box.box_mode) { this.bee.current_sst.drawInsideBoxHelper() }
+        else { this.bee.current_sst.drawInsideThreeFrames() }
+        this.folder.box.__controllers[0].updateDisplay();
+    }
+
+    nextTPC() {
+        let nTPC = this.store.experiment.nTPC();
+        this.bee.current_sst.drawInsideBoxHelper();
+        if (this.store.config.box.tpcNo < nTPC - 1) { this.store.config.box.tpcNo += 1 }
+        else { this.store.config.box.tpcNo = 0 }
+        this.folder.box.__controllers[7].updateDisplay();
+        this.folder.box.__controllers[0].setValue(true);
     }
 
     toggleSidebar() { this.store.dom.panel_sst.el_container.toggle('slide') }

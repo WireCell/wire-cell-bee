@@ -264,22 +264,6 @@ class SST {
         this.bee.scene3d.scene.main.add(this.boxhelper);
     }
 
-    toggleBox() {
-        this.store.config.box.box_mode = !(this.store.config.box.box_mode);
-        if (this.store.config.box.box_mode) { this.bee.current_sst.drawInsideBoxHelper() }
-        else { this.bee.current_sst.drawInsideThreeFrames() }
-        this.bee.gui.folder.box.__controllers[0].updateDisplay();
-    }
-
-    nextTPC() {
-        let nTPC = this.store.experiment.nTPC();
-        this.bee.current_sst.drawInsideBoxHelper();
-        if (this.store.config.box.tpcNo < nTPC - 1) { this.store.config.box.tpcNo += 1 }
-        else { this.store.config.box.tpcNo = 0 }
-        this.bee.gui.folder.box.__controllers[7].updateDisplay();
-        this.bee.gui.folder.box.__controllers[0].setValue(true);
-    }
-
     initMaterial() {
         this.material = {};
 
