@@ -226,7 +226,7 @@ store.process.init = $.getJSON(window.location.href, (data) => {
     store.config.box.ymax = store.experiment.tpc.boxROI[3];
     store.config.box.zmin = store.experiment.tpc.boxROI[4];
     store.config.box.zmax = store.experiment.tpc.boxROI[5];
-    store.config.slice.position = -store.experiment.tpc.halfxyz[0];
+    store.config.slice.position = store.experiment.tpc.anodeX;
     $.extend(true, store.event, data);
     $.extend(true, store.config, Lockr.get('store_config'), data.config); // priority: server > lockr > store
 });
