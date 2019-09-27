@@ -2,6 +2,7 @@ import { store, LocalStore } from './store.js'
 import { Scene3D } from './scene.js'
 import { SST } from './physics/sst.js'
 import { MC } from './physics/mc.js'
+import { DeadArea } from './physics/deadarea.js'
 import { OP } from './physics/op.js'
 import { Helper } from './helper.js'
 import { Gui } from './gui.js'
@@ -16,6 +17,7 @@ class Bee {
             this.initSST();
             if (store.event.hasMC) { this.mc = new MC(store, this) }
             if (store.event.hasOP) { this.op = new OP(store, this) }
+            if (store.event.hasDeadArea) { this.deadarea = new DeadArea(store, this) }
             this.localstore = new LocalStore(store, this);
             this.dispatcher = new Dispatcher(store, this);
         });

@@ -148,6 +148,7 @@ def event(request, set_id, event_id):
         # 'camera' : {},
         'hasMC' : eventset.has_MC(int(event_id)),
         'hasOP' : eventset.has_OP(int(event_id)),
+        'hasDeadArea' : eventset.has_DeadArea(int(event_id)),
         'sst': sst_list,
         'config': {},
     }

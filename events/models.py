@@ -91,6 +91,9 @@ class EventSet(models.Model):
 
     def has_OP(self, eventNo=0):
         return 'op' in self.data_info(eventNo)
+    
+    def has_DeadArea(self, eventNo=0):
+        return 'channel-deadarea' in self.data_info(eventNo)
 
     def content_list(self, eventNo=0):
         results = []

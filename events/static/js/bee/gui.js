@@ -113,6 +113,16 @@ class Gui {
                 .onChange(() => { this.bee.helper.showBeam() });
         }
 
+        if (this.store.event.hasDeadArea) {
+            folder.add(this.store.config.helper, "deadAreaOpacity", 0., 0.9)
+            .name("Inactivity").step(0.1)
+            .onChange((value) => {
+                if (this.bee.deadarea.mesh != null) {
+                    this.bee.deadarea.mesh.material.opacity = value;
+                }
+            });
+        }
+
         let scene3d = this.bee.scene3d;
         if (exp.name == 'uboone') {
             folder.add(this.store.config.helper, "showSCB")
@@ -137,7 +147,6 @@ class Gui {
                     }
                 });
         }
-
     }
 
     initGuiMC() {
