@@ -1,5 +1,5 @@
 // global data store
-import { createExperiment } from './experiment.js'
+import { createExperiment } from './physics/experiment.js'
 
 let store = {}
 

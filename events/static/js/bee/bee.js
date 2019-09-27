@@ -1,8 +1,8 @@
 import { store, LocalStore } from './store.js'
 import { Scene3D } from './scene.js'
-import { SST } from './sst.js'
-import { MC } from './mc.js'
-import { OP } from './op.js'
+import { SST } from './physics/sst.js'
+import { MC } from './physics/mc.js'
+import { OP } from './physics/op.js'
 import { Helper } from './helper.js'
 import { Gui } from './gui.js'
 import { Dispatcher } from './dispatcher.js';
