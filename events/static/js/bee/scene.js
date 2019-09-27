@@ -337,16 +337,16 @@ class Scene3D {
         }
     }
 
-    drawSpaceChargeBoundary(shiftx=0) {
+    drawSpaceChargeBoundary(shiftx = 0) {
         if (this.listOfSCBObjects != null) {
-            for (let i=0; i<this.listOfSCBObjects.length; i++){
+            for (let i = 0; i < this.listOfSCBObjects.length; i++) {
                 this.scene.main.remove(this.listOfSCBObjects[i]);
             }
         }
         this.listOfSCBObjects = [];
 
         let exp = this.store.experiment;
-        if ( exp.name != 'uboone') {
+        if (exp.name != 'uboone') {
             return; // only implemented in uboone
         }
         // console.log(detector, ': init scb');
@@ -371,14 +371,14 @@ class Scene3D {
             [[120, ymin, 0], [256, ymin, 11]],
             [[120, ymin, 1037], [256, ymin, 1026]],
         ]
-        for (let i=0; i<all_vtx.length; i++) {
+        for (let i = 0; i < all_vtx.length; i++) {
             let geometry = new THREE.Geometry();
-            for (let j=0; j<=1; j++) {
+            for (let j = 0; j <= 1; j++) {
                 geometry.vertices.push(
-                    new THREE.Vector3(...exp.toLocalXYZ(all_vtx[i][j][0]+shiftx, all_vtx[i][j][1], all_vtx[i][j][2]))
+                    new THREE.Vector3(...exp.toLocalXYZ(all_vtx[i][j][0] + shiftx, all_vtx[i][j][1], all_vtx[i][j][2]))
                 )
             }
-            let line = new THREE.Line( geometry, material );
+            let line = new THREE.Line(geometry, material);
             line.computeLineDistances();
             this.listOfSCBObjects.push(line);
             this.scene.main.add(line);

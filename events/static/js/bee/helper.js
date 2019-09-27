@@ -97,12 +97,12 @@ class Helper {
             let exp = this.store.experiment;
             let [halfx, halfy, halfz] = exp.tpc.halfxyz;
             let [centerx, centery, centerz] = exp.toLocalXYZ(...exp.tpc.center)
-    
-            if (config.theme=='light') { config.slice.color = 0xFF0000 }
+
+            if (config.theme == 'light') { config.slice.color = 0xFF0000 }
 
             this.slice = new THREE.Mesh(
-                new THREE.BoxGeometry(config.slice.width, halfy*2, halfz*2 ),
-                new THREE.MeshBasicMaterial( {
+                new THREE.BoxGeometry(config.slice.width, halfy * 2, halfz * 2),
+                new THREE.MeshBasicMaterial({
                     color: config.slice.color,
                     transparent: true,
                     opacity: config.slice.opacity

@@ -170,10 +170,10 @@ class LocalStore {
 
     save() {
         let store_config = {
-            'material' : store.config.material,
-            'box' : store.config.box,
-            'slice' : store.config.slice,
-            'theme' : store.config.theme,
+            'material': store.config.material,
+            'box': store.config.box,
+            'slice': store.config.slice,
+            'theme': store.config.theme,
             'helper': store.config.helper,
             'camera': store.config.camera,
             'mc': store.config.mc
@@ -226,7 +226,7 @@ store.process.init = $.getJSON(window.location.href, (data) => {
     store.config.box.ymax = store.experiment.tpc.boxROI[3];
     store.config.box.zmin = store.experiment.tpc.boxROI[4];
     store.config.box.zmax = store.experiment.tpc.boxROI[5];
-    store.config.slice.position = store.experiment.tpc.anodeX;
+    store.config.slice.position = -store.experiment.tpc.halfxyz[0];
     $.extend(true, store.event, data);
     $.extend(true, store.config, Lockr.get('store_config'), data.config); // priority: server > lockr > store
 });
