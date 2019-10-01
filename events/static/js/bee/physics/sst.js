@@ -9,7 +9,7 @@ class SST {
         this.scene = bee.scene3d.scene.main;
         this.gui = bee.gui;
 
-        this.url = `${store.url.simple_url}${name}/`;
+        this.url = `${store.url.base_url}${name}/`;
         this.index = store.event.sst.indexOf(name);
         this.initMaterial();
         this.initGui();

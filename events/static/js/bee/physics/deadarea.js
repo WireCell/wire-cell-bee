@@ -23,9 +23,9 @@ class DeadArea {
 
     initWorker() {
         this.worker_url = this.store.url.root_url;
+        this.worker_url = this.worker_url.replace('es6/', ''); // please remove this line later
         if (this.worker_url.indexOf('localhost') > 1
             || this.worker_url.indexOf('127.0.0.1') > 1) {
-            this.worker_url = this.worker_url.replace('es6/', ''); // please remove this line later
             this.worker_url += "static/js/worker_deadarea.js";
         }
         else if (this.worker_url.indexOf('twister') > 1) {
