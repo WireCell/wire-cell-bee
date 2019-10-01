@@ -74,6 +74,9 @@ class Dispatcher {
                 if (sst) { sst.selected() }
             });
         }
+
+        Mousetrap.bind('?', () => { $('#cmdModal').modal('show') });
+
     }
 
     initClickEvents() {
@@ -86,11 +89,6 @@ class Dispatcher {
         this.addClickEvent($('#toggleScan'), this.bee.gui.toggleScan, this.bee.gui);
 
         this.addClickEvent($('#preset-default'), this.bee.localstore.clearAndReload, this.bee.localstore);
-
-        // self.addClickEvent($('#toggleCluster') , self.toggleCluster);
-        // self.addClickEvent($('#btn-cluster')   , self.doCluster);
-        // self.addClickEvent($('#btn-cleanUpCluster') , self.cleanUpCluster);
-
     }
 
     initOtherEvents() {

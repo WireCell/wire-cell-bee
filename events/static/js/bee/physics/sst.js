@@ -351,7 +351,7 @@ class SST {
 
         if (this.data.runNo) {
             $('#runNo').html(this.data.runNo);
-            // $('#subRunNo').html(this.data.subRunNo + ' - ');
+            $('#subRunNo').html(this.data.subRunNo);
             $('#eventNo').html(this.data.eventNo);
             let thousands = Math.floor(this.data.runNo / 1000) * 1000;
             thousands = "000000".substr(0, 6 - thousands.toString().length) + thousands;

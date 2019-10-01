@@ -215,7 +215,7 @@ class Scene3D {
 
         if (this.store.experiment.name == "protodune" && this.store.config.camera.photo_booth) {
             this.tl = new TimelineLite({
-                onComplete: () => { this.restart() }
+                onComplete: () => { this.tl.restart() }
             });
             let x0 = this.camera.active.position.x;
             let y0 = this.camera.active.position.y;
@@ -229,7 +229,7 @@ class Scene3D {
             )
             this.tl
                 .to(this.camera.active.position, 5, {
-                    onComplete: () => { this.bee.current_sst.toggleBox() }
+                    onComplete: () => { this.bee.gui.toggleBox() }
                 }) // rotate 5 seconds, then turn on box
                 .to(dummy, 5, {}) // rotate 5 seconds
                 .to(this.camera.active.position, 5, {
@@ -245,7 +245,7 @@ class Scene3D {
                     onComplete: () => { this.bee.gui.toggleTPC() }
                 }) // rotate 10 sec, then turn on tpc
                 .to(this.camera.active.position, 5, {
-                    onComplete: () => { this.bee.current_sst.toggleBox() }
+                    onComplete: () => { this.bee.gui.toggleBox() }
                 }) // rotate 5 sec, then turn off box
                 .to(dummy, 5, {}) // rotate 5 seconds
                 .to(this.camera.active.position, 5, {
