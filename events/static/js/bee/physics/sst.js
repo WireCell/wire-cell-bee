@@ -14,6 +14,8 @@ class SST {
         this.initMaterial();
         this.initGui();
         this.loaded = false; // lazy loading
+
+        this.currentEventId = parseInt(this.store.url.base_url.substring(this.store.url.event_url.length));
     }
 
     load() {
@@ -33,6 +35,8 @@ class SST {
             .always(() => {
                 this.process = null; // force garbage collection (a very large JSON object)
             });
+
+        return this.process;
     }
 
     initData(data) {
@@ -399,6 +403,29 @@ class SST {
         else { this.material.size += value }
         this.pointCloud.material.size = this.material.size;
         this.setPanelProp();
+    }
+
+    loadNext() {
+        if (this.store.url.base_url.indexOf("gallery") > 0) {
+            if (this.currentEventId == this.store.event.nEvents - 1) { this.currentEventId = 0 }
+            else { this.currentEventId += 1 }
+            this.url = `${this.store.url.event_url}${this.currentEventId}/${this.name}/`
+        }
+
+        this.load().then(() => {
+            // console.log('load next: ', this.url);
+        });
+    }
+
+    refresh(sec) {
+        console.log("start refreshing at interval", sec, "sec");
+        this.refreshInterval = setInterval(() => { this.loadNext() },
+            sec * 1000);
+    }
+
+    stopRefresh() {
+        clearInterval(this.refreshInterval);
+        console.log("stop refreshing");
     }
 
 }

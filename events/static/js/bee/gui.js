@@ -31,6 +31,11 @@ class Gui {
             this.folder.op = this.gui.addFolder("Optical Flash");
             this.initGuiOP();
         }
+        if (this.store.url.base_url.indexOf("live") > 0 || this.store.url.base_url.indexOf("gallery") > 0) {
+            this.folder.live = this.gui.addFolder("Live");
+            this.initGuiLive();
+            this.folder.live.open();
+        }
         this.folder.sst = this.gui.addFolder("3-D Imaging");
         this.folder.box = this.gui.addFolder("Box of Interest");
         this.folder.slice = this.gui.addFolder("Time Slice");
@@ -115,12 +120,12 @@ class Gui {
 
         if (this.store.event.hasDeadArea) {
             folder.add(this.store.config.helper, "deadAreaOpacity", 0., 0.9)
-            .name("Inactivity").step(0.1)
-            .onChange((value) => {
-                if (this.bee.deadarea.mesh != null) {
-                    this.bee.deadarea.mesh.material.opacity = value;
-                }
-            });
+                .name("Inactivity").step(0.1)
+                .onChange((value) => {
+                    if (this.bee.deadarea.mesh != null) {
+                        this.bee.deadarea.mesh.material.opacity = value;
+                    }
+                });
         }
 
         let scene3d = this.bee.scene3d;
@@ -147,6 +152,17 @@ class Gui {
                     }
                 });
         }
+    }
+
+    initGuiLive() {
+        let folder = this.folder.live;
+        folder.add(this.store.config.live, "refresh")
+            .name("Refresh")
+            .onChange((value) => {
+                if (value) { this.bee.current_sst.refresh(this.store.config.live.interval) }
+                else { this.bee.current_sst.stopRefresh() }
+            });
+        folder.add(this.store.config.live, "interval").name("Interval");
     }
 
     initGuiMC() {
@@ -255,8 +271,8 @@ class Gui {
         if (this.store.experiment.name == "protodune") {
             folder.add(config.camera, "photo_booth")
                 .name("Photo Booth")
-                .onChange(function(value) {
-                    if(value && config.camera.ortho) {
+                .onChange(function (value) {
+                    if (value && config.camera.ortho) {
                         alert("Photo booth mode is designed to work under Perspective Camera!");
                     }
                 });

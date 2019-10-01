@@ -26,6 +26,9 @@ class Experiment {
             beamTimeMin: 2,  // time window for beam flash, (us) 
             beamTimeMax: 6,
         };
+        this.camera = {
+            depth: 2000
+        }
     }
 
     nTPC() { return this.tpc.location.length; }
@@ -165,6 +168,7 @@ class ProtoDUNE extends Experiment {
             '5826': '0.5 GeV',
             '5834': '0.3 GeV'
         };
+        this.camera.depth = 3000;
     }
 
 }
