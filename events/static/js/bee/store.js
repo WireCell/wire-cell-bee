@@ -191,15 +191,14 @@ class LocalStore {
         }
         Lockr.set('sst_config', sst_config);
 
-
         let scan_results = Lockr.get('scan_results');
         if (scan_results == null) scan_results = {};
         let sst = this.bee.current_sst;
-        let scan_id = sst.runNo + '-' + sst.subRunNo + '-' + sst.eventNo;
+        let scan_id = sst.data.runNo + '-' + sst.data.subRunNo + '-' + sst.data.eventNo;
         let event_type = $('input[name=scanResult]:checked').val();
         if (event_type) {
             scan_results[scan_id] = {
-                'url': base_url,
+                'url': this.store.url.base_url,
                 'event_type': event_type,
                 'unsure': $('input[name=sureCheck]').is(':checked')
             };
@@ -220,7 +219,7 @@ class LocalStore {
 store.process = {} // store ajax request objects
 store.process.init = $.getJSON(window.location.href, (data) => {
     store.experiment = createExperiment(data.experiment);
-    
+
     store.config.box.xmin = store.experiment.tpc.boxROI[0];
     store.config.box.xmax = store.experiment.tpc.boxROI[1];
     store.config.box.ymin = store.experiment.tpc.boxROI[2];

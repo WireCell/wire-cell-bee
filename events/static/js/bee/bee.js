@@ -6,6 +6,7 @@ import { DeadArea } from './physics/deadarea.js'
 import { OP } from './physics/op.js'
 import { Helper } from './helper.js'
 import { Gui } from './gui.js'
+import { Scan } from './physics/scan.js'
 import { Dispatcher } from './dispatcher.js';
 
 class Bee {
@@ -19,6 +20,7 @@ class Bee {
             if (store.event.hasOP) { this.op = new OP(store, this) }
             if (store.event.hasDeadArea) { this.deadarea = new DeadArea(store, this) }
             this.localstore = new LocalStore(store, this);
+            this.scan = new Scan(store, this);
             this.dispatcher = new Dispatcher(store, this);
         });
     }

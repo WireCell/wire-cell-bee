@@ -481,6 +481,11 @@ class Gui {
 
     toggleMC() { this.store.dom.el_mc.toggle('slide') }
 
+    toggleScan() { 
+        $('#scan').slideToggle('fast');
+        this.bee.scan.loadPreviousScanResults();
+    }
+
 }
 
 export { Gui }

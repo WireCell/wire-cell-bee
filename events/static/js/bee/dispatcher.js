@@ -54,6 +54,7 @@ class Dispatcher {
         Mousetrap.bind('j', () => { this.bee.gui.nextSlice(-1) });
         Mousetrap.bind('b', () => { this.bee.gui.toggleBox() });
         Mousetrap.bind('shift+t', () => { this.bee.gui.nextTPC() });
+        Mousetrap.bind('\\', () => { this.bee.gui.toggleScan() });
 
 
         if (null != this.bee.op) {
@@ -63,8 +64,6 @@ class Dispatcher {
             Mousetrap.bind('.', () => { this.bee.op.nextMatching() });
             Mousetrap.bind('/', () => { this.bee.op.nextMatchingBeam() });
         }
-
-        // this.addKeyEvent('\\', self.toggleScan);
 
         for (let i = 1; i <= 9; i++) {
             Mousetrap.bind(i.toString(), (e, key) => {
@@ -84,11 +83,11 @@ class Dispatcher {
         this.addClickEvent($('#container'), scene3d.setTargetSphere, scene3d, 'dblclick');
 
         this.addClickEvent($('#toggleSidebar'), this.bee.gui.toggleSidebar, this.bee.gui);
+        this.addClickEvent($('#toggleScan'), this.bee.gui.toggleScan, this.bee.gui);
 
         this.addClickEvent($('#preset-default'), this.bee.localstore.clearAndReload, this.bee.localstore);
 
         // self.addClickEvent($('#toggleCluster') , self.toggleCluster);
-        // self.addClickEvent($('#toggleScan')    , self.toggleScan);
         // self.addClickEvent($('#btn-cluster')   , self.doCluster);
         // self.addClickEvent($('#btn-cleanUpCluster') , self.cleanUpCluster);
 
