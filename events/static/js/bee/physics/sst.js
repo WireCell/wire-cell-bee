@@ -65,7 +65,6 @@ class SST {
         this.data.eventTime = data.eventTime == null ? '' : data.eventTime;
         this.data.trigger = data.trigger == null ? '0' : data.trigger;
         this.data.bounding_box = data.bounding_box == null ? [] : data.bounding_box;
-        this.data.clusterInfo = {};
 
         for (let i = 0; i < size_reduced; i++) {
             this.data.x[i] = data.x[indices[i]];
@@ -73,29 +72,6 @@ class SST {
             this.data.z[i] = data.z[indices[i]];
             this.data.q[i] = data.q == null ? 0 : data.q[indices[i]];
             this.data.cluster_id[i] = data.cluster_id == null ? 0 : data.cluster_id[indices[i]];
-
-            let thisCluster = this.data.cluster_id[i];
-            if (!(thisCluster in this.data.clusterInfo)) {
-                this.data.clusterInfo[thisCluster] = {
-                    'x_mean': 0,
-                    'y_mean': 0,
-                    'z_mean': 0,
-                    'n': 0
-                };
-            }
-            else {
-                this.data.clusterInfo[thisCluster].x_mean += this.data.x[i];
-                this.data.clusterInfo[thisCluster].y_mean += this.data.y[i];
-                this.data.clusterInfo[thisCluster].z_mean += this.data.z[i];
-                this.data.clusterInfo[thisCluster].n += 1;
-            }
-        }
-        this.data.nCluster = 0;
-        for (let id in this.data.clusterInfo) {
-            this.data.nCluster += 1;
-            this.data.clusterInfo[id].x_mean /= this.data.clusterInfo[id].n;
-            this.data.clusterInfo[id].y_mean /= this.data.clusterInfo[id].n;
-            this.data.clusterInfo[id].z_mean /= this.data.clusterInfo[id].n;
         }
     }
 

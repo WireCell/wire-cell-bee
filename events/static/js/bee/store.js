@@ -21,7 +21,6 @@ store.config = {
         showTPC: true,
         showAxes: false,
         deadAreaOpacity: 0.0,
-        showFlash: false,
         showMCNeutral: false,
         showBeam: false,
         showSCB: true
