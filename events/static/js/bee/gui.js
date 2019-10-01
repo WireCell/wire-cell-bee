@@ -199,7 +199,7 @@ class Gui {
 
         folder.add(this.store.config.op, "showFlash")
             .name("Show Flash")
-            .onChange(() => { this.bee.op.draw() });
+            .onChange(() => { this.bee.op.toggle() });
 
         folder.add(this.store.config.op, "showPMTClone")
             .name("Show PMT Clone")

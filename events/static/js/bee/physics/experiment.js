@@ -188,6 +188,9 @@ class ICARUS extends Experiment {
         // this.tpc.driftVelocity = 0.16; // cm/us
         // this.daq.timeBeforeTrigger = 500*0.5; //us
         // this.daq.timeAfterTrigger = 5500*0.5; //us
+
+        this.camera.depth = 3000;
+
     }
 
 }
