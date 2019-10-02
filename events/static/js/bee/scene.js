@@ -186,13 +186,21 @@ class Scene3D {
         let rot = Math.PI / 180 * this.store.experiment.tpc.viewAngle[index];
         this.scene.main.rotation.x = rot;
         this.scene.slice.rotation.x = rot;
-        this.camera.active.up.set(1, 0, 0);
-        TweenLite.to(this.camera.active.position, this.store.config.camera.tween_duration, {
-            x: this.controller.active.target.x,
-            y: this.store.config.camera.depth,
-            z: this.controller.active.target.z,
-            onUpdate: () => { this.controller.active.update() }
-        });
+
+        this.camera.active.position.x = this.controller.active.target.x,
+        this.camera.active.position.y = this.store.config.camera.depth,
+        this.camera.active.position.z = this.controller.active.target.z,
+        this.controller.active.rotateLeft(Math.PI/2);
+        this.controller.active.update()
+
+        // the method below changes the rotation axis which may not be desired
+        // this.camera.active.up.set(1, 0, 0);
+        // TweenLite.to(this.camera.active.position, this.store.config.camera.tween_duration, {
+        //     x: this.controller.active.target.x,
+        //     y: this.store.config.camera.depth,
+        //     z: this.controller.active.target.z,
+        //     onUpdate: () => { this.controller.active.update() }
+        // });
     }
 
     resetCamera() {
