@@ -124,7 +124,7 @@ class Scene3D {
                 renderer.render(self.scene.main, self.camera.frontCamera);
 
                 // side camera
-                width = SCREEN_W * 0.3; height = SCREEN_H * 0.3; left = SCREEN_W - 650; bottom = SCREEN_H - 200;
+                width = SCREEN_W * 0.3; height = SCREEN_H * 0.3; left = SCREEN_W - 650 - 250; bottom = SCREEN_H - 200;
                 renderer.setViewport(left, bottom, width, height);
                 renderer.setScissor(left, bottom, width, height);
                 renderer.setScissorTest(true);
@@ -132,7 +132,7 @@ class Scene3D {
                 renderer.render(self.scene.main, self.camera.sideCamera);
 
                 // top camera
-                width = SCREEN_W * 0.3; height = SCREEN_H * 0.3; left = SCREEN_W - 400; bottom = SCREEN_H - 200;
+                width = SCREEN_W * 0.3; height = SCREEN_H * 0.3; left = SCREEN_W - 400 - 250; bottom = SCREEN_H - 200;
                 renderer.setViewport(left, bottom, width, height);
                 renderer.setScissor(left, bottom, width, height);
                 renderer.setScissorTest(true);
