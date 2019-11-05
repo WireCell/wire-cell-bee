@@ -143,29 +143,63 @@ def event(request, set_id, event_id):
     options = {
         'nEvents' : eventset.event_count(),
         'id' : int(event_id),
-        'experiment': eventset.geom(event_id),
+        'geom' : {},
+        'camera' : {},
         'hasMC' : eventset.has_MC(int(event_id)),
-        'hasOP' : eventset.has_OP(int(event_id)),
-        'hasDeadArea' : eventset.has_DeadArea(int(event_id)),
-        'sst': sst_list,
-        'config': {},
+        'sst': sst_list
     }
-    # elif (eventset.geom(event_id) == 'dl'):
-    #     options['camera'] = {
-    #         'depth': 200,
-    #     }
-    #     options['geom']['name'] = 'dl'
-    #     options['geom']['angleU'] = 60
-    #     options['geom']['angleV'] = 60    
-    #     options['geom']['bounding_box'] = eventset.bounding_box(event_id)
+    if (eventset.geom(event_id) == 'uboone'):
+        options['camera'] = {
+            'depth': 2000,
+        }
+        options['geom']['name'] = 'uboone'
+        options['geom']['angleU'] = 60
+        options['geom']['angleV'] = 60
+    elif (eventset.geom(event_id) == 'dune35t'):
+        options['camera'] = {
+            'depth': 800,
+        }
+        options['geom']['name'] = 'dune35t'
+        options['geom']['angleU'] = 45
+        options['geom']['angleV'] = 45
+    elif (eventset.geom(event_id) == 'protodune'):
+        options['camera'] = {
+            'depth': 3000,
+        }
+        options['geom']['name'] = 'protodune'
+        options['geom']['angleU'] = 35.7
+        options['geom']['angleV'] = 35.7
+    elif (eventset.geom(event_id) == 'icarus'):
+        options['camera'] = {
+            'depth': 3000,
+        }
+        options['geom']['name'] = 'icarus'
+        options['geom']['angleU'] = 60
+        options['geom']['angleV'] = 60
+    elif (eventset.geom(event_id) == 'dune10kt_workspace'):
+        options['camera'] = {
+            'depth': 3000,
+        }
+        options['geom']['name'] = 'dune10kt_workspace'
+        options['geom']['angleU'] = 35.7
+        options['geom']['angleV'] = 35.7
+    elif (eventset.geom(event_id) == 'dl'):
+        options['camera'] = {
+            'depth': 200,
+        }
+        options['geom']['name'] = 'dl'
+        options['geom']['angleU'] = 60
+        options['geom']['angleV'] = 60    
+        options['geom']['bounding_box'] = eventset.bounding_box(event_id)
 
-    options['config'] = queryToOptions(request)
+    # options.update(queryToOptions(request))
+    options = update(options, queryToOptions(request))
     # print options
 
     if request.is_ajax():
         return HttpResponse(json.dumps(options))
     else:
-        return render(request, 'events/event_es6.html', context)
+        return render(request, 'events/event.html', context)
 
 
 

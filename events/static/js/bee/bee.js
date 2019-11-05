@@ -56,6 +56,10 @@ class Bee {
 }
 
 let bee = new Bee();
-console.log('store: ', store);
-console.log('bee:', bee);
+
+if (store.url.root_url.includes('127.0.0.1')) { // debug
+    console.log('store: ', store);
+    console.log('bee:', bee);
+}
+
 
