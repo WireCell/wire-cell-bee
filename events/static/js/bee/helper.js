@@ -9,6 +9,7 @@ class Helper {
         this.showAxes();
         this.showTPC();
         this.showBeam();
+        this.showPD();
         this.showSlice();
     }
 
@@ -52,7 +53,6 @@ class Helper {
             }
         }
         this.show(this.store.config.helper.showTPC, this.tpc);
-
     }
 
     showBeam() {
@@ -89,6 +89,70 @@ class Helper {
 
         }
         this.show(this.store.config.helper.showBeam, this.beam);
+    }
+
+    showPD() { // show optical detectors
+        let exp = this.store.experiment;
+        let location = exp.op.location;
+        let nDet = exp.op.nDet;
+        if (null == this.pd && this.store.experiment.name == 'protodune') { // init if not exist
+            this.pd = new THREE.Group();
+
+            // double shifted bar
+            let dsBar = new THREE.Mesh(new THREE.PlaneGeometry(209.6825, 10.16), new THREE.MeshBasicMaterial({
+                // color: 0x96f97b,
+                color: 0x15b01a,
+                opacity: 0.01,
+                side: THREE.DoubleSide
+            }));
+            dsBar.rotation.y = Math.PI / 2;
+            let dsBarArr = [
+                0,2,4,6,8, 10,12,14,15,17, 19,21,23,25,27, 
+                61,63,65,67,69, 71,73,75,77,79, 81,83,84,86,88
+            ]
+            for (let i=0; i<dsBarArr.length; i++) {
+                let bar = dsBar.clone();
+                let ind = dsBarArr[i];
+                bar.position.set(...exp.toLocalXYZ(location[ind][0], location[ind][1], location[ind][2]));
+                this.pd.add(bar);
+            }
+
+            // dip bar
+            let dipBar = new THREE.Mesh(new THREE.PlaneGeometry(209.6825, 10.16), new THREE.MeshBasicMaterial({
+                // color: 0x95d0fc,
+                color: 0x0343df,
+                opacity: 0.01,
+                side: THREE.DoubleSide
+            }));
+            dipBar.rotation.y = Math.PI / 2;
+            let dipBarArr = [
+                1,3,5,7,9, 11,13,16,18, 20,22,24,26,28, 
+                62,64,66,68,70, 72,74,76,78,80, 82,85,87,89
+            ]
+            for (let i=0; i<dipBarArr.length; i++) {
+                let bar = dipBar.clone();
+                let ind = dipBarArr[i];
+                bar.position.set(...exp.toLocalXYZ(location[ind][0], location[ind][1], location[ind][2]));
+                this.pd.add(bar);
+            }
+
+            // Arapuca bar
+            let apuBar = new THREE.Mesh(new THREE.PlaneGeometry(209.6825, 8.6), new THREE.MeshBasicMaterial({
+                // color: 0xbf77f6,
+                color: 0xf97306,
+                opacity: 0.01,
+                side: THREE.DoubleSide
+            }));
+            apuBar.rotation.y = Math.PI / 2;
+            apuBar.position.set(...exp.toLocalXYZ(-362.335, 390.692, 115.336));
+            this.pd.add(apuBar);
+
+            let apuBar2 = apuBar.clone();
+            // bar2.rotation.y = Math.PI / 2;
+            apuBar2.position.set(...exp.toLocalXYZ(362.335, 272.292, 347.396));
+            this.pd.add(apuBar2);
+        }
+        this.show(this.store.config.helper.showPD, this.pd);
     }
 
     showSlice() {

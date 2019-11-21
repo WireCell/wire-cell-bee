@@ -23,6 +23,7 @@ store.config = {
         deadAreaOpacity: 0.0,
         showMCNeutral: false,
         showBeam: false,
+        showPD: false,
         showSCB: true
     },
     mc: {

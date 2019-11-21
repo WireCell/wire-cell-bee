@@ -118,6 +118,12 @@ class Gui {
                 .onChange(() => { this.bee.helper.showBeam() });
         }
 
+        if (exp.name == "protodune") {
+            folder.add(this.store.config.helper, "showPD")
+                .name("Show Ph. Det.")
+                .onChange(() => { this.bee.helper.showPD() });
+        }
+
         if (this.store.event.hasDeadArea) {
             folder.add(this.store.config.helper, "deadAreaOpacity", 0., 0.9)
                 .name("Inactivity").step(0.1)
