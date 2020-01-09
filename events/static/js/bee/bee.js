@@ -8,6 +8,7 @@ import { Helper } from './helper.js'
 import { Gui } from './gui.js'
 import { Scan } from './physics/scan.js'
 import { Dispatcher } from './dispatcher.js';
+import { Speech } from './speech.js';
 
 class Bee {
     constructor() {
@@ -22,6 +23,7 @@ class Bee {
             this.localstore = new LocalStore(store, this);
             this.scan = new Scan(store, this);
             this.dispatcher = new Dispatcher(store, this);
+            this.speech = new Speech(store, this);
         });
     }
 

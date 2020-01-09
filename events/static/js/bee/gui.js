@@ -284,6 +284,20 @@ class Gui {
                 });
         }
 
+        if ('webkitSpeechRecognition' in window) {
+            folder.add(config.helper, "speech")
+            .name("&#9835 Speech")
+            .onChange(() => {
+                if (config.helper.speech) {
+                    this.bee.speech.recognition.start();
+                }
+                else {
+                    this.bee.speech.recognition.stop();
+                }
+            });
+        }
+
+
     }
 
     loadDefaultBoxROI() {

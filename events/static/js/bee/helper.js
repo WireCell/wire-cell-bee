@@ -93,6 +93,7 @@ class Helper {
 
     showPD() { // show optical detectors
         let exp = this.store.experiment;
+        if (exp.name != 'protodune') { return; }
         let location = exp.op.location;
         // let nDet = exp.op.nDet;
         const addBar = (bar, barInd) => {
