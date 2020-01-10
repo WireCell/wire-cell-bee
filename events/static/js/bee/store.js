@@ -127,6 +127,7 @@ store.dom = {
     el_logo: $('#event-logo'),
     el_statsbar: $('#statsbar'),
     el_loadingbar: $('#loadingbar'),
+    el_infobar: $('#infobar'),
     el_mc: $('#mc'),
     panel_sst: {
         el_container: $('#sst-docker'),

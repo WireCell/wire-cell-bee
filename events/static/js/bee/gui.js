@@ -286,7 +286,7 @@ class Gui {
 
         if ('webkitSpeechRecognition' in window) {
             folder.add(config.helper, "speech")
-            .name("&#9835 Speech")
+            .name("&#9835 Voice Control")
             .onChange(() => {
                 if (config.helper.speech) {
                     this.bee.speech.recognition.start();

@@ -109,6 +109,13 @@ body {
     display: none;
 }
 
+#infobar {
+    position: absolute;
+    left: 10px;
+    top: 46px;
+    display: none;
+}
+
 #mc {
     color: #999;
     position: absolute;

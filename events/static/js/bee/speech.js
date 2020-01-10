@@ -34,6 +34,7 @@ class Speech {
             this.recognizing = false; 
             let ctrls = this.bee.gui.folder.camera.__controllers;
             ctrls[ctrls.length-1].setValue(false);
+            this.store.dom.el_infobar.hide();
         };
         this.recognition.onerror = (e) => { console.log(e.error); };
         this.recognition.onnomatch = (e) => {
@@ -59,7 +60,9 @@ class Speech {
         let scene3d = this.bee.scene3d;
         // let camera = this.bee.scene3d.camera.active;
         let cmd = this.transcript;
-        console.log(cmd);
+        let el = this.store.dom.el_infobar;
+        el.show().html(cmd.join(', '));
+        // console.log(cmd);
         if (cmd.includes('side') || cmd.includes('site')) { scene3d.yzView() } // x
         else if (cmd.includes('top')) { scene3d.xzView() } // y
         else if (cmd.includes('front')) { scene3d.xyView() } // z

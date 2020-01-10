@@ -65,6 +65,7 @@
                 <li><a href="#" id="clear-scan">Clear Scan Results </a></li>
                 <li role="separator" class="divider"></li>
                 <li><a href="" data-toggle="modal" data-target="#cmdModal">Hotkey List <span class="hotkey">?</span></a></li>
+                <li><a href="" data-toggle="modal" data-target="#voiceModal">Voice Commands</a></li>
               </ul>
             </li>
 
@@ -125,6 +126,7 @@
 
     <div id="statusbar"></div>
     <div id="mc"></div>
+    <div class="alert alert-info fade in" id="infobar"></div>
 
     <div id="sst-docker">
       <h4 id="sst"></h4>
@@ -233,6 +235,27 @@
                   </tr>
                 </tbody>
             </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="voiceModal" class="modal hide fade" role="dialog" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">List of Voice Commands</h4>
+          </div>
+          <div class="modal-body">
+            <ul>
+              <li><b>Camera control</b>: <i>"top", "side", "front", "u", "v", "w", "reset"</i>.</li>
+              <li><b>Flash navigation</b>: <i>"neutrino", "everything", "next match", "previous match", "next flash", "previous flash"</i>.</li>
+              <li><b>Event navigation</b>: <i>"next event", "previous event", "event number 42"</i>.</li>
+            </ul>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
