@@ -118,7 +118,7 @@ class Gui {
                 .onChange(() => { this.bee.helper.showBeam() });
         }
 
-        if (exp.name == "protodune") {
+        if (exp.name == "protodune" || exp.name == "icarus") {
             folder.add(this.store.config.helper, "showPD")
                 .name("Show Ph. Det.")
                 .onChange(() => { this.bee.helper.showPD() });

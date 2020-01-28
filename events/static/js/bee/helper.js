@@ -93,68 +93,92 @@ class Helper {
 
     showPD() { // show optical detectors
         let exp = this.store.experiment;
-        if (exp.name != 'protodune') { return; }
-        let location = exp.op.location;
-        // let nDet = exp.op.nDet;
-        const addBar = (bar, barInd) => {
-            for (let i=0; i<barInd.length; i++) {
-                let barC = bar.clone();
-                let ind = barInd[i];
-                barC.position.set(...exp.toLocalXYZ(location[ind][0], location[ind][1], location[ind][2]));
-                this.pd.add(barC);
+        if (exp.name == 'protodune') {
+            let location = exp.op.location;
+            // let nDet = exp.op.nDet;
+            const addBar = (bar, barInd) => {
+                for (let i=0; i<barInd.length; i++) {
+                    let barC = bar.clone();
+                    let ind = barInd[i];
+                    barC.position.set(...exp.toLocalXYZ(location[ind][0], location[ind][1], location[ind][2]));
+                    this.pd.add(barC);
+                }
+            };
+            if (null == this.pd) { // init if not exist
+                this.pd = new THREE.Group();
+    
+                let dsBar = new THREE.LineSegments(
+                    new THREE.EdgesGeometry(new THREE.PlaneGeometry(209.6825, 10.16)), 
+                    new THREE.LineBasicMaterial({color: 0x15b01a})
+                );
+                dsBar.rotation.y = Math.PI / 2;
+                let dsBarArr = [
+                    0,2,4,6,8, 10,12,14,15,17, 19,21,23,25,27, 
+                    61,63,65,67,69, 71,73,75,77,79, 81,83,84,86,88
+                ]
+                addBar(dsBar, dsBarArr);
+    
+                let dipBar = new THREE.LineSegments(
+                    new THREE.EdgesGeometry(new THREE.PlaneGeometry(209.6825, 10.16)), 
+                    new THREE.LineBasicMaterial({color: 0x0343df})
+                );
+                dipBar.rotation.y = Math.PI / 2;
+                let dipBarArr = [
+                    1,3,5,7,9, 11,13,16,18, 20,22,24,26,28, 
+                    62,64,66,68,70, 72,74,76,78,80, 82,85,87,89
+                ]
+                addBar(dipBar, dipBarArr);
+    
+                // Arapuca bar, large
+                let apuBar = new THREE.LineSegments(
+                    new THREE.EdgesGeometry(new THREE.PlaneGeometry(20, 8)), 
+                    new THREE.LineBasicMaterial({color: 0xf97306})
+                );
+                apuBar.rotation.y = Math.PI / 2;
+                let apuBarArr = [
+                    29,31,33,35,
+                    45,47,49,51
+                ]
+                addBar(apuBar, apuBarArr);
+    
+                // Arapuca bar, small
+                let apuBar2 = new THREE.LineSegments(
+                    new THREE.EdgesGeometry(new THREE.PlaneGeometry(10, 8)), 
+                    new THREE.LineBasicMaterial({color: 0xf97306})
+                );
+                apuBar2.rotation.y = Math.PI / 2;
+                let apuBar2Arr = [
+                    37,38,39,40,41,42,43,44,
+                    53,54,55,56,57,58,59,60
+                ]
+                addBar(apuBar2, apuBar2Arr);
+    
             }
-        };
-        if (null == this.pd && this.store.experiment.name == 'protodune') { // init if not exist
-            this.pd = new THREE.Group();
-
-            let dsBar = new THREE.LineSegments(
-                new THREE.EdgesGeometry(new THREE.PlaneGeometry(209.6825, 10.16)), 
-                new THREE.LineBasicMaterial({color: 0x15b01a})
-            );
-            dsBar.rotation.y = Math.PI / 2;
-            let dsBarArr = [
-                0,2,4,6,8, 10,12,14,15,17, 19,21,23,25,27, 
-                61,63,65,67,69, 71,73,75,77,79, 81,83,84,86,88
-            ]
-            addBar(dsBar, dsBarArr);
-
-            let dipBar = new THREE.LineSegments(
-                new THREE.EdgesGeometry(new THREE.PlaneGeometry(209.6825, 10.16)), 
-                new THREE.LineBasicMaterial({color: 0x0343df})
-            );
-            dipBar.rotation.y = Math.PI / 2;
-            let dipBarArr = [
-                1,3,5,7,9, 11,13,16,18, 20,22,24,26,28, 
-                62,64,66,68,70, 72,74,76,78,80, 82,85,87,89
-            ]
-            addBar(dipBar, dipBarArr);
-
-            // Arapuca bar, large
-            let apuBar = new THREE.LineSegments(
-                new THREE.EdgesGeometry(new THREE.PlaneGeometry(20, 8)), 
-                new THREE.LineBasicMaterial({color: 0xf97306})
-            );
-            apuBar.rotation.y = Math.PI / 2;
-            let apuBarArr = [
-                29,31,33,35,
-                45,47,49,51
-            ]
-            addBar(apuBar, apuBarArr);
-
-            // Arapuca bar, small
-            let apuBar2 = new THREE.LineSegments(
-                new THREE.EdgesGeometry(new THREE.PlaneGeometry(10, 8)), 
-                new THREE.LineBasicMaterial({color: 0xf97306})
-            );
-            apuBar2.rotation.y = Math.PI / 2;
-            let apuBar2Arr = [
-                37,38,39,40,41,42,43,44,
-                53,54,55,56,57,58,59,60
-            ]
-            addBar(apuBar2, apuBar2Arr);
-
+            this.show(this.store.config.helper.showPD, this.pd);
         }
-        this.show(this.store.config.helper.showPD, this.pd);
+        else if (exp.name == 'icarus') {
+            let location = this.store.experiment.op.location;
+            let nDet = this.store.experiment.op.nDet;
+            if (null == this.pd) { // init if not exist
+                this.pd = new THREE.Group();
+                Object.keys(location).forEach(i => {
+                    let radius = 10;
+                    let segments = 32; //<-- Increase or decrease for more resolution I guess
+        
+                    let circleGeometry = new THREE.CircleGeometry( radius, segments );
+                    let circle = new THREE.Mesh(circleGeometry, new THREE.MeshBasicMaterial({
+                        color: 0xbbbbbb,
+                        opacity: 0.01,
+                        side: THREE.DoubleSide
+                    }));
+                    circle.rotation.y = Math.PI / 2;
+                    circle.position.set(...exp.toLocalXYZ(location[i][0], location[i][1], location[i][2]));
+                    this.pd.add(circle);
+                });
+            }
+            this.show(this.store.config.helper.showPD, this.pd);
+        }
+
     }
 
     showSlice() {
