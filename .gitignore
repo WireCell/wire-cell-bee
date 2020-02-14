@@ -15,4 +15,4 @@ dist/
 *.root
 Thumbs.db
 bee.old.js
-
+.vscode/
