@@ -13,6 +13,9 @@ void WireCell2JSON(TString filename, TString option = "truth", TString outfile="
     else if (option == "op") {
         r.DumpOp();
     }
+    else if (option == "vtx") {
+        r.DumpVtx();
+    }
     else {
         r.DumpSpacePoints(option);
     }
