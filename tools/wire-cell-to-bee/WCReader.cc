@@ -287,6 +287,11 @@ void WCReader::DumpVtx()
 {
     double x=0, y=0, z=0;
     int type = -1;
+    // 1: Steiner-inspired graph
+    // 2: Steiner terminals
+    // 3: end point (extreme point, connecting to one object)
+    // 4: kink (connecting to two objects
+    // 5: vertex (connecting to three or more objects)
     int flag_main = -1;
     int cluster_id=0;
     vector<int> *sub_cluster_ids = new std::vector<int>;
