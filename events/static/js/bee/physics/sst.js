@@ -16,6 +16,7 @@ class SST {
         this.loaded = false; // lazy loading
 
         this.currentEventId = parseInt(this.store.url.base_url.substring(this.store.url.event_url.length));
+
     }
 
     load() {
@@ -58,6 +59,7 @@ class SST {
         this.data.z = new Float32Array(size_reduced);
         this.data.q = new Float32Array(size_reduced);
         this.data.cluster_id = new Float32Array(size_reduced);
+        this.data.real_cluster_id = new Float32Array(size_reduced);
         // this.data.nq = [];
         this.data.runNo = data.runNo;
         this.data.subRunNo = data.subRunNo;
@@ -72,6 +74,7 @@ class SST {
             this.data.z[i] = data.z[indices[i]];
             this.data.q[i] = data.q == null ? 0 : data.q[indices[i]];
             this.data.cluster_id[i] = data.cluster_id == null ? 0 : data.cluster_id[indices[i]];
+            this.data.real_cluster_id[i] = data.real_cluster_id == null ? 0 : data.real_cluster_id[indices[i]];
         }
     }
 
@@ -150,7 +153,8 @@ class SST {
             let color = new THREE.Color();
             if (config.material.showCluster) {
                 let length = USER_COLORS[theme].length;
-                let color_id = Math.floor((this.data.cluster_id[ind] + length) % (length - ran));
+                let color_id = this.data.real_cluster_id[ind] > 0 ? this.data.real_cluster_id[ind] : this.data.cluster_id[ind]; // backward compatible
+                color_id = Math.floor((color_id + length) % (length - ran));
                 color = new THREE.Color(USER_COLORS[theme][color_id]);
             }
             else if (config.material.showCharge) {

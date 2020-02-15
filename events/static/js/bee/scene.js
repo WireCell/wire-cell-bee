@@ -306,7 +306,15 @@ class Scene3D {
         let loc = this.getIntersect(e);
         if (null == loc) return;
         let [x, y, z] = this.store.experiment.toGlobalXYZ(...loc);
-        this.store.dom.el_statusbar.html(`(x, y, z) = (${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)})`);
+        let data = this.bee.current_sst.data;
+        let size = data.x.length;
+        let ind = 0;
+        for (let i=0; i<size; i++) {
+            if ((x-data.x[i])*(x-data.x[i]) + (y-data.y[i])*(y-data.y[i]) + (z-data.z[i])*(z-data.z[i])<1) { ind=i; break; }
+        }
+        let text = `(x, y, z) = (${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)})`;
+        text += `<br/>cluster = ${data.real_cluster_id[ind]}`;
+        this.store.dom.el_statusbar.html(text);
     }
 
     setTargetSphere(e) {
