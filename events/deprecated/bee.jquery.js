@@ -17,9 +17,9 @@ if ( typeof Object.create !== 'function' ) {
         base_url = base_url.substring(0, index_of_query_postion);
     }
     var event_url = base_url.substring(0, base_url.indexOf('event')) + 'event/';
-    // console.log(index_of_query_postion, base_url, base_query, event_url);
     var root_url = base_url.substring(0, base_url.indexOf('set'));
-    $('#evd-2d').attr('href', base_url+'evd-2d/');
+    // console.log(index_of_query_postion, base_url, base_query, event_url, root_url);
+
     $( "#progressbar" ).progressbar({
       value: 0
     });
@@ -425,6 +425,9 @@ if ( typeof Object.create !== 'function' ) {
                 )
 
             }
+            if($.fn.BEE.user_options.helper.showSCB) {
+                $.fn.BEE.scene3D.drawSpaceChargeBoundary(self.driftV*t);
+            }
 
         }
     };
@@ -507,6 +510,82 @@ if ( typeof Object.create !== 'function' ) {
             // self.setup();
         },
 
+        setEventText: function() {
+            // $("#fullscreeninfo").html(text);
+            if ($.fn.BEE.user_options.geom.name == "protodune") {
+                var text = '';
+                var momentumMap = {
+                  // '3936' : '2 GeV',
+                  '5762' : '2 GeV',
+                  '5145' : '7 GeV',
+                  '5387' : '1 GeV',
+                  '5432' : '2 GeV',
+                  '5770' : '6 GeV',
+                  '5786' : '3 GeV',
+                  '5826' : '0.5 GeV',
+                  '5834' : '0.3 GeV'
+                };
+                var triggerMap = {
+                    '12': 'Beam',
+                    '13': 'CRT',
+                    '8': 'Random'
+                };
+                var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
+                text += eventStr;
+
+                var triggerStr = triggerMap[$.fn.BEE.current_sst.trigger];
+                if (triggerStr) {
+                    triggerStr = $.fn.BEE.current_sst.trigger + ' [' + triggerStr + ']';
+                }
+                else {
+                    triggerStr = 'N/A';
+                }
+                text += '<br /> Trigger: ' + triggerStr;
+
+                var momentum = momentumMap[$.fn.BEE.current_sst.runNo];
+                if (momentum) {
+                    text += ' [momentum = ' + momentum + ']';
+                }
+
+                var timeStr =  $.fn.BEE.current_sst.eventTime;
+                text += "<br />" + timeStr;
+                $("#event-text").html(text);
+            }
+        },
+
+        reload: function() {
+            var self = this;
+            if (base_url.indexOf("gallery")>0) {
+                var event_index = base_url.indexOf(event_url);
+                var eventNo = parseInt(base_url.substring(event_url.length));
+                if (eventNo == $.fn.BEE.user_options.nEvents-1) { eventNo = 0; }
+                else { eventNo += 1; }
+                base_url = event_url + eventNo + '/';
+                self.url =  base_url + self.name + "/";
+                // console.log($.fn.BEE.user_options.nEvents);
+            }
+
+            self.setup().then(function() {
+                $('#runNo').html(self.runNo);
+                $('#eventNo').html(self.eventNo);
+                self.setEventText();
+                console.log('reloading: ', self.url);
+            });
+        },
+
+        refresh: function(sec) {
+            var self = this;
+            console.log("start refreshing at interval", sec, "sec");
+            self.refreshInterval = setInterval(function(){
+                self.reload();
+            }, sec*1000);
+        },
+
+        stopRefresh: function() {
+            clearInterval(this.refreshInterval);
+            console.log("stop refreshing");
+        },
+
         setup: function() {
             var self = this;
             self.process = $.getJSON(self.url, function(data) {
@@ -546,6 +625,13 @@ if ( typeof Object.create !== 'function' ) {
             self.runNo = data.runNo;
             self.subRunNo = data.subRunNo;
             self.eventNo = data.eventNo;
+            if (data.eventTime == undefined) {self.eventTime = "";}
+            else {self.eventTime = data.eventTime;}
+            if (data.trigger == undefined) {self.trigger = "0";}
+            else {self.trigger = data.trigger;}
+            // console.log(data);
+            if (data.bounding_box == undefined) { self.bounding_box = []; }
+            else { self.bounding_box = data.bounding_box;}
             self.clusterInfo = {};
 
             for (var i = 0; i < size_reduced; i++) {
@@ -598,6 +684,12 @@ if ( typeof Object.create !== 'function' ) {
         initPointCloud: function() {
             var self = this;
             var size = self.x.length;
+            if(self.material) {
+                var current_size = self.material.size;
+                var current_opacity = self.material.opacity;
+                var current_chargeColor = self.chargeColor;
+                // console.log(current_size, current_opacity, current_chargeColor);
+            }
 
             self.material = new THREE.PointsMaterial({
                 vertexColors    : true,
@@ -609,6 +701,12 @@ if ( typeof Object.create !== 'function' ) {
                 sizeAttenuation : false
             });
             if (self.name == self.options.sst[0]) self.material.opacity = self.options.material.opacity;
+            if (current_size) {
+                self.material.size = current_size;
+                self.material.opacity = current_opacity;
+                self.chargeColor = current_chargeColor;
+            }
+
             self.bounds = {
                 xmax: getMaxOfArray(self.x),
                 xmin: getMinOfArray(self.x),
@@ -620,7 +718,7 @@ if ( typeof Object.create !== 'function' ) {
                 ymean: getMeanOfArray(self.y),
                 zmean: getMeanOfArray(self.z)
             }
-            self.drawInsideThreeFrames();
+            self.drawInsideThreeFrames(false, $.fn.BEE.user_options.box.box_mode);
             // self.drawInsideBeamFrame()
         },
 
@@ -795,41 +893,16 @@ if ( typeof Object.create !== 'function' ) {
                 clustered_positions.push(clustered_nodes[key]);
             }
 
-
-            // size = clustered_positions.length;
-            // if (size<50) return clustered_nodes;
-
-            // var positions = new Float32Array( size * 3 );
-            // for (var i=0; i<size; i++) {
-            //     positions[i*3] = clustered_positions[i][0];
-            //     positions[i*3+1] = clustered_positions[i][1];
-            //     positions[i*3+2] = clustered_positions[i][2];
-            // }
-
-            // var theme = $.fn.BEE.user_options['theme'];
-            // var color = Math.floor(Math.random() * USER_COLORS[theme].length);
-            // var material = new THREE.PointsMaterial({
-            //     // vertexColors    : true,
-            //     color           :  USER_COLORS[theme][color],
-            //     size            : 3,
-            //     blending        : THREE.NormalBlending,
-            //     opacity         : 0.8,
-            //     transparent     : true,
-            //     depthWrite      : false,
-            //     sizeAttenuation : false
-            // });
-            // var geometry = new THREE.BufferGeometry();
-            // geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-            // var clusterPointCloud = new THREE.Points(geometry, material);
-            // if (!(self.containedIn == null)) {
-            //     self.containedIn.add(clusterPointCloud);
-            // }
-            // return clustered_nodes;
         },
 
-        drawInsideSlice: function(start, width, randomClusterColor=false) {
+        drawInsideBox: function(xmin, xmax, ymin, ymax, zmin, zmax, randomClusterColor=false) {
             var self = this;
             var size = self.x.length;
+
+            if(self.boxhelper != undefined) {
+                // $.fn.BEE.scene3D.scene.remove(self.group_box);
+                $.fn.BEE.scene3D.scene.remove(self.boxhelper);
+            }
 
             if (!(self.containedIn == null)) {
                 self.containedIn.remove(self.pointCloud);
@@ -840,7 +913,7 @@ if ( typeof Object.create !== 'function' ) {
                 var x = toLocalX(self.x[i]);
                 var y = toLocalY(self.y[i]);
                 var z = toLocalZ(self.z[i]);
-                if (x  < start || x > start+width) {
+                if (x<xmin || x>xmax || y<ymin || y>ymax || z<zmin || z>zmax ) {
                     continue;
                 }
                 indices.push(i);
@@ -940,15 +1013,133 @@ if ( typeof Object.create !== 'function' ) {
             if (!(self.containedIn == null)) {
                 self.containedIn.add(self.pointCloud);
             }
-
         },
 
-        drawInsideThreeFrames: function(randomClusterColor=false) {
-            this.drawInsideSlice(-3*this.options.geom.halfx, this.options.geom.halfx*6, randomClusterColor);
+        drawInsideSlice: function(start, width, randomClusterColor=false) {
+            var self = this;
+            self.drawInsideBox(start, start+width, -1e9, 1e9, -1e9, 1e9, randomClusterColor);
+        },
+
+        drawInsideThreeFrames: function(randomClusterColor=false, box_mode=false) {
+            if (box_mode) {
+                this.drawInsideBoxHelper();
+            }
+            else {
+                this.drawInsideSlice(-3*this.options.geom.halfx, this.options.geom.halfx*6, randomClusterColor);
+            }
         },
 
         drawInsideBeamFrame: function() {
             this.drawInsideSlice(-this.options.geom.halfx, this.options.geom.halfx*2);
+        },
+
+        drawInsideTPC: function(tpcNo) {
+            var self = this;
+            var r = $.fn.BEE.scene3D.tpcLoc[tpcNo];
+            self.drawInsideBox(
+                toLocalX(r[0]), toLocalX(r[1]),
+                toLocalY(r[2]), toLocalY(r[3]),
+                toLocalZ(r[4]), toLocalZ(r[5]));
+        },
+
+        drawInsideBoxHelper: function() {
+            var self = this;
+
+            var xmin = toLocalX($.fn.BEE.user_options.box.xmin);
+            var xmax = toLocalX($.fn.BEE.user_options.box.xmax);
+            var ymin = toLocalY($.fn.BEE.user_options.box.ymin);
+            var ymax = toLocalY($.fn.BEE.user_options.box.ymax);
+            var zmin = toLocalZ($.fn.BEE.user_options.box.zmin);
+            var zmax = toLocalZ($.fn.BEE.user_options.box.zmax);
+            var tpcNo = $.fn.BEE.user_options.box.tpcNo;
+
+            if (tpcNo >= 0) {
+                var r = $.fn.BEE.scene3D.tpcLoc[tpcNo];
+                xmin = toLocalX(r[0]);
+                xmax = toLocalX(r[1]);
+                // xmin = toLocalX(r[0]-$.fn.BEE.scene3D.driftVelocity*$.fn.BEE.scene3D.daqTimeBeforeTrigger);
+                // xmax = toLocalX(r[0]+$.fn.BEE.scene3D.driftVelocity*$.fn.BEE.scene3D.daqTimeAfterTrigger);
+                ymin = toLocalY(r[2]);
+                ymax = toLocalY(r[3]);
+                zmin = toLocalZ(r[4]);
+                zmax = toLocalZ(r[5]);
+            }
+
+            self.drawInsideBox(xmin, xmax, ymin, ymax, zmin, zmax);
+
+            if(self.boxhelper != undefined) {
+                // $.fn.BEE.scene3D.scene.remove(self.group_box);
+                $.fn.BEE.scene3D.scene.remove(self.boxhelper);
+            }
+            // self.group_box = new THREE.Group();
+            self.boxhelper = new THREE.Object3D;
+            var aBox = new THREE.Mesh(
+                new THREE.BoxGeometry(xmax-xmin, ymax-ymin, zmax-zmin ),
+                new THREE.MeshBasicMaterial( {
+                    color: 0x96f97b,
+                    transparent: true,
+                    depthWrite: true,
+                    opacity: 0.5,
+            }));
+            var box = new THREE.BoxHelper(aBox);
+            box.material.color.setHex(0xff0000);
+            self.boxhelper.add(box);
+            self.boxhelper.position.x = (xmax+xmin)/2;
+            self.boxhelper.position.y = (ymax+ymin)/2;
+            self.boxhelper.position.z = (zmax+zmin)/2;
+            // self.group_box.add(self.boxhelper);
+            // $.fn.BEE.scene3D.scene.add( self.group_op );
+            $.fn.BEE.scene3D.scene.add( self.boxhelper );
+
+        },
+
+        // drawROI: function() {
+        //     var self = this;
+        //     $.fn.BEE.scene3D.drawROI = true;
+        //     for (var i=0; i<$.fn.BEE.scene3D.tpcHelpers.length; i++) {
+        //         if (i!=$.fn.BEE.scene3D.roiTPC) {
+        //             $.fn.BEE.scene3D.tpcHelpers[i].visible = false;
+        //         }
+        //         else {
+        //             $.fn.BEE.scene3D.tpcHelpers[i].visible = true;
+        //         }
+        //     }
+        //     self.drawInsideTPC($.fn.BEE.scene3D.roiTPC);
+        // },
+
+        toggleROI: function() {
+            var self = this;
+            $.fn.BEE.scene3D.drawROI = !$.fn.BEE.scene3D.drawROI
+            if ($.fn.BEE.scene3D.drawROI) {
+                for (var i=0; i<$.fn.BEE.scene3D.tpcHelpers.length; i++) {
+                    if (i!=$.fn.BEE.scene3D.roiTPC) {
+                        $.fn.BEE.scene3D.tpcHelpers[i].visible = false;
+                    }
+                    else {
+                        $.fn.BEE.scene3D.tpcHelpers[i].visible = true;
+                    }
+                }
+                self.drawInsideTPC($.fn.BEE.scene3D.roiTPC);
+            }
+            else {
+                for (var i=0; i<$.fn.BEE.scene3D.tpcHelpers.length; i++) {
+                    $.fn.BEE.scene3D.tpcHelpers[i].visible = true;
+                }
+                self.drawInsideThreeFrames();
+            }
+        },
+
+        setProp: function() {
+            var self = this;
+            if (!$.fn.BEE.user_options.material.overlay) {
+                for (var name in $.fn.BEE.scene3D.listOfSST) {
+                    $.fn.BEE.scene3D.listOfSST[name].material.opacity = 0;
+                }
+                self.material.opacity = $.fn.BEE.user_options.material.opacity;
+            }
+            $.fn.BEE.ui_sst.$el_size.slider("value", self.material.size);
+            $.fn.BEE.ui_sst.$el_opacity.slider("value", self.material.opacity);
+            $.fn.BEE.ui_sst.$el_color.val('#'+self.chargeColor.getHexString());
         },
 
         selected: function() {
@@ -962,15 +1153,17 @@ if ( typeof Object.create !== 'function' ) {
                 this.setup();
                 this.scene3D.registerSST(this);
                 this.process.then(function(){
-                    $.fn.BEE.ui_sst.$el_size.slider("value", self.material.size);
-                    $.fn.BEE.ui_sst.$el_opacity.slider("value", self.material.opacity);
-                    $.fn.BEE.ui_sst.$el_color.val('#'+self.chargeColor.getHexString());
+                    self.setProp();
+                    // $.fn.BEE.ui_sst.$el_size.slider("value", self.material.size);
+                    // $.fn.BEE.ui_sst.$el_opacity.slider("value", self.material.opacity);
+                    // $.fn.BEE.ui_sst.$el_color.val('#'+self.chargeColor.getHexString());
                 }, function(){});
             }
             else {
-                $.fn.BEE.ui_sst.$el_size.slider("value", self.material.size);
-                $.fn.BEE.ui_sst.$el_opacity.slider("value", self.material.opacity);
-                $.fn.BEE.ui_sst.$el_color.val('#'+self.chargeColor.getHexString());
+                self.setProp();
+                // $.fn.BEE.ui_sst.$el_size.slider("value", self.material.size);
+                // $.fn.BEE.ui_sst.$el_opacity.slider("value", self.material.opacity);
+                // $.fn.BEE.ui_sst.$el_color.val('#'+self.chargeColor.getHexString());
             }
             for (var name in listOfReconElems) {
                 listOfReconElems[name].css('color', 'white');
@@ -1010,7 +1203,9 @@ if ( typeof Object.create !== 'function' ) {
             self.initCamera();
             self.initScene();
 
-            self.initHelper();
+            // if (! $.fn.BEE.user_options.geom.name == "dl") {
+                self.initHelper();
+            // }
             self.initSlice();
 
             self.initRenderer();
@@ -1030,7 +1225,9 @@ if ( typeof Object.create !== 'function' ) {
             self.initOP();
             self.initCT();
             self.initDeadArea();
-
+            // if ($.fn.BEE.user_options.helper.showSCB) {
+            //     self.drawSpaceChargeBoundary();
+            // }
             self.initGuiSlice();
             self.initGuiCamera();
 
@@ -1088,64 +1285,8 @@ if ( typeof Object.create !== 'function' ) {
             var ctrl = self.guiController;
 
             var folder_general = self.gui.addFolder("General");
-            var folder_flash = self.gui.addFolder("Flash");
-            var folder_recon = self.gui.addFolder("Recon");
-            // console.log(self.gui.__folders.Recon)
-            var options = {
-                'id' : $.fn.BEE.user_options.id,
-                'flash_id': 0
-            };
-            folder_general.add(options, 'id', 0, $.fn.BEE.user_options.nEvents-1)
-                .name("Event").step(1)
-                .onFinishChange(function(value) {
-                    // console.log($.fn.BEE.user_options.id, value);
-                    if (value == $.fn.BEE.user_options.id) { return; }
-                    window.location.assign(event_url + value + '/' + base_query);
-                });
-
-            // folder_general.add(ctrl, 'display', self.options.sst)
-            //    .name("Display")
-            //    .onChange(function(value) {
-            //         var ssts = self.listOfSST;
-            //         var sst;
-            //         for (var name in ssts) {
-            //             sst = ssts[name];
-            //             if (name == value) sst.material.opacity = self.options.material.opacity;
-            //             else sst.material.opacity = 0;
-            //             sst.material.needsUpdate = true;
-            //             checkSST(sst);
-            //         }
-            //    });
-
-            folder_general.add($.fn.BEE.user_options, 'theme', ['dark', 'light'])
-               .name("Theme")
-               .onChange(function(value) {
-                    clearLocalStorage();
-                    $(window).unbind('beforeunload');
-                    var new_query;
-                    if (base_query.indexOf('theme=light')>0) {
-                        new_query = base_query.replace('theme=light', 'theme='+value);
-                    }
-                    else if (base_query.indexOf('theme=dark')>0) {
-                        new_query = base_query.replace('theme=dark', 'theme='+value);
-                    }
-                    else {
-                        if (base_query == "") {
-                            new_query = base_query+'?theme='+value;
-                        }
-                        else {
-                            new_query = base_query+'&theme='+value;
-                        }
-                    }
-                    window.location.assign(base_url+new_query);
-               });
-
-            folder_general.add($.fn.BEE.user_options.material, "showCharge")
-                .name("Show Charge")
-                .onChange(function(value) {
-                    self.redrawAllSST();
-                });
-            folder_general.add($.fn.BEE.user_options.helper, "showTPCs")
+            var folder_helper = self.gui.addFolder("Helper");
+            folder_helper.add($.fn.BEE.user_options.helper, "showTPCs")
                 .name("Show TPCs")
                 .onChange(function(value) {
                     if (value) {
@@ -1155,8 +1296,8 @@ if ( typeof Object.create !== 'function' ) {
                         self.group_main.remove(self.group_helper);
                     }
                 });
-            folder_general.add($.fn.BEE.user_options.helper, "showAxises")
-                .name("Show Axises")
+            folder_helper.add($.fn.BEE.user_options.helper, "showAxises")
+                .name("Show Axes")
                 .onChange(function(value) {
                     if (value) {
                         self.scene.add(self.axises);
@@ -1165,17 +1306,46 @@ if ( typeof Object.create !== 'function' ) {
                         self.scene.remove(self.axises);
                     }
                 });
-            folder_general.add($.fn.BEE.user_options.material, "colorScale", 0., 1.9)
-                .name("Color-scale")
-                .step(0.01)
+            folder_helper.add($.fn.BEE.user_options.helper, "showMCNeutral")
+                .name("Show Neutral Particles (MC)")
                 .onChange(function(value) {
-                    if ($.fn.BEE.user_options.material.showCharge) {
-                        for (var name in self.listOfSST) {
-                            self.listOfSST[name].drawInsideThreeFrames();
-                        }
+                    $('#mc').jstree(true).refresh();
+                });
+            folder_helper.add($.fn.BEE.user_options.helper, "showBeam")
+                .name("Show Beam")
+                .onChange(function(value) {
+                    if (value) {
+                        self.group_main.add(self.arrowHelper);
+                    }
+                    else {
+                        self.group_main.remove(self.arrowHelper);
                     }
                 });
-            folder_general.add($.fn.BEE.user_options.helper, "deadAreaOpacity", 0., 0.9)
+            folder_helper.add($.fn.BEE.user_options.helper, "showSCB")
+            .name("Show SCB")
+            .onChange(function(value) {
+                if (value) {
+                    var op = $.fn.BEE.scene3D.op;
+                    if (op.t != undefined) {
+                        self.drawSpaceChargeBoundary(
+                            op.t[op.currentFlash]*op.driftV
+                        );
+                    }
+                    else {
+                        self.drawSpaceChargeBoundary();
+                    }
+
+                }
+                else {
+                    if (self.listOfSCBObjects != undefined) {
+                        for (var i=0; i<self.listOfSCBObjects.length; i++){
+                            self.scene.remove(self.listOfSCBObjects[i]);
+                        }
+                        self.listOfSCBObjects= [];            
+                    }
+                }
+            });
+            folder_helper.add($.fn.BEE.user_options.helper, "deadAreaOpacity", 0., 0.9)
                 .name("Inactivity")
                 .step(0.1)
                 .onChange(function(value) {
@@ -1203,8 +1373,116 @@ if ( typeof Object.create !== 'function' ) {
                             obj.material.needsUpdate = true;
                         }
                     }
-
                 });
+            if (base_url.indexOf("live")>0 || base_url.indexOf("gallery")>0) {
+                var folder_live = self.gui.addFolder("Live");
+                folder_live.add($.fn.BEE.user_options.live, "refresh")
+                    .name("Refresh")
+                    .onChange(function(value) {
+                        if(value) {
+                           $.fn.BEE.current_sst.refresh( $.fn.BEE.user_options.live.interval );
+                        }
+                        else {
+                            $.fn.BEE.current_sst.stopRefresh();
+                        }
+                    });
+                folder_live.add($.fn.BEE.user_options.live, "interval")
+                    .name("Interval");
+                folder_live.open();
+            }
+
+            var folder_flash = self.gui.addFolder("Flash");
+            var folder_recon = self.gui.addFolder("Recon");
+
+            var folder_box = self.gui.addFolder("Box");
+            folder_box.add($.fn.BEE.user_options.box, "box_mode")
+                .name("Box Mode")
+                .onChange(function(value) {
+                    if(value) {
+                       $.fn.BEE.current_sst.drawInsideBoxHelper();
+                    }
+                    else {
+                        $.fn.BEE.current_sst.drawInsideThreeFrames();
+                    }
+                });
+            folder_box.add($.fn.BEE.user_options.box, "xmin")
+                .name("x min");
+            folder_box.add($.fn.BEE.user_options.box, "xmax")
+                .name("x max");
+            folder_box.add($.fn.BEE.user_options.box, "ymin")
+                .name("y min");
+            folder_box.add($.fn.BEE.user_options.box, "ymax")
+                .name("y max");
+            folder_box.add($.fn.BEE.user_options.box, "zmin")
+                .name("z min");
+            folder_box.add($.fn.BEE.user_options.box, "zmax")
+                .name("z max");
+            folder_box.add($.fn.BEE.user_options.box, "tpcNo", -1, 11)
+                .name("TPC No.").step(1)
+                .onChange(function(value) {
+                    // console.log(value);
+                    if (value >= 0) {
+                        $.fn.BEE.current_sst.drawInsideBoxHelper();
+                    }
+                    else {
+                        $.fn.BEE.current_sst.drawInsideThreeFrames();
+                    }
+                    // $.fn.BEE.scene3D.roiTPC = value;
+                    // $.fn.BEE.current_sst.drawROI();
+                });
+            // console.log(self.gui.__folders.Recon)
+            var options = {
+                'id' : $.fn.BEE.user_options.id,
+                'flash_id': 0
+            };
+            folder_general.add(options, 'id', 0, $.fn.BEE.user_options.nEvents-1)
+                .name("Event").step(1)
+                .onFinishChange(function(value) {
+                    // console.log($.fn.BEE.user_options.id, value);
+                    if (value == $.fn.BEE.user_options.id) { return; }
+                    window.location.assign(event_url + value + '/' + base_query);
+                });
+
+            folder_general.add($.fn.BEE.user_options, 'theme', ['dark', 'light'])
+               .name("Theme")
+               .onChange(function(value) {
+                    // clearLocalStorage();
+                    $(window).unbind('beforeunload');
+                    var new_query;
+                    if (base_query.indexOf('theme=light')>0) {
+                        new_query = base_query.replace('theme=light', 'theme='+value);
+                    }
+                    else if (base_query.indexOf('theme=dark')>0) {
+                        new_query = base_query.replace('theme=dark', 'theme='+value);
+                    }
+                    else {
+                        if (base_query == "") {
+                            new_query = base_query+'?theme='+value;
+                        }
+                        else {
+                            new_query = base_query+'&theme='+value;
+                        }
+                    }
+                    window.location.assign(base_url+new_query);
+               });
+
+            folder_general.add($.fn.BEE.user_options.material, "showCharge")
+                .name("Show Charge")
+                .onChange(function(value) {
+                    self.redrawAllSST();
+                });
+
+            folder_general.add($.fn.BEE.user_options.material, "colorScale", 0., 1.9)
+                .name("Color-scale")
+                .step(0.01)
+                .onChange(function(value) {
+                    if ($.fn.BEE.user_options.material.showCharge) {
+                        for (var name in self.listOfSST) {
+                            self.listOfSST[name].drawInsideThreeFrames();
+                        }
+                    }
+                });
+
             // folder_general.add(self, 'toggleOp').name('Toggle Flash');
 
             folder_general.add($.fn.BEE.user_options.material, "showCluster")
@@ -1212,6 +1490,14 @@ if ( typeof Object.create !== 'function' ) {
                 .onChange(function(value) {
                     self.redrawAllSST();
                 });
+
+            folder_general.add($.fn.BEE.user_options.material, "overlay")
+                .name("Overlay Reco")
+                .onChange(function(value) {
+                    // self.redrawAllSST()
+                    // console.log($.fn.BEE.user_options.overlay);
+                });
+
             folder_general.open();
 
             folder_flash.add(options, 'flash_id', 0, 200)
@@ -1314,6 +1600,15 @@ if ( typeof Object.create !== 'function' ) {
                     else if (value == 'XU') { self.xuView(); }
                     else if (value == 'XV') { self.xvView(); }
                 });
+            if ($.fn.BEE.user_options.geom.name == "protodune") {
+                folder_camera.add($.fn.BEE.user_options.camera, "photo_booth")
+                    .name("Photo Booth")
+                    .onChange(function(value) {
+                        if(value && $.fn.BEE.user_options.camera.ortho) {
+                            alert("Photo booth mode is designed to work under Perspective Camera!");
+                        }
+                    });
+            }
             folder_camera.add(self, 'resetCamera').name('Reset');
             folder_camera.open();
         },
@@ -1344,7 +1639,7 @@ if ( typeof Object.create !== 'function' ) {
                     self.slice.material.opacity = value;
                     $.fn.BEE.user_options.slice.opacity = value;
                 });
-            folder_slice.add(ctrl.slice, "width", w, halfx*2).step(w)
+            folder_slice.add(ctrl.slice, "width", 0.32, halfx*2).step(0.32)
                 .onChange(function(value){
                     $.fn.BEE.user_options.slice.width = value;
                     self.slice.scale.x = value/w; // SCALE
@@ -1365,24 +1660,37 @@ if ( typeof Object.create !== 'function' ) {
             var self = this;
             var ctrl = self.guiController;
             var depth = self.options.camera.depth;
+            // console.log(self.options);
 
+            // orthographic camera: frustum aspect ratio mush match viewport's aspect ratio
             self.camera = $.fn.BEE.user_options.camera.ortho
-                ? new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000)
-                : new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 1, 4000);
+                ? new THREE.OrthographicCamera(window.innerWidth/-2*self.options.camera.scale, window.innerWidth/2*self.options.camera.scale, window.innerHeight/2, window.innerHeight/-2, 1, 8000)
+                : new THREE.PerspectiveCamera(25, window.innerWidth*self.options.camera.scale / window.innerHeight, 1, 8000);
             var camera = self.camera;
             camera.position.z = depth*Math.cos(Math.PI/4);
             camera.position.x = -depth*Math.sin(Math.PI/4);
             camera.position.y = depth*Math.sin(Math.PI/6);
+            // var depth0 = 3000;
+            // camera.position.z = depth0*Math.cos(Math.PI/4);
+            // camera.position.x = -depth0*Math.sin(Math.PI/4);
+            // camera.position.y = depth0*Math.sin(Math.PI/6);
+            if ($.fn.BEE.user_options.camera.ortho) {
+                camera.zoom = 1500./depth;
+                camera.updateProjectionMatrix();
+            }
+            // camera.zoom = depth0/depth;
+            // camera.updateProjectionMatrix();
 
-            self.frontCamera = new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
+
+            self.frontCamera = new THREE.OrthographicCamera(window.innerWidth/-2*self.options.camera.scale, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
             self.frontCamera.position.set (-1000,0,0);
             self.frontCamera.lookAt (new THREE.Vector3(0,0,0));
 
-            self.sideCamera = new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
+            self.sideCamera = new THREE.OrthographicCamera(window.innerWidth/-2*self.options.camera.scale, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
             self.sideCamera.position.set(0,0,1000);
             self.sideCamera.lookAt (new THREE.Vector3(0,0,0));
 
-            self.topCamera = new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
+            self.topCamera = new THREE.OrthographicCamera(window.innerWidth/-2*self.options.camera.scale, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 1, 4000);
             self.topCamera.position.set(0,1000,0);
             self.topCamera.up.set(1,0,0);
             self.topCamera.lookAt(new THREE.Vector3(0,0,0));
@@ -1398,7 +1706,8 @@ if ( typeof Object.create !== 'function' ) {
             self.group_main = new THREE.Group();
             self.scene.add(self.group_main);
 
-            self.axises = new THREE.AxisHelper( 100 );
+            // self.axises = new THREE.AxisHelper( 100 );
+            self.axises = new THREE.AxesHelper( 100 );
             if ($.fn.BEE.user_options.helper.showAxises) {
                 self.scene.add(self.axises);
             }
@@ -1409,6 +1718,12 @@ if ( typeof Object.create !== 'function' ) {
             var self = this;
             self.group_helper = new THREE.Group();
             self.tpcHelpers = [];
+            self.roiTPC = 0;
+            self.drawROI = false;
+            // default are for protodune
+            self.driftVelocity = 0.16; // cm/us
+            self.daqTimeBeforeTrigger = 500*0.5; //us
+            self.daqTimeAfterTrigger = 5500*0.5; //us
 
             // $.fn.BEE.user_options.geom.name = "dune35t";
 
@@ -1423,6 +1738,9 @@ if ( typeof Object.create !== 'function' ) {
                 $.fn.BEE.user_options.geom.center[0] = (self.tpcLoc[0][1]+self.tpcLoc[0][0])/2;
                 $.fn.BEE.user_options.geom.center[1] = (self.tpcLoc[0][3]+self.tpcLoc[0][2])/2;
                 $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[0][5]+self.tpcLoc[0][4])/2;
+                self.driftVelocity = 0.1101; // cm/us
+                self.daqTimeBeforeTrigger = (3200+10)*0.5; //us
+                self.daqTimeAfterTrigger = (6400-10)*0.5; //us
             }
 
             else if ($.fn.BEE.user_options.geom.name == "dune35t") {
@@ -1445,16 +1763,6 @@ if ( typeof Object.create !== 'function' ) {
             }
 
             else if ($.fn.BEE.user_options.geom.name == "dune10kt_workspace") {
-                // self.tpcLoc = [
-                //     [-363.37605, -2.53305 , -628.57875, -20.75000, -106.39000, 126.00000],
-                //     [2.53305   , 363.37605, -628.57875, -20.75000, -106.39000, 126.00000],
-                //     [-363.37605, -2.53305 , -20.75000 , 587.07875, -106.39000, 126.00000],
-                //     [2.53305   , 363.37605, -20.75000 , 587.07875, -106.39000, 126.00000],
-                //     [-363.37605, -2.53305 , -628.57875, -20.75000, 126.00000 , 358.39000],
-                //     [2.53305   , 363.37605, -628.57875, -20.75000, 126.00000 , 358.39000],
-                //     [-363.37605, -2.53305 , -20.75000 , 587.07875, 126.00000 , 358.39000],
-                //     [2.53305   , 363.37605, -20.75000 , 587.07875, 126.00000 , 358.39000]
-                // ];
                 self.tpcLoc = [
                     [-363.376, -2.53305, -607.829, 0      , -0.87625, 231.514],
                     [2.53305 ,  363.376, -607.829, 0      , -0.87625, 231.514],
@@ -1475,19 +1783,6 @@ if ( typeof Object.create !== 'function' ) {
 
             else if ($.fn.BEE.user_options.geom.name == "protodune") {
                 self.tpcLoc = [
-                    // [-387.36 , -365.917, -0.2, 607.629, -0.87625, 231.514],
-                    // [-360.851, -0.008  , -0.2, 607.629, -0.87625, 231.514],
-                    // [0.008   , 360.851 , -0.2, 607.629, -0.87625, 231.514],
-                    // [365.917 , 387.36  , -0.2, 607.629, -0.87625, 231.514],
-                    // [-387.36 , -365.917, -0.2, 607.629, 231.514 , 463.904],
-                    // [-360.851, -0.008  , -0.2, 607.629, 231.514 , 463.904],
-                    // [0.008   , 360.851 , -0.2, 607.629, 231.514 , 463.904],
-                    // [365.917 , 387.36  , -0.2, 607.629, 231.514 , 463.904],
-                    // [-387.36 , -365.917, -0.2, 607.629, 463.904 , 696.294],
-                    // [-360.851, -0.008  , -0.2, 607.629, 463.904 , 696.294],
-                    // [0.008   , 360.851 , -0.2, 607.629, 463.904 , 696.294],
-                    // [365.917 , 387.36  , -0.2, 607.629, 463.904 , 696.294],
-
                     [-380.434 , -367.504 , 0.0, 607.499, -0.49375 , 231.166],
                     [-359.884 , -0.008   , 0.0, 607.499, -0.49375 , 231.166],
                     [0.008    , 359.884  , 0.0, 607.499, -0.49375 , 231.166],
@@ -1509,7 +1804,39 @@ if ( typeof Object.create !== 'function' ) {
                 $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[11][5]+self.tpcLoc[0][4])/2;
 
                 self.guiController.slice.position = -$.fn.BEE.user_options.geom.halfx;
+                self.roiTPC = 1;
+            }
 
+            else if ($.fn.BEE.user_options.geom.name == "icarus") {
+                self.tpcLoc = [
+                    [-369.06, -220.86, -181.86, 134.96, -894.951, 894.951],
+                    [-219.57, -71.37, -181.86, 134.96, -894.951, 894.951],
+                    [71.37, 219.57, -181.86, 134.96, -894.951, 894.951],
+                    [220.86, 369.06, -181.86, 134.96, -894.951, 894.951],
+                ];
+                $.fn.BEE.user_options.geom.halfx = (self.tpcLoc[3][1]-self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.halfy = (self.tpcLoc[3][3]-self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.halfz = (self.tpcLoc[3][5]-self.tpcLoc[0][4])/2;
+                $.fn.BEE.user_options.geom.center[0] = (self.tpcLoc[3][1]+self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.center[1] = (self.tpcLoc[3][3]+self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[3][5]+self.tpcLoc[0][4])/2;
+
+                self.guiController.slice.position = -$.fn.BEE.user_options.geom.halfx;
+                // self.roiTPC = 1;
+            }
+
+            if ($.fn.BEE.user_options.geom.name == "dl") {
+                self.tpcLoc = [
+                    // [0., 256., -115.51, 117.45, 0., 1036.96]
+                    // [13.77, 59.84, -14.39, 31.6, 129.32, 175.4]
+                    $.fn.BEE.user_options.geom.bounding_box
+                ];
+                $.fn.BEE.user_options.geom.halfx = (self.tpcLoc[0][1]-self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.halfy = (self.tpcLoc[0][3]-self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.halfz = (self.tpcLoc[0][5]-self.tpcLoc[0][4])/2;
+                $.fn.BEE.user_options.geom.center[0] = (self.tpcLoc[0][1]+self.tpcLoc[0][0])/2;
+                $.fn.BEE.user_options.geom.center[1] = (self.tpcLoc[0][3]+self.tpcLoc[0][2])/2;
+                $.fn.BEE.user_options.geom.center[2] = (self.tpcLoc[0][5]+self.tpcLoc[0][4])/2;
             }
 
             // console.log($.fn.BEE.user_options.geom)
@@ -1533,7 +1860,10 @@ if ( typeof Object.create !== 'function' ) {
                 // tpc.position.z = (self.tpcLoc[i][5]+self.tpcLoc[i][4])/2;
                 helper = new THREE.Object3D;
                 box = new THREE.BoxHelper(tpc);
-                box.material.color.setHex(0x111111);
+                // box.material.color.setHex(0x111111);
+                box.material.color.setHex(0x666666);
+                box.material.transparent = true;
+                box.material.opacity = 0.5;
                 helper.add(box);
                 helper.position.x = toLocalX((self.tpcLoc[i][1]+self.tpcLoc[i][0])/2);
                 helper.position.y = toLocalY((self.tpcLoc[i][3]+self.tpcLoc[i][2])/2);
@@ -1545,6 +1875,8 @@ if ( typeof Object.create !== 'function' ) {
                 // helper.material.transparent = true;
                 self.tpcHelpers.push(helper);
                 self.group_helper.add(helper);
+
+
             }
 
             // self.helper = new THREE.BoxHelper(new THREE.Mesh(
@@ -1555,6 +1887,43 @@ if ( typeof Object.create !== 'function' ) {
             // self.group_helper.add(self.helper);
             if ($.fn.BEE.user_options.helper.showTPCs == true) {
                 self.group_main.add(self.group_helper);
+            }
+
+            // add beam window
+            if ($.fn.BEE.user_options.geom.name == "protodune") {
+                var radius = 12.5;
+                var segments = 300; //<-- Increase or decrease for more resolution I guess
+
+                var circleGeometry = new THREE.CircleGeometry( radius, segments );
+                circleGeometry.vertices.shift(); // remove center vertex
+                var bw = new THREE.LineLoop(circleGeometry, new THREE.MeshBasicMaterial({
+                    color: 0xff0000,
+                    opacity: 0.2,
+                    side: THREE.DoubleSide
+                    // depthWrite: false
+                    // wireframe: true
+                }));
+                // console.log(self.locations);
+                // bw.rotation.y = Math.PI / 2;
+                bw.position.x = toLocalX(-27.173);
+                bw.position.y = toLocalY(421.445);
+                bw.position.z = toLocalZ(0);
+                self.group_main.add(bw);
+
+                var dir = new THREE.Vector3( -0.178177, -0.196387, 0.959408 );
+                //normalize the direction vector (convert to vector of length 1)
+                dir.normalize();
+                var length = 200;
+                var hex = 0xfcb001;
+                var origin = new THREE.Vector3(
+                    bw.position.x-length*dir.x,
+                    bw.position.y-length*dir.y,
+                    bw.position.z-length*dir.z
+                );
+                self.arrowHelper = new THREE.ArrowHelper( dir, origin, length, hex);
+                if ($.fn.BEE.user_options.helper.showBeam) {
+                    self.group_main.add( self.arrowHelper );
+                }
             }
 
         },
@@ -1690,6 +2059,62 @@ if ( typeof Object.create !== 'function' ) {
             );
         },
 
+        drawSpaceChargeBoundary: function(shiftx=0) {
+            // console.log(shiftx);
+            var self = this;
+            if (self.listOfSCBObjects != undefined) {
+                for (var i=0; i<self.listOfSCBObjects.length; i++){
+                    self.scene.remove(self.listOfSCBObjects[i]);
+                }
+            }
+            self.listOfSCBObjects = [];
+
+            var detector = $.fn.BEE.user_options.geom.name;
+            if ( detector != 'uboone') {
+                return; // only implemented in uboone
+            }
+            // console.log(detector, ': init scb');
+
+            var material = new THREE.LineDashedMaterial({
+                color: 0xff796c,
+                linewidth: 1,
+                scale: 1,
+                dashSize: 3,
+                gapSize: 1,
+            });
+            var z = self.tpcLoc[0][5];
+            var ymax = self.tpcLoc[0][3];
+            var ymin = self.tpcLoc[0][2];
+            var all_vtx = [
+                [[80, -116, 0], [256, -99, 0]],
+                [[80, -116, z], [256, -99, z]],
+                [[100, 116, 0], [256, 102, 0]],
+                [[100, 116, z], [256, 102, z]],
+                [[120, ymax, 0], [256, ymax, 11]],
+                [[120, ymax, 1037], [256, ymax, 1026]],
+                [[120, ymin, 0], [256, ymin, 11]],
+                [[120, ymin, 1037], [256, ymin, 1026]],
+            ]
+            for (var i=0; i<all_vtx.length; i++) {
+                var geometry = new THREE.Geometry();
+                for (var j=0; j<=1; j++) {
+                    geometry.vertices.push(
+                        new THREE.Vector3(
+                            toLocalX(all_vtx[i][j][0]+shiftx),
+                            toLocalY(all_vtx[i][j][1]),
+                            toLocalZ(all_vtx[i][j][2])
+                        )
+                    )
+                }
+                // geometry.computeLineDistances();
+                var line = new THREE.Line( geometry, material );
+                line.computeLineDistances();
+                self.listOfSCBObjects.push(line);
+                self.scene.add(line);
+            }
+
+        },
+
         initMC: function() {
             var self = this;
             self.listOfMCObjects = [];
@@ -1703,7 +2128,6 @@ if ( typeof Object.create !== 'function' ) {
                     }
                     self.listOfMCObjects = [];
 
-
                     var nSelected = data.selected.length;
                     var line, node, geometry, material;
                     for (var i=0; i<nSelected; i++) {
@@ -1711,30 +2135,51 @@ if ( typeof Object.create !== 'function' ) {
                         if (node.text.indexOf("nu_")>=0
                             || node.text.indexOf("neutron")>=0
                             || node.text.indexOf('gamma')>=0) {
-                            material = new THREE.LineBasicMaterial({
-                                color: 0x59656d,
-                                linewidth: 1,
-                            });
+                            if ($.fn.BEE.user_options.helper.showMCNeutral) {
+                                material = new THREE.LineBasicMaterial({
+                                    color: 0x59656d,
+                                    linewidth: 1,
+                                });
+                            }
+                            else {
+                                continue; // skip neutral particles
+                            }
+
                         }
                         else {
                             material = new THREE.LineBasicMaterial({
                                 color: 0xff000d,
-                                linewidth: 4,
+                                linewidth: 4, // webgl doesn't support line width for now
                             });
                         }
                         geometry = new THREE.Geometry();
-                        geometry.vertices.push(
-                            new THREE.Vector3(
-                                toLocalX(node.data.start[0]),
-                                toLocalY(node.data.start[1]),
-                                toLocalZ(node.data.start[2])
-                            ),
-                            new THREE.Vector3(
-                                toLocalX(node.data.end[0]),
-                                toLocalY(node.data.end[1]),
-                                toLocalZ(node.data.end[2])
-                            )
-                        );
+                        if (node.data.traj_x == undefined) {
+                            geometry.vertices.push(
+                                new THREE.Vector3(
+                                    toLocalX(node.data.start[0]),
+                                    toLocalY(node.data.start[1]),
+                                    toLocalZ(node.data.start[2])
+                                ),
+                                new THREE.Vector3(
+                                    toLocalX(node.data.end[0]),
+                                    toLocalY(node.data.end[1]),
+                                    toLocalZ(node.data.end[2])
+                                )
+                            );
+                        }
+                        else {
+                            var trajPoints = node.data.traj_x.length;
+                            for (var j=0; j<trajPoints; j++) {
+                                geometry.vertices.push(
+                                    new THREE.Vector3(
+                                        toLocalX(node.data.traj_x[j]),
+                                        toLocalY(node.data.traj_y[j]),
+                                        toLocalZ(node.data.traj_z[j])
+                                    )
+                                );
+                            }
+                        }
+
                         line = new THREE.Line( geometry, material );
 
                         self.listOfMCObjects.push(line);
@@ -1928,9 +2373,12 @@ if ( typeof Object.create !== 'function' ) {
 
                        // console.log(sst_options[sst.name])
                     }
-                    sst.drawInsideThreeFrames();
                     sst.selected();
                     self.selected_sst = sst.name;
+                    // console.log('here');
+                    // sst.drawInsideThreeFrames();
+
+
                     // if (options && options['selected_sst'] && options['selected_sst'] == sst.name) {
                     //     sst.selected();
                     //     self.selected_sst = sst.name;
@@ -1940,6 +2388,29 @@ if ( typeof Object.create !== 'function' ) {
                         $('#runNo').html(sst.runNo);
                         // $('#subRunNo').html(sst.subRunNo + ' - ');
                         $('#eventNo').html(sst.eventNo);
+                        var thousands = Math.floor(sst.runNo/1000) * 1000;
+                        // console.log(thousands)
+                        thousands = "000000".substr(0, 6 - thousands.toString().length) + thousands
+                        // var plotUrl = $('#diag-plots').attr('href')
+                        var plotUrl = 'https://www.phy.bnl.gov/twister/static/plots/'
+                            + $.fn.BEE.user_options.geom.name + '/'
+                            + thousands + '/'
+                            + sst.runNo + '/'
+                            + sst.subRunNo + '/'
+                            + sst.eventNo + '/';
+
+                        $('#diag-plots').attr('href', plotUrl);
+                        sst.setEventText();
+
+                        // var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
+                        // var timeStr =  $.fn.BEE.current_sst.eventTime;
+                        // var text = eventStr + " | trigger: " + $.fn.BEE.current_sst.trigger;
+                        // text = text + "<br/>" + timeStr;
+                        // // $("#fullscreeninfo").html(text);
+                        // if ($.fn.BEE.user_options.geom.name == "protodune") {
+                        //     $("#event-text").html(text);
+                        // }
+
                     }
                     // console.log(sst);
 
@@ -1978,25 +2449,6 @@ if ( typeof Object.create !== 'function' ) {
             var self = this;
             // var folder_recon = self.gui.addFolder("Recon (" + sst.name + ")");
             var opacity = sst.name == "WireCell-charge" ? self.options.material.opacity : 0;
-            // var prop = {
-            //     size: 2,
-            //     opacity: opacity,
-            //     select: function() {
-            //         $.fn.BEE.current_sst = sst;
-            //         // console.log($.fn.BEE.current_sst);
-            //     }
-            // };
-            // folder_recon.add(prop, "size", 1, 6).step(1)
-            //     .onChange(function(value) {
-            //         sst.material.size = value;
-            //     });
-            // folder_recon.add(prop, "opacity", 0, 1)
-            //     .onChange(function(value) {
-            //         sst.material.opacity = value;
-            //     });
-            // if (sst.name == "WireCell-charge" || sst.name == "truth") {
-            //     folder_recon.open();
-            // }
 
             self.gui.__folders.Recon.add(sst, "selected")
                 .name(sst.name);
@@ -2015,7 +2467,6 @@ if ( typeof Object.create !== 'function' ) {
             var self = this;
             self.renderer = new THREE.WebGLRenderer( { antialias: true } );
             var renderer = self.renderer;
-
             renderer.setPixelRatio( window.devicePixelRatio );
             renderer.setSize( window.innerWidth*self.options.camera.scale, window.innerHeight );
             renderer.gammaInput = true;
@@ -2024,7 +2475,6 @@ if ( typeof Object.create !== 'function' ) {
                 renderer.setClearColor(0xFFFFFF, 1);
                 // renderer.setClearColor(0xdddddd, 1);
             }
-
             // container = document.getElementById( 'container' );
             var container = self.$elem[0];
             container.appendChild(renderer.domElement);
@@ -2039,10 +2489,15 @@ if ( typeof Object.create !== 'function' ) {
             if ($.fn.BEE.user_options.theme == 'light') {
               $('#event-info').removeClass('invert-color');
             }
-            if ($.fn.BEE.user_options.geom.name == 'uboone') {
+            var detector = $.fn.BEE.user_options.geom.name;
+            if ( detector == 'uboone' || detector == 'protodune') {
               var $logo = $('#event-logo');
               var new_src = $logo.attr('src').replace('dummy', $.fn.BEE.user_options.geom.name);
               $logo.attr('src', new_src);
+            }
+            else {
+                var $logo = $('#event-logo');
+                $logo.hide();
             }
         },
 
@@ -2106,26 +2561,6 @@ if ( typeof Object.create !== 'function' ) {
             var newId = id <= 0 ? maxId : id-1;
             window.location.assign(event_url + newId + '/' + base_query);
         },
-
-        // nextRecon: function() {
-        //     var self = this;
-        //     var disp = self.gui.__folders.General.__controllers[1];
-        //     var currentIndex = self.options.sst.indexOf(self.guiController.display);
-        //     var newIndex = currentIndex == self.options.sst.length - 1
-        //             ? 0
-        //             : currentIndex + 1;
-        //     disp.setValue(self.options.sst[newIndex]);
-        // },
-
-        // prevRecon: function() {
-        //     var self = this;
-        //     var disp = self.gui.__folders.General.__controllers[1];
-        //     var currentIndex = self.options.sst.indexOf(self.guiController.display);
-        //     var newIndex = currentIndex == 0
-        //             ? self.options.sst.length - 1
-        //             : currentIndex - 1;
-        //     disp.setValue(self.options.sst[newIndex]);
-        // },
 
         toggleOp: function() { this.op.toggle(); },
         drawOp: function() { this.op.draw(); },
@@ -2221,9 +2656,66 @@ if ( typeof Object.create !== 'function' ) {
             self.animate();
             self.gui.close();
             // $("#statusbar").hide();
+            // var eventStr = "Event: " + $.fn.BEE.current_sst.runNo + " - " + $.fn.BEE.current_sst.subRunNo + " - " + $.fn.BEE.current_sst.eventNo;
+            // var timeStr =  $.fn.BEE.current_sst.eventTime;
+            // var text = eventStr + "<br/>" + timeStr;
+
+            if ($.fn.BEE.user_options.geom.name == "protodune" && $.fn.BEE.user_options.camera.photo_booth) {
+                // self.playInterval = setInterval(function(){
+                //     self.toggleBox();
+                //     self.toggeleTPCs();
+                // }, 3000);
+                self.tl = new TimelineLite({
+                    onComplete:function() {this.restart();}
+                });
+                var x0 = $.fn.BEE.scene3D.camera.position.x;
+                var y0 = $.fn.BEE.scene3D.camera.position.y;
+                var z0 = $.fn.BEE.scene3D.camera.position.z;
+                var zoomIn = 0.5;
+                var dummy = {};
+                var xBox = toLocalX(($.fn.BEE.user_options.box.xmin+$.fn.BEE.user_options.box.xmax)/2);
+                var yBox = toLocalY(($.fn.BEE.user_options.box.ymin+$.fn.BEE.user_options.box.ymax)/2);
+                var zBox = toLocalZ(($.fn.BEE.user_options.box.zmin+$.fn.BEE.user_options.box.zmax)/2);
+                console.log(xBox, yBox, zBox);
+                self.tl
+                .to($.fn.BEE.scene3D.camera.position, 5, {
+                    onComplete: function(){self.toggleBox();}
+                }) // rotate 5 seconds, then turn on box
+                .to(dummy, 5, {}) // rotate 5 seconds
+                .to($.fn.BEE.scene3D.camera.position, 5, {
+                    x: x0 * zoomIn, y: y0 * zoomIn, z: z0 * zoomIn,
+                }) // zoom in for 5 sec
+                // .to($.fn.BEE.scene3D.orbitController.target, 5, {
+                //     x: xBox, y: yBox, z: zBox,
+                //     onUpdate: function(){self.orbitController.update();},
+                // }) // change rotation to around box for 5 sec
+                .to($.fn.BEE.scene3D.camera.position, 5, {
+                    onComplete: function(){self.toggeleTPCs();}
+                }) // rotate 5 sec, then turn off tpc
+                .to($.fn.BEE.scene3D.camera.position, 5, {
+                    x: x0 * zoomIn * 0.75, y: y0 * zoomIn * 0.75, z: z0 * zoomIn * 0.75,
+                }) // zoom in another 50% for 5 sec
+                .to($.fn.BEE.scene3D.camera.position, 10, {
+                    onComplete: function(){self.toggeleTPCs();}
+                }) // rotate 10 sec, then turn on tpc
+                .to($.fn.BEE.scene3D.camera.position, 5, {
+                    onComplete: function(){self.toggleBox();}
+                }) // rotate 5 sec, then turn off box
+                // .to($.fn.BEE.scene3D.orbitController.target, 5, {
+                //     x: 0, y: 0, z: 0,
+                //     onUpdate: function(){self.orbitController.update();},
+                // }) // change rotation to center for 5 sec
+                .to(dummy, 5, {}) // rotate 5 seconds
+                .to($.fn.BEE.scene3D.camera.position, 5, {
+                    x: x0, y: y0, z: z0,
+                }) // zoom out for 5 sec
+
+            }
             if (screenfull.enabled) {
+                // $("#fullscreeninfo").show();
                 screenfull.request(document.getElementById('container'));
             }
+
         },
 
         stop: function() {
@@ -2232,6 +2724,14 @@ if ( typeof Object.create !== 'function' ) {
             self.options.camera.rotate = false;
             self.animate();
             self.gui.open();
+            $("#fullscreeninfo").hide();
+            if (self.playInterval) {
+                clearInterval(self.playInterval);
+            }
+            if (self.tl) {
+                self.tl.kill();
+            }
+
             // $("#statusbar").show();
         },
 
@@ -2489,6 +2989,43 @@ if ( typeof Object.create !== 'function' ) {
             self.redrawAllSST();
         },
 
+        toggleROI: function() {
+            var self = this;
+            $.fn.BEE.current_sst.toggleROI();
+        },
+
+        toggleBox: function() {
+            $.fn.BEE.user_options.box.box_mode = !$.fn.BEE.user_options.box.box_mode
+            if($.fn.BEE.user_options.box.box_mode) {
+               $.fn.BEE.current_sst.drawInsideBoxHelper();
+            }
+            else {
+                $.fn.BEE.current_sst.drawInsideThreeFrames();
+            }
+        },
+        
+        nextTPC: function() {
+            var length = $.fn.BEE.scene3D.tpcLoc.length;
+            $.fn.BEE.current_sst.drawInsideBoxHelper();
+            if ($.fn.BEE.user_options.box.tpcNo < length-1) {
+                $.fn.BEE.user_options.box.tpcNo += 1;
+            }
+            else {
+                $.fn.BEE.user_options.box.tpcNo = 0;
+            }
+        },
+
+        toggeleTPCs: function() {
+            var self = this;
+            $.fn.BEE.user_options.helper.showTPCs = !$.fn.BEE.user_options.helper.showTPCs;
+            if ($.fn.BEE.user_options.helper.showTPCs) {
+                self.group_main.add(self.group_helper);
+            }
+            else {
+                self.group_main.remove(self.group_helper);
+            }
+        },
+
         increaseOpacity: function() {
             if ($.fn.BEE.current_sst.material.opacity >= 1) { return; }
             else { $.fn.BEE.current_sst.material.opacity += 0.05; }
@@ -2551,7 +3088,7 @@ if ( typeof Object.create !== 'function' ) {
                 var x = sst.geometry.attributes.position.array[index*3]; // local coordinates
                 var y = sst.geometry.attributes.position.array[index*3+1];
                 var z = sst.geometry.attributes.position.array[index*3+2];
-                console.log(index, x,y,z);
+                // console.log(index, x,y,z);
 
                 self.el_statusbar.html(
                     '(x, y, z) = ('
@@ -2736,6 +3273,11 @@ if ( typeof Object.create !== 'function' ) {
             self.addKeyEvent(',', self.prevMatchingOp);
             self.addKeyEvent('/', self.nextMatchingBeamOp);
             self.addKeyEvent('o', self.redrawAllSSTRandom);
+            self.addKeyEvent('shift+f', self.play);
+            self.addKeyEvent('shift+i', self.toggleROI);
+            self.addKeyEvent('b', self.toggleBox);
+            self.addKeyEvent('shift+t', self.nextTPC);
+
             self.addKeyEvent('\\', self.toggleScan);
 
             Mousetrap.bindGlobal('esc', function(){
@@ -2799,8 +3341,9 @@ if ( typeof Object.create !== 'function' ) {
 
                 if ($.fn.BEE.user_options.camera.multiview) {
                     // front camera
-                    left = -10; bottom = SCREEN_H-300; width = SCREEN_W*0.3; height = SCREEN_H*0.3;
-                    renderer.setViewport (left,bottom,width,height);
+                    // width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = 20; bottom = SCREEN_H-300; 
+                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = 10; bottom = 50; 
+                    renderer.setViewport(left,bottom,width,height);
                     renderer.setScissor(left,bottom,width,height);
                     renderer.setScissorTest(true);
                     // frontCamera.aspect = width/height;
@@ -2808,16 +3351,18 @@ if ( typeof Object.create !== 'function' ) {
                     renderer.render(self.scene, self.frontCamera);
 
                     // side camera
-                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-650; bottom = -40;
-                    renderer.setViewport (left,bottom,width,height);
+                    // width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-650; bottom = -40;
+                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-650; bottom = SCREEN_H-200;
+                    renderer.setViewport(left,bottom,width,height);
                     renderer.setScissor(left,bottom,width,height);
                     renderer.setScissorTest(true);
                     self.sideCamera.updateProjectionMatrix();
                     renderer.render(self.scene, self.sideCamera);
 
                     // top camera
-                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-400; bottom = -10;
-                    renderer.setViewport (left,bottom,width,height);
+                    // width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-400; bottom = -10;
+                    width = SCREEN_W*0.3; height = SCREEN_H*0.3; left = SCREEN_W-400; bottom = SCREEN_H-200;
+                    renderer.setViewport(left,bottom,width,height);
                     renderer.setScissor(left,bottom,width,height);
                     renderer.setScissorTest(true);
                     self.topCamera.updateProjectionMatrix();
@@ -2837,8 +3382,9 @@ if ( typeof Object.create !== 'function' ) {
     };
 
     $.fn.BEE = function( options ) {
-        $.fn.BEE.user_options = $.extend(true, {}, $.fn.BEE.options, options, Lockr.get('options') ); // recursive extend
+        $.fn.BEE.user_options = $.extend(true, {}, $.fn.BEE.options, Lockr.get('options'), options ); // recursive extend
         // console.log($.fn.BEE.user_options);
+        // console.log(Lockr.get('options'));
 
         var scene3D = Object.create(Scene3D);
         scene3D.init($.fn.BEE.user_options, this);
@@ -2858,7 +3404,10 @@ if ( typeof Object.create !== 'function' ) {
             showTPCs : true,
             showAxises : false,
             deadAreaOpacity : 0.0,
-            showFlash: false
+            showFlash: false,
+            showMCNeutral: false,
+            showBeam: false,
+            showSCB: true
         },
         flash    : {
             showFlash: false,
@@ -2876,24 +3425,41 @@ if ( typeof Object.create !== 'function' ) {
             halfz : 520.,
             center : [128, 0, 520],
             angleU : 60,
-            angleV : 60
+            angleV : 60,
+            bounding_box: []
         },
         camera   : {
-            scale : 0.85,
+            scale : 1.,
             depth : 2000,
             ortho : true,
             rotate: false,
-            multiview: true
+            multiview: false,
+            photo_booth: false
         },
         slice : {
-            width: 0.32,
-            opacity: 0.05
+            opacity: 0.0,
+            width: 0.32
+        },
+        box: {
+            box_mode: false,
+            xmin: 0.,
+            xmax: 0.,
+            ymin: 0.,
+            ymax: 0.,
+            zmin: 0.,
+            zmax: 0.,
+            tpcNo: -1
+        },
+        live : {
+            refresh: false,
+            interval: 60
         },
         material : {
             colorScale: 1.0,
             opacity : 0.2,
             showCharge : true,
-            showCluster : false
+            showCluster : false,
+            overlay  : true
         },
         sst : [
             // "WireCell-charge",
@@ -2903,6 +3469,14 @@ if ( typeof Object.create !== 'function' ) {
         ]
     };
     $.fn.BEE.user_options = $.fn.BEE.options;
+    if ($.fn.BEE.user_options.geom.name == "protodune") {
+        $.fn.BEE.user_options.box.xmin = -100;
+        $.fn.BEE.user_options.box.xmax = 0;
+        $.fn.BEE.user_options.box.ymin = 250;
+        $.fn.BEE.user_options.box.ymax = 500;
+        $.fn.BEE.user_options.box.zmin = 0;
+        $.fn.BEE.user_options.box.zmax = 400;
+    }
 
     $.fn.BEE.current_sst = {
         material: {
@@ -2946,6 +3520,7 @@ if ( typeof Object.create !== 'function' ) {
     function saveLocalStorage() {
         var options = {
             'material' : $.fn.BEE.user_options.material,
+            'box' : $.fn.BEE.user_options.box,
             'slice' : $.fn.BEE.user_options.slice,
             'theme' : $.fn.BEE.user_options.theme,
             'helper': $.fn.BEE.user_options.helper,

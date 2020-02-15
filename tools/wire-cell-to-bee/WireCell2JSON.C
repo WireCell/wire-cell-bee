@@ -1,7 +1,7 @@
 void WireCell2JSON(TString filename, TString option = "truth", TString outfile="wc.json")
 {
     gROOT->Reset();
-    gROOT->ProcessLine(".x loadClasses.C" );
+    // gROOT->ProcessLine(".x loadClasses.C" );
     gErrorIgnoreLevel=2001;
     WCReader r(filename, outfile);
     if (option == "mc") {
@@ -12,6 +12,9 @@ void WireCell2JSON(TString filename, TString option = "truth", TString outfile="
     }
     else if (option == "op") {
         r.DumpOp();
+    }
+    else if (option == "vtx") {
+        r.DumpVtx();
     }
     else {
         r.DumpSpacePoints(option);

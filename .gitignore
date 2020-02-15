@@ -3,11 +3,16 @@
 *.d
 *.so
 *.zip
+*.pcm
 test.*
 data/
 tmp/
 fabfile.py
 wc.json
 media/
+dist/
+.cache/
 *.root
 Thumbs.db
+bee.old.js
+.vscode/

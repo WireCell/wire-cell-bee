@@ -6,6 +6,7 @@ FILENAME_ALIAS = {
 }
 
 SORTED_RECON_FILES = [
+    "cluster",
     "rec_charge_blob",
     "truth",
     "rec_charge_cell",

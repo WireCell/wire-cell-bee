@@ -29,24 +29,51 @@
               <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                  role="button" aria-haspopup="true" aria-expanded="false">
                  Run <span id="runNo"></span> |
-                 Subrun <span id="subRunNo"></span> | 
+                 <!-- <span id="subRunNo"></span> -->
                  Event <span id="eventNo"></span>
-                 <!-- <span class="caret"></span> -->
+                 <span class="caret"></span>
               </a>
-              <!-- <ul class="dropdown-menu">
-                <li role="separator" class="divider"></li>
+              <ul class="dropdown-menu">
+              <li><a href="#" id="toggleMC">Show MC <span class="hotkey">m</span></a></li>
+              <li><a href="#" id="toggleCharge">Toggle Charge <span class="hotkey">q</span></a></li>
+<!--                 <li role="separator" class="divider"></li>
                 <li><a href="{% url 'event_list' set_id %}">
                   Go to Event List ...
-                </a></li>
-              </ul> -->
+                </a></li> -->
+              </ul>
+            </li>
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Camera <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#" id="centerToEvent">Center to Event <span class="hotkey">c</span></a></li>
+                <li><a href="#" id="xyView">X-Y View <span class="hotkey">x</span></a></li>
+                <li><a href="#" id="xzView">X-Z View <span class="hotkey">z</span></a></li>
+                <li><a href="#" id="xuView">X-U View <span class="hotkey">u</span></a></li>
+                <li><a href="#" id="xvView">X-V View <span class="hotkey">v</span></a></li>
+                <li><a href="#" id="resetCamera">Reset <span class="hotkey">r</span></a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#" id="play">Play (Fullscreen)</a></li>
+              </ul>
             </li>
 
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View <span class="caret"></span></a>
               <ul class="dropdown-menu">
+                <li><a href="#" id="nextEvent">Next Event <span class="hotkey">Shift+n</span></a></li>
+                <li><a href="#" id="prevEvent">Prev Event <span class="hotkey">Shift+p</span></a></li>
+<!--                 <li role="separator" class="divider"></li>
+                <li><a href="#" id="nextRecon">Next Recon <span class="hotkey">]</span></a></li>
+                <li><a href="#" id="prevRecon">Prev Recon <span class="hotkey">[</span></a></li> -->
+                <li role="separator" class="divider"></li>
+                <li><a href="#" id="nextSlice">Next Slice <span class="hotkey">k</span></a></li>
+                <li><a href="#" id="prevSlice">Prev Slice <span class="hotkey">j</span></a></li>
+                <li role="separator" class="divider"></li>
                 <li><a href="#" id="toggleSidebar">Toggle Sidebar</a></li>
+                <li><a href="#" id="toggleCluster">Toggle Cluster Panel</a></li>
                 <li><a href="#" id="toggleScan">Toggle Scan Panel <span class="hotkey">\</span></a></li>
                 <li role="separator" class="divider"></li>
+                <!-- <li><a href="#" id="toggleScanResults">Show Scan Results</a></li> -->
                 <li><a href="" data-toggle="modal" data-target="#scanResultsModal" id="scanResultsModalLink">Show Scan Results</a></li>
               </ul>
             </li>
@@ -63,9 +90,9 @@
               <ul class="dropdown-menu">
                 <li><a href="#" id="preset-default">Reset to Default Preference </a></li>
                 <li><a href="#" id="clear-scan">Clear Scan Results </a></li>
+                <li><a href="#" id="toggleStats">Show Performace Monitor <span class="hotkey">s</span></a></li>
                 <li role="separator" class="divider"></li>
-                <li><a href="" data-toggle="modal" data-target="#cmdModal">Hotkey List <span class="hotkey">?</span></a></li>
-                <li><a href="" data-toggle="modal" data-target="#voiceModal">Voice Commands</a></li>
+                <li><a href="" data-toggle="modal" data-target="#cmdModal">Hotkey List </a></li>
               </ul>
             </li>
 
@@ -73,6 +100,17 @@
         </div>
       </div>
     </nav>
+    <div id="cluster">
+      <button type="button" class="btn btn-primary" aria-label="Left Align" id="btn-cluster">
+        Do Cluster
+      </button>
+      <button type="button" class="btn btn-primary" aria-label="Left Align" id="btn-cleanUpCluster">
+        Clean Up
+      </button>
+      <!-- <input type="text" class="form-control" value="40" aria-describedby="basic-addon1"> -->
+      <div id="progressbar"></div>
+      <div id="cluster-message"></div>
+    </div>
 
     <div id="scan">
       <form >
@@ -111,6 +149,11 @@
       </form>
     </div>
 
+
+<!--     <div id="event-info" class='invert-color'>
+      <img id="event-logo" src="{% static 'css/dummy-logo.png' %}" alt="" style="width: 200px;" />
+    </div> -->
+
     <div id="container">
       <div id="fullscreeninfo" style="display: none;"></div>
       <div id="event-info" class='invert-color'>
@@ -120,14 +163,16 @@
 
     </div>
 
-    <!-- <div id="imgbar">
+    <div id="imgbar">
        <img src="{% static 'css/bnl.jpg' %}" height="0" width="180" />
-    </div> -->
-
-    <div id="statusbar"></div>
+    </div>
+    <div id="statusbar">
+<!--         slice #: <span id="slice_number">0</span> |
+        slice x: <span id="slice_x">0</span> -->
+    </div>
     <div id="mc"></div>
-    <div class="alert alert-info fade in" id="infobar"></div>
-
+    <!-- <div id="sst">HAAdsfada</div> -->
+    <!-- <div id="accordion"></div> -->
     <div id="sst-docker">
       <h4 id="sst"></h4>
       Size
@@ -140,6 +185,7 @@
           <input type="color" style="width:60px; float:right" id="sst-color" value="#FFFFFF">
         </div>
       </form>
+
     </div>
 
     <div class="alert alert-info fade in" id="loadingbar">
@@ -177,13 +223,17 @@
                     <td>Next Event</td><td>Shift+n</td>
                     <td>Prev Event</td><td>Shift+p</td>
                   </tr>
+<!--                   <tr>
+                    <td>Next Recon</td><td>]</td>
+                    <td>Prev Recon</td><td>[</td>
+                  </tr> -->
                   <tr>
                     <td>Next Slice</td><td>k</td>
                     <td>Prev Slice</td><td>j</td>
                   </tr>
                   <tr>
-                    <td>Next Flash</td><td>&gt</td>
-                    <td>Prev Flash</td><td>&lt</td>
+                    <td>Next Flash</td><td>></td>
+                    <td>Prev Flash</td><td><</td>
                   </tr>
                   <tr>
                     <td>Next Match Falsh</td><td>.</td>
@@ -194,27 +244,23 @@
                     <td>Next TPC</td><td>Shift+t</td>
                   </tr>
                   <tr>
-                    <td>Front (YZ) view</td><td>x</td>
-                    <td>Top (XZ) view</td><td>y</td>
+                    <td>Center to Event</td><td>c</td>
+                    <td>Reset Camera</td><td>r</td>
                   </tr>
                   <tr>
-                    <td>Side (XY) view</td><td>z</td>
-                    <td>W (XW) view</td><td>w</td>
+                    <td>X-U view</td><td>u</td>
+                    <td>X-V view</td><td>v</td>
                   </tr>
                   <tr>
-                    <td>U (XU) view</td><td>u</td>
-                    <td>V (XV) view</td><td>v</td>
+                    <td>X-Z view</td><td>z</td>
+                    <td>X-Y view</td><td>x</td>
                   </tr>
-                  <tr>
-                      <td>Fullscreen</td><td>shift+f</td>
-                      <td>Reset Camera</td><td>r</td>
-                    </tr>
                   <tr>
                     <td>Zoom in</td><td>Shift+Up</td>
                     <td>Zoom out</td><td>Shift+Down</td>
                   </tr>
                   <tr>
-                    <td>Select Reco</td><td>1 - 9</td>
+                    <td>Select Recon</td><td>1 - 9</td>
                     <td>Unselect All</td><td>Esc</td>
                   </tr>
                   <tr>
@@ -222,40 +268,15 @@
                     <td>Decrease Opacity</td><td>-</td>
                   </tr>
                   <tr>
-                    <td>Max Opacity</td><td>}</td>
-                    <td>Transparent</td><td>{</td>
-                  </tr>
-                  <tr>
                     <td>Increase Point Size</td><td>+</td>
                     <td>Decrease Point Size</td><td>_</td>
                   </tr>
                   <tr>
                     <td>Redraw All Points</td><td>o</td>
-                    <td>Help</td><td>?</td>
+                    <td>Show FPS</td><td>s</td>
                   </tr>
                 </tbody>
             </table>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="voiceModal" class="modal hide fade" role="dialog" tabindex="-1">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title">List of Voice Commands</h4>
-          </div>
-          <div class="modal-body">
-            <ul>
-              <li><b>Camera control</b>: <i>"top", "side", "front", "u", "v", "w", "reset"</i>.</li>
-              <li><b>Flash navigation</b>: <i>"neutrino", "everything", "next match", "previous match", "next flash", "previous flash"</i>.</li>
-              <li><b>Event navigation</b>: <i>"next event", "previous event", "event number 42"</i>.</li>
-            </ul>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -290,16 +311,33 @@
 
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="{% static 'js/lib/dat.gui.min.js' %}"></script>
+    <!-- <script type="text/javascript" src="{% static 'js/lib/three.min.js' %}"></script> -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/107/three.min.js"></script>
 
     <script type="text/javascript" src="{% static 'js/lib/TypedArrayUtils.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/lib/OrbitControls.js' %}"></script>
-    <!-- <script type="text/javascript" src="{% static 'js/lib/stats.min.js' %}"></script> -->
+    <script type="text/javascript" src="{% static 'js/lib/stats.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/lib/screenfull.min.js' %}"></script>
+    <!-- <script type="text/javascript" src="{% static 'js/lib/jstree.min.js' %}"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.8/jstree.min.js"></script>
 
-    <script type="text/javascript" src="{% static 'js/bee/dist/bee.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/bee.jquery.js' %}"></script>
+    <script>
+        var options = {};
+        var xhr = $.getJSON(window.location.href, function(data){
+            $.extend(true, options, data);
+            // console.log(options);
+        }); // server options
 
+        xhr.then(function(){
+            // $.extend(true, options, {
+            //   material: {
+            //     opacity: 0.2
+            //   }
+            // }); // user options
+            var bee = $("#container").BEE(options);
+        });
 
+    </script>
 </body>
 </html>

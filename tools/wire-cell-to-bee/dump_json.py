@@ -35,7 +35,7 @@ def main(filename, options):
         os.mkdir('data/'+str_i)
         filename = list_of_files[i]
         for rec in options:
-            cmd = "root -b -q -l 'WireCell2JSON.C(\"%s\", \"%s\", \"%s\")'" % (
+            cmd = "root -b -q -l loadClasses.C 'WireCell2JSON.C(\"%s\", \"%s\", \"%s\")'" % (
                 filename,
                 rec,
                 'data/'+str_i+'/'+str_i+'-'+rec+'.json')
