@@ -208,8 +208,8 @@ void WCReader::DumpOp()
 void WCReader::DumpSpacePoints(TString option)
 {
     double x=0, y=0, z=0, q=0, nq=1;
-    int cluster_id=0;
-    vector<double> vx, vy, vz, vq, vnq, vcluster_id;
+    int cluster_id=0, real_cluster_id=0;
+    vector<double> vx, vy, vz, vq, vnq, vcluster_id, vreal_cluster_id;
     TTree * t = 0;
 
     if (option == "truth" || option == "true") {
@@ -246,6 +246,7 @@ void WCReader::DumpSpacePoints(TString option)
         }
         if (option.Contains("cluster")) {
             t->SetBranchAddress("cluster_id", &cluster_id);
+            t->SetBranchAddress("real_cluster_id", &real_cluster_id);
         }
         int nPoints = t->GetEntries();
         for (int i=0; i<nPoints; i++) {
@@ -256,6 +257,7 @@ void WCReader::DumpSpacePoints(TString option)
             vq.push_back(q);
             vnq.push_back(nq);
             vcluster_id.push_back(cluster_id);
+            vreal_cluster_id.push_back(real_cluster_id);
         }
     }
 
@@ -271,6 +273,7 @@ void WCReader::DumpSpacePoints(TString option)
     print_vector(jsonFile, vq, "q");
     print_vector(jsonFile, vnq, "nq");
     print_vector(jsonFile, vcluster_id, "cluster_id");
+    print_vector(jsonFile, vreal_cluster_id, "real_cluster_id");
 
 
     jsonFile << '"' << "type" << '"' << ":" << '"' << option << '"' << "," << endl;
