@@ -235,15 +235,11 @@ void WCReader::DumpSpacePoints(TString option)
         t->SetBranchAddress("x", &x);
         t->SetBranchAddress("y", &y);
         t->SetBranchAddress("z", &z);
-<<<<<<< HEAD
-	//        if (! (option.Contains("simple") ||  option.Contains("cluster")) ) {
-	if (t->GetBranch("q")){
-=======
+
         // if (! (option.Contains("simple") ||  option.Contains("cluster")) ) {
         //     t->SetBranchAddress("q", &q);
         // }
         if (t->GetBranch("q")) {
->>>>>>> 1de60624afa2e3c2c4dd08d320865d320c3e03b5
             t->SetBranchAddress("q", &q);
         }
         if (option.Contains("charge")) {
