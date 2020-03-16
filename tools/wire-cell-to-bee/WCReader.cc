@@ -1,5 +1,5 @@
 #include "WCReader.h"
-
+ 
 #include <iostream>
 #include <vector>
 #include <map>
