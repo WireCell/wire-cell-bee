@@ -36,7 +36,7 @@ export function getMaxOfArray(arr) {
 export function getColorAtScalar(n, maxLength) {
     let value = 0;
     if (n <= maxLength) {
-        value = (maxLength - n) / maxLength * 240 / 360;
+        value = (maxLength - n) / maxLength * 2 / 3; // remove magenta color; see http://hslpicker.com
     }
     return value;
 }
