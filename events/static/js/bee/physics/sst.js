@@ -153,7 +153,7 @@ class SST {
             let color = new THREE.Color();
             if (config.material.showCluster) {
                 let length = USER_COLORS[theme].length;
-                let color_id = this.data.real_cluster_id[ind] >= 0 ? this.data.real_cluster_id[ind] : this.data.cluster_id[ind]; // backward compatible
+                let color_id = this.data.real_cluster_id[ind] > 0 ? this.data.real_cluster_id[ind] : this.data.cluster_id[ind]; // backward compatible
                 color_id = Math.floor((color_id + length) % (length - ran));
                 color = new THREE.Color(USER_COLORS[theme][color_id]);
             }
