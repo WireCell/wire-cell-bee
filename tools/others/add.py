@@ -34,8 +34,9 @@ def add(summary, nextEvt):
         'subRunNo': 0,
         'geom': 'uboone'
     }
-
-    with open(all_files[0], "r") as f:
+    
+    # print(all_files[0])
+    with open(sorted(all_files)[0], "r") as f:
         runInfo = json.load(f)
 
     for path in all_files:
@@ -58,11 +59,11 @@ def add(summary, nextEvt):
     summary[nextEvt] = info
     
 
-if __name__ == "__main__":
 '''
 Add a bee event from a web link to a new collection. Place the script in parallel with the 'data' directory.
 usage: python add.py [link to bee event]
 '''
+if __name__ == "__main__":
     with open("data/summary.json", "r") as f:
         summary = json.load(f)
 
@@ -76,4 +77,4 @@ usage: python add.py [link to bee event]
     with open('data/summary.json', 'w') as outfile:
         json.dump(summary, outfile)
 
-    pp.pprint(summary)
+#    pp.pprint(summary)
