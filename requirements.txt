@@ -1,4 +1,4 @@
-Django==1.7.6
+Django==1.11.29
 ecdsa==0.13
 Fabric==1.10.2
 ipython==3.2.1
