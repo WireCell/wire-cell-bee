@@ -63,6 +63,7 @@ class Dispatcher {
             Mousetrap.bind(',', () => { this.bee.op.prevMatching() });
             Mousetrap.bind('.', () => { this.bee.op.nextMatching() });
             Mousetrap.bind('/', () => { this.bee.op.nextMatchingBeam() });
+            Mousetrap.bind('\'', () => { this.bee.op.nextMatchingNUMI() });
         }
 
         for (let i = 1; i <= 9; i++) {

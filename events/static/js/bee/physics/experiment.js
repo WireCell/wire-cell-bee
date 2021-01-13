@@ -25,6 +25,8 @@ class Experiment {
             nDet: 0,
             beamTimeMin: 2,  // time window for beam flash, (us) 
             beamTimeMax: 6,
+            numiTimeMin: 4,  // time window for NUMI beam flash, (us) 
+            numiTimeMax: 18,
         };
         this.camera = {
             depth: 2000

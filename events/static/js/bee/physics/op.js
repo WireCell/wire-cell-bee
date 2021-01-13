@@ -216,6 +216,28 @@ class OP {
         
     }
 
+    nextMatchingNUMI() {
+        let n = 0;
+        do {
+            if (this.currentFlash < this.data.op_t.length - 1) {
+                this.currentFlash += 1;
+                n += 1;
+            }
+            else {
+                this.currentFlash = 0;
+                n += 1
+            }
+            if (n > this.data.op_t.length) break;
+        } while (
+            this.data.op_cluster_ids[this.currentFlash].length == 0
+            || this.data.op_t[this.currentFlash] < this.store.experiment.op.numiTimeMin
+            || this.data.op_t[this.currentFlash] > this.store.experiment.op.numiTimeMax
+        )
+        if (n <= this.data.op_t.length) { this.drawMachingCluster() }
+        else { this.store.dom.el_statusbar.html('No matching flash found inside beam window') }
+
+    }
+
     toggle() {
         if (this.group_op == null) { this.draw() }
         else {
