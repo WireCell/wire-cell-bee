@@ -272,7 +272,7 @@ class ICARUS extends Experiment {
             [71.37, 219.57, -181.86, 134.96, -894.951, 894.951],
             [220.86, 369.06, -181.86, 134.96, -894.951, 894.951],
         ]);
-        this.tpc.viewAngle = [90, -30, 30];
+        this.tpc.viewAngle = [90, 30, -30];
         // this.tpc.driftVelocity = 0.16; // cm/us
         // this.daq.timeBeforeTrigger = 500*0.5; //us
         // this.daq.timeAfterTrigger = 5500*0.5; //us
