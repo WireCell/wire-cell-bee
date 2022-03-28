@@ -371,12 +371,12 @@ class Gui {
                 bee.helper.slice.material.opacity = value;
             });
 
-        folder.add(config.slice, "width", step, halfx * 2).step(step)
+        folder.add(config.slice, "width", step, halfx * 2 * 3).step(step)
             .onChange((value) => {
                 bee.helper.slice.scale.x = value / w; // SCALE
             });
 
-        folder.add(config.slice, "position", -3 * halfx + w / 2, 3 * halfx - w / 2)
+        folder.add(config.slice, "position", -3 * halfx * 3 + w / 2, 3 * halfx - w / 2)
             .onChange(() => {
                 this.updateSlice();
             });

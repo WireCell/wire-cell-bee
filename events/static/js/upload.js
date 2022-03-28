@@ -7,7 +7,7 @@ Dropzone.autoDiscover = false;
 
     var dz = new Dropzone("#dropzone", {
         // autoProcessQueue : false,
-        maxFilesize: 400,  // MB
+        maxFilesize: 500,  // MB
         accept: function(file, done) {
             if (file.name.substr(-3) == "zip") {
                 done();
