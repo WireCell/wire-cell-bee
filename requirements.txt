@@ -1,6 +1,5 @@
 Django==1.7.6
 ecdsa==0.13
 Fabric==1.10.2
-ipython==3.2.1
 paramiko==1.15.2
 pycrypto==2.6.1
