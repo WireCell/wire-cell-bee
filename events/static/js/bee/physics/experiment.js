@@ -686,6 +686,22 @@ class DUNE35t extends Experiment {
 }
 
 // --------------------------------------------------------
+class ProtoDUNEVDTest extends Experiment {
+
+    constructor() {
+        super('protodunevd-test');
+        this.updateTPCLocation([
+            [-602, 542, -600, 600, -421, 720],
+            [-315, 313, -342, 342, -5, 304]
+        ]);
+        this.tpc.viewAngle = [-45, 45, 0];
+        this.camera.depth = 4000;
+
+    }
+
+}
+
+// --------------------------------------------------------
 
 function createExperiment(name) {
     let exp = null;
@@ -694,6 +710,7 @@ function createExperiment(name) {
     else if (name == 'icarus') { exp = new ICARUS(); }
     else if (name == 'dune10kt_workspace') { exp = new DUNE10ktWorkspace(); }
     else if (name == 'dune35t') { exp = new DUNE35t(); }
+    else if (name == 'protodunevd-test') { exp = new ProtoDUNEVDTest(); }
     else { exp = new MicroBooNE(); } // default
     return exp;
 }
